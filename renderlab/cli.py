@@ -201,12 +201,27 @@ def expand_prompts(server: str, model: str, intent: str, count: int) -> list[str
         "the intent leaves them open. Each prompt must stand alone and must not refer to previous "
         "images or variations. Return only JSON in the form {\"prompts\":[\"...\"]}."
     )
+    schema = {
+        "type": "object",
+        "properties": {
+            "prompts": {
+                "type": "array",
+                "items": {"type": "string", "minLength": 1},
+                "minItems": count,
+                "maxItems": count,
+            }
+        },
+        "required": ["prompts"],
+        "additionalProperties": False,
+    }
     result = request_json(
         "POST",
         f"{server}/v1/chat/completions",
         {
             "model": model,
             "temperature": 0.9,
+            "max_tokens": 1536,
+            "json_schema": schema,
             "messages": [
                 {"role": "system", "content": instruction},
                 {"role": "user", "content": intent},
@@ -225,7 +240,11 @@ def expand_prompts(server: str, model: str, intent: str, count: int) -> list[str
         or len(prompts) != count
         or any(not isinstance(prompt, str) or not prompt.strip() for prompt in prompts)
     ):
-        raise RenderError(f"prompt expander did not return exactly {count} non-empty prompts")
+        returned_count = len(prompts) if isinstance(prompts, list) else "non-list"
+        raise RenderError(
+            f"prompt expander returned {returned_count} prompts; expected exactly {count}: "
+            f"{prompts!r}"
+        )
     normalized = [prompt.strip() for prompt in prompts]
     if len(set(normalized)) != count:
         raise RenderError("prompt expander returned duplicate prompts")

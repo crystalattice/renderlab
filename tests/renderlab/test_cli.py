@@ -141,6 +141,8 @@ class RenderLabCliTests(unittest.TestCase):
         payload = request.call_args.args[2]
         self.assertEqual(payload["model"], "tiny-model")
         self.assertEqual(payload["messages"][1]["content"], "starry mech")
+        self.assertEqual(payload["json_schema"]["properties"]["prompts"]["minItems"], 2)
+        self.assertEqual(payload["json_schema"]["properties"]["prompts"]["maxItems"], 2)
 
     def test_variations_default_to_whiskers_cpu_summarizer(self):
         args = cli.parse_args(["starry mech", "--variations", "2"])
