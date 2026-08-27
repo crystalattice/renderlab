@@ -194,12 +194,27 @@ def sha256_json(value: Any) -> str:
 
 
 def expand_prompts(server: str, model: str, intent: str, count: int) -> list[str]:
+    director_briefs = (
+        "1. World-first: radically change the environment and use a wide or unusual establishing "
+        "composition; let the setting materially affect the subject.\n"
+        "2. Subject-first: redesign the subject's identity, shape, clothing or machinery, pose, and "
+        "action; use a markedly different camera distance and angle.\n"
+        "3. Treatment-first: choose a distinct visual medium or photographic treatment, palette, "
+        "weather, lighting direction, and emotional tone.\n"
+        "For additional prompts, combine unused camera, action, environment, design, lighting, and "
+        "treatment choices without repeating an earlier composition."
+    )
     instruction = (
         f"Create exactly {count} materially different image-generation prompts from the user's "
-        "rough intent. Preserve its essential subjects and requested concepts. Vary identity, "
-        "composition, camera position, environment, pose, lighting, palette, and atmosphere where "
-        "the intent leaves them open. Each prompt must stand alone and must not refer to previous "
-        "images or variations. Return only JSON in the form {\"prompts\":[\"...\"]}."
+        "rough intent. Preserve only its essential subjects and explicitly requested concepts. "
+        "Treat every unspecified detail as permission to change it. Every prompt must differ from "
+        "every other prompt on at least four of these axes: subject design or identity, action or "
+        "pose, camera distance or angle, environment, lighting or palette, and visual medium or "
+        "treatment. Do not merely paraphrase, substitute synonyms, or retain the same centered "
+        "standing composition. Do not add bracketed tags.\n\n"
+        f"Director briefs:\n{director_briefs}\n\n"
+        "Each prompt must stand alone and must not refer to previous images or variations. Return "
+        "only JSON in the form {\"prompts\":[\"...\"]}."
     )
     schema = {
         "type": "object",
@@ -486,6 +501,7 @@ def main(argv: list[str] | None = None) -> int:
                         {
                             "server": args.prompt_server,
                             "model": args.prompt_model,
+                            "variation_policy": "directors_v1",
                             "variation_index": batch_index,
                             "variation_count": render_count,
                         }

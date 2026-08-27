@@ -141,6 +141,10 @@ class RenderLabCliTests(unittest.TestCase):
         payload = request.call_args.args[2]
         self.assertEqual(payload["model"], "tiny-model")
         self.assertEqual(payload["messages"][1]["content"], "starry mech")
+        system_prompt = payload["messages"][0]["content"]
+        self.assertIn("at least four", system_prompt)
+        self.assertIn("Do not merely paraphrase", system_prompt)
+        self.assertIn("Director briefs", system_prompt)
         self.assertEqual(payload["json_schema"]["properties"]["prompts"]["minItems"], 2)
         self.assertEqual(payload["json_schema"]["properties"]["prompts"]["maxItems"], 2)
 
@@ -187,6 +191,9 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["intent"], "starry mech")
             self.assertEqual(metadata["effective_prompt"], "lake mech")
             self.assertEqual(metadata["prompt_expander"]["variation_count"], 2)
+            self.assertEqual(
+                metadata["prompt_expander"]["variation_policy"], "directors_v1"
+            )
 
     def test_jobs_lists_prompt_ids_and_statuses(self):
         with patch.object(
