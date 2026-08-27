@@ -28,13 +28,32 @@ class RenderError(RuntimeError):
     pass
 
 
-CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras"}
+CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras", "doctor"}
 
 MODEL_NODE_INPUTS = (
     ("diffusion_models", "UNETLoader", "unet_name"),
     ("checkpoints", "CheckpointLoaderSimple", "ckpt_name"),
     ("text_encoders", "CLIPLoader", "clip_name"),
     ("vaes", "VAELoader", "vae_name"),
+)
+
+REQUIRED_WORKFLOW_NODES = (
+    "UNETLoader",
+    "CLIPLoader",
+    "VAELoader",
+    "CLIPTextEncode",
+    "ConditioningZeroOut",
+    "EmptySD3LatentImage",
+    "ModelSamplingAuraFlow",
+    "KSampler",
+    "VAEDecode",
+    "SaveImage",
+)
+
+REQUIRED_MODEL_CHOICES = (
+    ("UNETLoader", "unet_name", "z_image_turbo_int8_convrot.safetensors"),
+    ("CLIPLoader", "clip_name", "qwen_3_4b_fp8_mixed.safetensors"),
+    ("VAELoader", "vae_name", "ae.safetensors"),
 )
 
 
@@ -70,6 +89,9 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
 
     loras_parser = subparsers.add_parser("loras", help="list LoRAs visible to ComfyUI")
     add_server_argument(loras_parser)
+
+    doctor_parser = subparsers.add_parser("doctor", help="validate the RenderLab runtime")
+    add_server_argument(doctor_parser)
 
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
@@ -264,8 +286,39 @@ def print_discovered_group(label: str, choices: list[str]) -> None:
         print("  (none)")
 
 
+def run_doctor(server: str) -> int:
+    failures = 0
+    request_json("GET", f"{server}/system_stats")
+    print(f"[ok] ComfyUI: {server}")
+
+    for node_name in REQUIRED_WORKFLOW_NODES:
+        result = request_json("GET", f"{server}/object_info/{quote(node_name, safe='')}")
+        if node_name in result:
+            print(f"[ok] node: {node_name}")
+        else:
+            print(f"[missing] node: {node_name}")
+            failures += 1
+
+    for node_name, input_name, filename in REQUIRED_MODEL_CHOICES:
+        choices = discover_node_choices(server, node_name, input_name)
+        if filename in choices:
+            print(f"[ok] model: {filename}")
+        else:
+            print(f"[missing] model: {filename}")
+            failures += 1
+
+    if failures:
+        print(f"RenderLab doctor found {failures} problem(s).", file=sys.stderr)
+        return 1
+    print("RenderLab is ready.")
+    return 0
+
+
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "doctor":
+            return run_doctor(args.server)
+
         if args.command == "models":
             for label, node_name, input_name in MODEL_NODE_INPUTS:
                 print_discovered_group(

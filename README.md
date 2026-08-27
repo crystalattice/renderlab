@@ -78,6 +78,35 @@ See what ComfyUI can do with the [newer template workflows](https://comfy.org/wo
   - [3D and vision](https://comfy.org/workflows/): Hunyuan3D 2.1, TripoSplat, SeedVR2, SUPIR, Depth Anything 3, MoGe, SAM 3 and 3.1, RT-DETRv4, and BiRefNet.
   - [Text generation](https://comfy.org/workflows/tag/text-generation/): Gemma 3 and 4, Qwen3, Qwen3.5, and Qwen3-VL, including multimodal inputs.
 - Load complete checkpoints or separate diffusion models, VAEs, text encoders, LoRAs, ControlNets, adapters, and upscalers from supported model formats.
+
+## RenderLab local text-to-image CLI
+
+This fork includes a focused local CLI using the bundled Z-Image Turbo INT8 API workflow.
+Start ComfyUI, then validate the required nodes and models:
+
+```bash
+python -m renderlab doctor
+```
+
+Render one image or a sequential warm batch:
+
+```bash
+python -m renderlab "starry night, giant robot silhouetted against the sky" \
+  --count 3
+```
+
+Operational commands:
+
+```bash
+python -m renderlab jobs
+python -m renderlab status PROMPT_ID
+python -m renderlab cancel PROMPT_ID
+python -m renderlab models
+python -m renderlab loras
+```
+
+Every output receives an adjacent JSON provenance sidecar containing the resolved seed,
+effective workflow, hashes, model filenames, timing, and batch identity.
 - Built-in tools for inpainting, outpainting, reference conditioning, masks and compositing, model merging, upscaling, frame interpolation, segmentation, depth estimation, and media processing.
 - Save and load workflows as JSON, or recover complete workflows and seeds from supported generated media.
 - Runs fully offline: core does not download anything unless you request it. Use `--disable-api-nodes` to disable the optional paid [Comfy API nodes](https://docs.comfy.org/tutorials/api-nodes/overview) and force all built-in functionality to stay offline.

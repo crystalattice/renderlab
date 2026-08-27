@@ -204,6 +204,44 @@ class RenderLabCliTests(unittest.TestCase):
             "GET", "http://127.0.0.1:8188/object_info/LoraLoader"
         )
 
+    def test_doctor_accepts_complete_runtime(self):
+        choice_by_node = {
+            node_name: (input_name, filename)
+            for node_name, input_name, filename in cli.REQUIRED_MODEL_CHOICES
+        }
+
+        def doctor_response(_method, url, _payload=None):
+            if url.endswith("/system_stats"):
+                return {"system": {}}
+            node_name = url.rsplit("/", 1)[-1]
+            response = {node_name: {"input": {"required": {}}}}
+            if node_name in choice_by_node:
+                input_name, filename = choice_by_node[node_name]
+                response[node_name]["input"]["required"][input_name] = [[filename], {}]
+            return response
+
+        with patch.object(cli, "request_json", side_effect=doctor_response):
+            result = cli.main(["doctor"])
+
+        self.assertEqual(result, 0)
+
+    def test_doctor_reports_missing_model(self):
+        def doctor_response(_method, url, _payload=None):
+            if url.endswith("/system_stats"):
+                return {"system": {}}
+            node_name = url.rsplit("/", 1)[-1]
+            response = {node_name: {"input": {"required": {}}}}
+            for configured_node, input_name, filename in cli.REQUIRED_MODEL_CHOICES:
+                if node_name == configured_node:
+                    choices = [] if node_name == "UNETLoader" else [filename]
+                    response[node_name]["input"]["required"][input_name] = [choices, {}]
+            return response
+
+        with patch.object(cli, "request_json", side_effect=doctor_response):
+            result = cli.main(["doctor"])
+
+        self.assertEqual(result, 1)
+
     def test_output_path_rejects_traversal(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
             with self.assertRaises(cli.RenderError):
