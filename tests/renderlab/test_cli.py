@@ -60,6 +60,18 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["prompt_id"], "prompt-123")
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
+            self.assertEqual(metadata["schema_version"], 2)
+            self.assertEqual(metadata["renderlab_version"], "0.1.0")
+            self.assertEqual(metadata["intent"], "a test fox")
+            self.assertEqual(metadata["effective_prompt"], "a test fox")
+            self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())
+            self.assertEqual(
+                metadata["submitted_workflow_sha256"],
+                cli.sha256_json(metadata["submitted_workflow"]),
+            )
+            self.assertEqual(
+                metadata["submitted_workflow"]["8"]["inputs"]["seed"], 987654321
+            )
 
     def test_batch_resolves_independent_random_seeds(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
@@ -98,6 +110,10 @@ class RenderLabCliTests(unittest.TestCase):
             )
             self.assertEqual(metadata["batch_index"], 3)
             self.assertEqual(metadata["batch_count"], 3)
+            first_metadata = json.loads(
+                (output_dir / "RenderLab_00001_.png.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(first_metadata["batch_id"], metadata["batch_id"])
 
     def test_explicit_batch_seed_increments(self):
         self.assertEqual(cli.resolve_seeds(500, 3), [500, 501, 502])

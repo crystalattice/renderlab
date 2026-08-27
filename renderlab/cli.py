@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import secrets
 import sys
@@ -12,6 +13,8 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
+
+from . import __version__
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -120,6 +123,22 @@ def load_workflow(path: Path) -> dict[str, Any]:
     if not isinstance(workflow, dict):
         raise RenderError(f"workflow {path} is not a Comfy API object")
     return workflow
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    try:
+        with path.open("rb") as file_handle:
+            for chunk in iter(lambda: file_handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError as exc:
+        raise RenderError(f"cannot hash {path}: {exc}") from exc
+    return digest.hexdigest()
+
+
+def sha256_json(value: Any) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def inject_parameters(
@@ -245,6 +264,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(actual_argv)
     try:
         seeds = resolve_seeds(args.seed, args.count)
+        batch_id = str(uuid.uuid4())
+        workflow_source = args.workflow.expanduser().resolve()
+        workflow_source_sha256 = sha256_file(workflow_source)
         for batch_index, seed in enumerate(seeds, start=1):
             started_at = datetime.now(timezone.utc)
             workflow = load_workflow(args.workflow)
@@ -256,6 +278,7 @@ def main(argv: list[str] | None = None) -> int:
                 height=args.height,
                 steps=args.steps,
             )
+            submitted_workflow_sha256 = sha256_json(workflow)
             prompt_id = submit(args.server, workflow)
             print(f"[{batch_index}/{args.count}] prompt_id: {prompt_id}", file=sys.stderr)
             print(f"[{batch_index}/{args.count}] seed: {seed}", file=sys.stderr)
@@ -266,9 +289,13 @@ def main(argv: list[str] | None = None) -> int:
             metadata_path = write_metadata(
                 output_path,
                 {
-                    "schema_version": 1,
+                    "schema_version": 2,
+                    "renderlab_version": __version__,
                     "prompt_id": prompt_id,
+                    "batch_id": batch_id,
+                    "intent": args.prompt,
                     "prompt": args.prompt,
+                    "effective_prompt": args.prompt,
                     "seed": seed,
                     "batch_index": batch_index,
                     "batch_count": args.count,
@@ -283,8 +310,12 @@ def main(argv: list[str] | None = None) -> int:
                         "vae": "ae.safetensors",
                     },
                     "server": args.server,
-                    "workflow": str(args.workflow.resolve()),
+                    "workflow": str(workflow_source),
+                    "workflow_source_sha256": workflow_source_sha256,
+                    "submitted_workflow_sha256": submitted_workflow_sha256,
+                    "submitted_workflow": workflow,
                     "output": str(output_path),
+                    "output_sha256": sha256_file(output_path),
                     "started_at": started_at.isoformat(),
                     "finished_at": finished_at.isoformat(),
                     "duration_seconds": round((finished_at - started_at).total_seconds(), 3),
