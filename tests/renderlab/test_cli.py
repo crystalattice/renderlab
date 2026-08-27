@@ -106,6 +106,40 @@ class RenderLabCliTests(unittest.TestCase):
         with self.assertRaises(cli.RenderError):
             cli.resolve_seeds(cli.MAX_SEED, 2)
 
+    def test_jobs_lists_prompt_ids_and_statuses(self):
+        with patch.object(
+            cli,
+            "request_json",
+            return_value={
+                "jobs": [
+                    {"id": "prompt-running", "status": "in_progress"},
+                    {"id": "prompt-waiting", "status": "pending"},
+                ]
+            },
+        ) as request:
+            result = cli.main(["jobs", "--limit", "2"])
+
+        self.assertEqual(result, 0)
+        request.assert_called_once_with("GET", "http://127.0.0.1:8188/api/jobs?limit=2")
+
+    def test_status_fetches_one_job(self):
+        with patch.object(
+            cli, "request_json", return_value={"id": "prompt-123", "status": "completed"}
+        ) as request:
+            result = cli.main(["status", "prompt-123"])
+
+        self.assertEqual(result, 0)
+        request.assert_called_once_with("GET", "http://127.0.0.1:8188/api/jobs/prompt-123")
+
+    def test_cancel_uses_targeted_job_endpoint(self):
+        with patch.object(cli, "request_json", return_value={"cancelled": True}) as request:
+            result = cli.main(["cancel", "prompt-123"])
+
+        self.assertEqual(result, 0)
+        request.assert_called_once_with(
+            "POST", "http://127.0.0.1:8188/api/jobs/prompt-123/cancel", {}
+        )
+
     def test_output_path_rejects_traversal(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
             with self.assertRaises(cli.RenderError):

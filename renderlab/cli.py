@@ -25,6 +25,43 @@ class RenderError(RuntimeError):
     pass
 
 
+CONTROL_COMMANDS = {"jobs", "status", "cancel"}
+
+
+def add_server_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--server", default="http://127.0.0.1:8188")
+
+
+def validate_server(parser: argparse.ArgumentParser, server: str) -> str:
+    parsed = urlparse(server)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        parser.error("--server must be an http(s) URL")
+    return server.rstrip("/")
+
+
+def parse_control_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(prog="renderlab")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    jobs_parser = subparsers.add_parser("jobs", help="list ComfyUI jobs")
+    jobs_parser.add_argument("--limit", type=int, default=20)
+    add_server_argument(jobs_parser)
+
+    status_parser = subparsers.add_parser("status", help="show one ComfyUI job")
+    status_parser.add_argument("prompt_id")
+    add_server_argument(status_parser)
+
+    cancel_parser = subparsers.add_parser("cancel", help="cancel a running or pending job")
+    cancel_parser.add_argument("prompt_id")
+    add_server_argument(cancel_parser)
+
+    args = parser.parse_args(argv)
+    if args.command == "jobs" and args.limit <= 0:
+        parser.error("--limit must be greater than zero")
+    args.server = validate_server(parser, args.server)
+    return args
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="renderlab",
@@ -41,7 +78,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=1,
         help="number of sequential renders; an explicit seed increments for each render",
     )
-    parser.add_argument("--server", default="http://127.0.0.1:8188")
+    add_server_argument(parser)
     parser.add_argument("--timeout", type=float, default=600.0, help="completion timeout in seconds")
     parser.add_argument("--poll-interval", type=float, default=1.0)
     parser.add_argument("--workflow", type=Path, default=DEFAULT_WORKFLOW)
@@ -61,10 +98,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     if args.timeout <= 0 or args.poll_interval <= 0:
         parser.error("--timeout and --poll-interval must be greater than zero")
 
-    parsed = urlparse(args.server)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-        parser.error("--server must be an http(s) URL")
-    args.server = args.server.rstrip("/")
+    args.server = validate_server(parser, args.server)
     return args
 
 
@@ -175,8 +209,40 @@ def write_metadata(path: Path, metadata: dict[str, Any]) -> Path:
     return metadata_path
 
 
+def run_control_command(args: argparse.Namespace) -> int:
+    try:
+        if args.command == "jobs":
+            result = request_json("GET", f"{args.server}/api/jobs?limit={args.limit}")
+            jobs = result.get("jobs", [])
+            if not jobs:
+                print("No jobs.")
+                return 0
+            for job in jobs:
+                print(f"{job.get('id', '?')}\t{job.get('status', 'unknown')}")
+            return 0
+
+        prompt_id = quote(args.prompt_id, safe="")
+        if args.command == "status":
+            job = request_json("GET", f"{args.server}/api/jobs/{prompt_id}")
+            print(json.dumps(job, indent=2))
+            return 0
+
+        result = request_json("POST", f"{args.server}/api/jobs/{prompt_id}/cancel", {})
+        if result.get("cancelled"):
+            print(f"cancelled: {args.prompt_id}")
+        else:
+            print(f"not cancelled: {args.prompt_id}")
+        return 0
+    except RenderError as exc:
+        print(f"renderlab: error: {exc}", file=sys.stderr)
+        return 1
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = parse_args(argv)
+    actual_argv = sys.argv[1:] if argv is None else argv
+    if actual_argv and actual_argv[0] in CONTROL_COMMANDS:
+        return run_control_command(parse_control_args(actual_argv))
+    args = parse_args(actual_argv)
     try:
         seeds = resolve_seeds(args.seed, args.count)
         for batch_index, seed in enumerate(seeds, start=1):
