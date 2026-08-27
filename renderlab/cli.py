@@ -28,13 +28,19 @@ class RenderError(RuntimeError):
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="renderlab",
-        description="Submit one local text-to-image render to ComfyUI.",
+        description="Submit local text-to-image renders to ComfyUI.",
     )
     parser.add_argument("prompt", help="positive text prompt")
     parser.add_argument("--seed", type=int, help="fixed seed; random 64-bit seed by default")
     parser.add_argument("--width", type=int, default=1024)
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--steps", type=int, default=8)
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=1,
+        help="number of sequential renders; an explicit seed increments for each render",
+    )
     parser.add_argument("--server", default="http://127.0.0.1:8188")
     parser.add_argument("--timeout", type=float, default=600.0, help="completion timeout in seconds")
     parser.add_argument("--poll-interval", type=float, default=1.0)
@@ -49,7 +55,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
     if args.seed is not None and not 0 <= args.seed <= MAX_SEED:
         parser.error(f"--seed must be between 0 and {MAX_SEED}")
-    for name in ("width", "height", "steps"):
+    for name in ("width", "height", "steps", "count"):
         if getattr(args, name) <= 0:
             parser.error(f"--{name.replace('_', '-')} must be greater than zero")
     if args.timeout <= 0 or args.poll_interval <= 0:
@@ -60,6 +66,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--server must be an http(s) URL")
     args.server = args.server.rstrip("/")
     return args
+
+
+def resolve_seeds(seed: int | None, count: int) -> list[int]:
+    if seed is None:
+        return [secrets.randbits(64) for _ in range(count)]
+    if seed + count - 1 > MAX_SEED:
+        raise RenderError(
+            f"seed range exceeds {MAX_SEED}; use --seed no greater than {MAX_SEED - count + 1}"
+        )
+    return [seed + index for index in range(count)]
 
 
 def load_workflow(path: Path) -> dict[str, Any]:
@@ -161,54 +177,57 @@ def write_metadata(path: Path, metadata: dict[str, Any]) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    seed = args.seed if args.seed is not None else secrets.randbits(64)
-    started_at = datetime.now(timezone.utc)
     try:
-        workflow = load_workflow(args.workflow)
-        inject_parameters(
-            workflow,
-            prompt=args.prompt,
-            seed=seed,
-            width=args.width,
-            height=args.height,
-            steps=args.steps,
-        )
-        prompt_id = submit(args.server, workflow)
-        print(f"prompt_id: {prompt_id}", file=sys.stderr)
-        print(f"seed: {seed}", file=sys.stderr)
-        history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
-        image = find_saved_image(history)
-        output_path = local_output_path(args.output_dir, image)
-        finished_at = datetime.now(timezone.utc)
-        metadata_path = write_metadata(
-            output_path,
-            {
-                "schema_version": 1,
-                "prompt_id": prompt_id,
-                "prompt": args.prompt,
-                "seed": seed,
-                "width": args.width,
-                "height": args.height,
-                "steps": args.steps,
-                "cfg": 1,
-                "profile": "z_image_turbo_int8",
-                "models": {
-                    "diffusion_model": "z_image_turbo_int8_convrot.safetensors",
-                    "text_encoder": "qwen_3_4b_fp8_mixed.safetensors",
-                    "vae": "ae.safetensors",
+        seeds = resolve_seeds(args.seed, args.count)
+        for batch_index, seed in enumerate(seeds, start=1):
+            started_at = datetime.now(timezone.utc)
+            workflow = load_workflow(args.workflow)
+            inject_parameters(
+                workflow,
+                prompt=args.prompt,
+                seed=seed,
+                width=args.width,
+                height=args.height,
+                steps=args.steps,
+            )
+            prompt_id = submit(args.server, workflow)
+            print(f"[{batch_index}/{args.count}] prompt_id: {prompt_id}", file=sys.stderr)
+            print(f"[{batch_index}/{args.count}] seed: {seed}", file=sys.stderr)
+            history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
+            image = find_saved_image(history)
+            output_path = local_output_path(args.output_dir, image)
+            finished_at = datetime.now(timezone.utc)
+            metadata_path = write_metadata(
+                output_path,
+                {
+                    "schema_version": 1,
+                    "prompt_id": prompt_id,
+                    "prompt": args.prompt,
+                    "seed": seed,
+                    "batch_index": batch_index,
+                    "batch_count": args.count,
+                    "width": args.width,
+                    "height": args.height,
+                    "steps": args.steps,
+                    "cfg": 1,
+                    "profile": "z_image_turbo_int8",
+                    "models": {
+                        "diffusion_model": "z_image_turbo_int8_convrot.safetensors",
+                        "text_encoder": "qwen_3_4b_fp8_mixed.safetensors",
+                        "vae": "ae.safetensors",
+                    },
+                    "server": args.server,
+                    "workflow": str(args.workflow.resolve()),
+                    "output": str(output_path),
+                    "started_at": started_at.isoformat(),
+                    "finished_at": finished_at.isoformat(),
+                    "duration_seconds": round((finished_at - started_at).total_seconds(), 3),
                 },
-                "server": args.server,
-                "workflow": str(args.workflow.resolve()),
-                "output": str(output_path),
-                "started_at": started_at.isoformat(),
-                "finished_at": finished_at.isoformat(),
-                "duration_seconds": round((finished_at - started_at).total_seconds(), 3),
-            },
-        )
+            )
+            print(output_path)
+            print(f"[{batch_index}/{args.count}] metadata: {metadata_path}", file=sys.stderr)
     except RenderError as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 
-    print(output_path)
-    print(f"metadata: {metadata_path}", file=sys.stderr)
     return 0
