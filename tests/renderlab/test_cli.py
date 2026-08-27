@@ -156,6 +156,54 @@ class RenderLabCliTests(unittest.TestCase):
             "POST", "http://127.0.0.1:8188/api/jobs/prompt-123/cancel", {}
         )
 
+    def test_discover_node_choices_reads_comfy_input_options(self):
+        with patch.object(
+            cli,
+            "request_json",
+            return_value={
+                "LoraLoader": {
+                    "input": {"required": {"lora_name": [["style/a.safetensors"], {}]}}
+                }
+            },
+        ):
+            choices = cli.discover_node_choices(
+                "http://127.0.0.1:8188", "LoraLoader", "lora_name"
+            )
+
+        self.assertEqual(choices, ["style/a.safetensors"])
+
+    def test_models_queries_each_supported_loader(self):
+        def object_info(_method, url, _payload=None):
+            node_name = url.rsplit("/", 1)[-1]
+            input_name = next(
+                input_name
+                for _, configured_node, input_name in cli.MODEL_NODE_INPUTS
+                if configured_node == node_name
+            )
+            return {
+                node_name: {"input": {"required": {input_name: [[f"{node_name}.model"], {}]}}}
+            }
+
+        with patch.object(cli, "request_json", side_effect=object_info) as request:
+            result = cli.main(["models"])
+
+        self.assertEqual(result, 0)
+        self.assertEqual(request.call_count, len(cli.MODEL_NODE_INPUTS))
+
+    def test_loras_queries_lora_loader(self):
+        response = {
+            "LoraLoader": {
+                "input": {"required": {"lora_name": [["character.safetensors"], {}]}}
+            }
+        }
+        with patch.object(cli, "request_json", return_value=response) as request:
+            result = cli.main(["loras"])
+
+        self.assertEqual(result, 0)
+        request.assert_called_once_with(
+            "GET", "http://127.0.0.1:8188/object_info/LoraLoader"
+        )
+
     def test_output_path_rejects_traversal(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
             with self.assertRaises(cli.RenderError):

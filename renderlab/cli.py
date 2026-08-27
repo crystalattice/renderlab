@@ -28,7 +28,14 @@ class RenderError(RuntimeError):
     pass
 
 
-CONTROL_COMMANDS = {"jobs", "status", "cancel"}
+CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras"}
+
+MODEL_NODE_INPUTS = (
+    ("diffusion_models", "UNETLoader", "unet_name"),
+    ("checkpoints", "CheckpointLoaderSimple", "ckpt_name"),
+    ("text_encoders", "CLIPLoader", "clip_name"),
+    ("vaes", "VAELoader", "vae_name"),
+)
 
 
 def add_server_argument(parser: argparse.ArgumentParser) -> None:
@@ -57,6 +64,12 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     cancel_parser = subparsers.add_parser("cancel", help="cancel a running or pending job")
     cancel_parser.add_argument("prompt_id")
     add_server_argument(cancel_parser)
+
+    models_parser = subparsers.add_parser("models", help="list models visible to ComfyUI")
+    add_server_argument(models_parser)
+
+    loras_parser = subparsers.add_parser("loras", help="list LoRAs visible to ComfyUI")
+    add_server_argument(loras_parser)
 
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
@@ -228,8 +241,44 @@ def write_metadata(path: Path, metadata: dict[str, Any]) -> Path:
     return metadata_path
 
 
+def discover_node_choices(server: str, node_name: str, input_name: str) -> list[str]:
+    result = request_json("GET", f"{server}/object_info/{quote(node_name, safe='')}")
+    try:
+        definition = result[node_name]["input"]["required"][input_name]
+        choices = definition[0]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise RenderError(
+            f"ComfyUI node {node_name} does not expose required input {input_name}"
+        ) from exc
+    if not isinstance(choices, list):
+        raise RenderError(f"ComfyUI node {node_name} returned an invalid {input_name} list")
+    return [str(choice) for choice in choices]
+
+
+def print_discovered_group(label: str, choices: list[str]) -> None:
+    print(f"{label}:")
+    if choices:
+        for choice in choices:
+            print(f"  {choice}")
+    else:
+        print("  (none)")
+
+
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "models":
+            for label, node_name, input_name in MODEL_NODE_INPUTS:
+                print_discovered_group(
+                    label, discover_node_choices(args.server, node_name, input_name)
+                )
+            return 0
+
+        if args.command == "loras":
+            print_discovered_group(
+                "loras", discover_node_choices(args.server, "LoraLoader", "lora_name")
+            )
+            return 0
+
         if args.command == "jobs":
             result = request_json("GET", f"{args.server}/api/jobs?limit={args.limit}")
             jobs = result.get("jobs", [])
