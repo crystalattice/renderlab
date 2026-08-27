@@ -107,6 +107,19 @@ python -m renderlab loras
 
 Every output receives an adjacent JSON provenance sidecar containing the resolved seed,
 effective workflow, hashes, model filenames, timing, and batch identity.
+
+For semantic variation rather than seed-only variation, point RenderLab at a local
+OpenAI-compatible prompt model (for example, llama.cpp server) and request variations:
+
+```bash
+python -m renderlab "starry night, giant robot, shooting stars" \
+  --variations 3 \
+  --prompt-server http://127.0.0.1:8080 \
+  --prompt-model local
+```
+
+The expander runs once before rendering. The original intent and every effective prompt
+are preserved separately in the provenance sidecars.
 - Built-in tools for inpainting, outpainting, reference conditioning, masks and compositing, model merging, upscaling, frame interpolation, segmentation, depth estimation, and media processing.
 - Save and load workflows as JSON, or recover complete workflows and seeds from supported generated media.
 - Runs fully offline: core does not download anything unless you request it. Use `--disable-api-nodes` to disable the optional paid [Comfy API nodes](https://docs.comfy.org/tutorials/api-nodes/overview) and force all built-in functionality to stay offline.

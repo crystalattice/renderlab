@@ -116,6 +116,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=1,
         help="number of sequential renders; an explicit seed increments for each render",
     )
+    parser.add_argument(
+        "--variations",
+        type=int,
+        help="expand the intent into this many materially different prompts before rendering",
+    )
+    parser.add_argument(
+        "--prompt-server",
+        default="http://127.0.0.1:8080",
+        help="OpenAI-compatible local prompt-expander server",
+    )
+    parser.add_argument("--prompt-model", default="local")
     add_server_argument(parser)
     parser.add_argument("--timeout", type=float, default=600.0, help="completion timeout in seconds")
     parser.add_argument("--poll-interval", type=float, default=1.0)
@@ -133,10 +144,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     for name in ("width", "height", "steps", "count"):
         if getattr(args, name) <= 0:
             parser.error(f"--{name.replace('_', '-')} must be greater than zero")
+    if args.variations is not None:
+        if args.variations <= 0:
+            parser.error("--variations must be greater than zero")
+        if args.count != 1:
+            parser.error("--count and --variations cannot be used together")
     if args.timeout <= 0 or args.poll_interval <= 0:
         parser.error("--timeout and --poll-interval must be greater than zero")
 
     args.server = validate_server(parser, args.server)
+    args.prompt_server = validate_server(parser, args.prompt_server)
     return args
 
 
@@ -176,6 +193,45 @@ def sha256_json(value: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def expand_prompts(server: str, model: str, intent: str, count: int) -> list[str]:
+    instruction = (
+        f"Create exactly {count} materially different image-generation prompts from the user's "
+        "rough intent. Preserve its essential subjects and requested concepts. Vary identity, "
+        "composition, camera position, environment, pose, lighting, palette, and atmosphere where "
+        "the intent leaves them open. Each prompt must stand alone and must not refer to previous "
+        "images or variations. Return only JSON in the form {\"prompts\":[\"...\"]}."
+    )
+    result = request_json(
+        "POST",
+        f"{server}/v1/chat/completions",
+        {
+            "model": model,
+            "temperature": 0.9,
+            "messages": [
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": intent},
+            ],
+        },
+    )
+    try:
+        content = result["choices"][0]["message"]["content"]
+        start = content.index("{")
+        end = content.rindex("}") + 1
+        prompts = json.loads(content[start:end])["prompts"]
+    except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise RenderError(f"prompt expander returned invalid JSON: {result!r}") from exc
+    if (
+        not isinstance(prompts, list)
+        or len(prompts) != count
+        or any(not isinstance(prompt, str) or not prompt.strip() for prompt in prompts)
+    ):
+        raise RenderError(f"prompt expander did not return exactly {count} non-empty prompts")
+    normalized = [prompt.strip() for prompt in prompts]
+    if len(set(normalized)) != count:
+        raise RenderError("prompt expander returned duplicate prompts")
+    return normalized
+
+
 def inject_parameters(
     workflow: dict[str, Any], *, prompt: str, seed: int, width: int, height: int, steps: int
 ) -> None:
@@ -199,9 +255,9 @@ def request_json(method: str, url: str, payload: dict[str, Any] | None = None) -
             return json.load(response)
     except HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
-        raise RenderError(f"ComfyUI returned HTTP {exc.code}: {detail}") from exc
+        raise RenderError(f"API returned HTTP {exc.code}: {detail}") from exc
     except (URLError, OSError, json.JSONDecodeError) as exc:
-        raise RenderError(f"ComfyUI request failed: {exc}") from exc
+        raise RenderError(f"API request failed: {exc}") from exc
 
 
 def submit(server: str, workflow: dict[str, Any]) -> str:
@@ -365,16 +421,25 @@ def main(argv: list[str] | None = None) -> int:
         return run_control_command(parse_control_args(actual_argv))
     args = parse_args(actual_argv)
     try:
-        seeds = resolve_seeds(args.seed, args.count)
+        if args.variations is not None:
+            effective_prompts = expand_prompts(
+                args.prompt_server, args.prompt_model, args.prompt, args.variations
+            )
+        else:
+            effective_prompts = [args.prompt] * args.count
+        render_count = len(effective_prompts)
+        seeds = resolve_seeds(args.seed, render_count)
         batch_id = str(uuid.uuid4())
         workflow_source = args.workflow.expanduser().resolve()
         workflow_source_sha256 = sha256_file(workflow_source)
-        for batch_index, seed in enumerate(seeds, start=1):
+        for batch_index, (seed, effective_prompt) in enumerate(
+            zip(seeds, effective_prompts, strict=True), start=1
+        ):
             started_at = datetime.now(timezone.utc)
             workflow = load_workflow(args.workflow)
             inject_parameters(
                 workflow,
-                prompt=args.prompt,
+                prompt=effective_prompt,
                 seed=seed,
                 width=args.width,
                 height=args.height,
@@ -382,8 +447,8 @@ def main(argv: list[str] | None = None) -> int:
             )
             submitted_workflow_sha256 = sha256_json(workflow)
             prompt_id = submit(args.server, workflow)
-            print(f"[{batch_index}/{args.count}] prompt_id: {prompt_id}", file=sys.stderr)
-            print(f"[{batch_index}/{args.count}] seed: {seed}", file=sys.stderr)
+            print(f"[{batch_index}/{render_count}] prompt_id: {prompt_id}", file=sys.stderr)
+            print(f"[{batch_index}/{render_count}] seed: {seed}", file=sys.stderr)
             history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
             image = find_saved_image(history)
             output_path = local_output_path(args.output_dir, image)
@@ -396,11 +461,21 @@ def main(argv: list[str] | None = None) -> int:
                     "prompt_id": prompt_id,
                     "batch_id": batch_id,
                     "intent": args.prompt,
-                    "prompt": args.prompt,
-                    "effective_prompt": args.prompt,
+                    "prompt": effective_prompt,
+                    "effective_prompt": effective_prompt,
+                    "prompt_expander": (
+                        {
+                            "server": args.prompt_server,
+                            "model": args.prompt_model,
+                            "variation_index": batch_index,
+                            "variation_count": render_count,
+                        }
+                        if args.variations is not None
+                        else None
+                    ),
                     "seed": seed,
                     "batch_index": batch_index,
-                    "batch_count": args.count,
+                    "batch_count": render_count,
                     "width": args.width,
                     "height": args.height,
                     "steps": args.steps,
@@ -424,7 +499,7 @@ def main(argv: list[str] | None = None) -> int:
                 },
             )
             print(output_path)
-            print(f"[{batch_index}/{args.count}] metadata: {metadata_path}", file=sys.stderr)
+            print(f"[{batch_index}/{render_count}] metadata: {metadata_path}", file=sys.stderr)
     except RenderError as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1

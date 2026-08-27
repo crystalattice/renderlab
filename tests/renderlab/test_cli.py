@@ -122,6 +122,66 @@ class RenderLabCliTests(unittest.TestCase):
         with self.assertRaises(cli.RenderError):
             cli.resolve_seeds(cli.MAX_SEED, 2)
 
+    def test_expand_prompts_calls_local_openai_compatible_server(self):
+        response = {
+            "choices": [
+                {
+                    "message": {
+                        "content": '```json\n{"prompts":["desert mech","alpine mech"]}\n```'
+                    }
+                }
+            ]
+        }
+        with patch.object(cli, "request_json", return_value=response) as request:
+            prompts = cli.expand_prompts(
+                "http://127.0.0.1:8080", "tiny-model", "starry mech", 2
+            )
+
+        self.assertEqual(prompts, ["desert mech", "alpine mech"])
+        payload = request.call_args.args[2]
+        self.assertEqual(payload["model"], "tiny-model")
+        self.assertEqual(payload["messages"][1]["content"], "starry mech")
+
+    def test_variations_render_expanded_prompts_and_record_intent(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            output_dir = Path(temporary_dir)
+            histories = []
+            for index in range(1, 3):
+                image_path = output_dir / f"RenderLab_{index:05d}_.png"
+                image_path.write_bytes(b"png")
+                histories.append(
+                    {
+                        "outputs": {
+                            "10": {
+                                "images": [
+                                    {"filename": image_path.name, "subfolder": "", "type": "output"}
+                                ]
+                            }
+                        }
+                    }
+                )
+            with (
+                patch.object(cli, "expand_prompts", return_value=["desert mech", "lake mech"]),
+                patch.object(cli.secrets, "randbits", side_effect=[11, 22]),
+                patch.object(cli, "submit", side_effect=["prompt-1", "prompt-2"]) as submit,
+                patch.object(cli, "wait_for_history", side_effect=histories),
+            ):
+                result = cli.main(
+                    ["starry mech", "--variations", "2", "--output-dir", str(output_dir)]
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(
+                [call.args[1]["4"]["inputs"]["text"] for call in submit.call_args_list],
+                ["desert mech", "lake mech"],
+            )
+            metadata = json.loads(
+                (output_dir / "RenderLab_00002_.png.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(metadata["intent"], "starry mech")
+            self.assertEqual(metadata["effective_prompt"], "lake mech")
+            self.assertEqual(metadata["prompt_expander"]["variation_count"], 2)
+
     def test_jobs_lists_prompt_ids_and_statuses(self):
         with patch.object(
             cli,
