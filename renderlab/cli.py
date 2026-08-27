@@ -123,8 +123,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--prompt-server",
-        default="http://127.0.0.1:8080",
-        help="OpenAI-compatible local prompt-expander server",
+        default="http://127.0.0.1:8084",
+        help="OpenAI-compatible local prompt-expander server (default: Whiskers summarizer)",
     )
     parser.add_argument("--prompt-model", default="local")
     add_server_argument(parser)

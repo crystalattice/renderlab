@@ -114,12 +114,16 @@ OpenAI-compatible prompt model (for example, llama.cpp server) and request varia
 ```bash
 python -m renderlab "starry night, giant robot, shooting stars" \
   --variations 3 \
-  --prompt-server http://127.0.0.1:8080 \
+  --prompt-server http://127.0.0.1:8084 \
   --prompt-model local
 ```
 
 The expander runs once before rendering. The original intent and every effective prompt
 are preserved separately in the provenance sidecars.
+
+The default `8084` endpoint matches Whiskers' CPU-only Qwen 2.5 summarizer. Start that
+llama.cpp server by itself with zero GPU layers; starting the complete Whiskers stack also
+loads its main GPU model and can compete with ComfyUI for VRAM.
 - Built-in tools for inpainting, outpainting, reference conditioning, masks and compositing, model merging, upscaling, frame interpolation, segmentation, depth estimation, and media processing.
 - Save and load workflows as JSON, or recover complete workflows and seeds from supported generated media.
 - Runs fully offline: core does not download anything unless you request it. Use `--disable-api-nodes` to disable the optional paid [Comfy API nodes](https://docs.comfy.org/tutorials/api-nodes/overview) and force all built-in functionality to stay offline.
