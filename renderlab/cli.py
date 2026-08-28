@@ -21,6 +21,7 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 REPO_DIR = PACKAGE_DIR.parent
 DEFAULT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8.json"
 DEFAULT_IMG2IMG_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_img2img.json"
+DEFAULT_INPAINT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_inpaint.json"
 DEFAULT_OUTPUT_DIR = REPO_DIR / "output"
 MAX_SEED = (1 << 64) - 1
 SUPPORTED_INPUT_IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -52,6 +53,8 @@ REQUIRED_WORKFLOW_NODES = (
     "SaveImage",
     "LoadImage",
     "VAEEncode",
+    "LoadImageMask",
+    "VAEEncodeForInpaint",
 )
 
 REQUIRED_MODEL_CHOICES = (
@@ -117,6 +120,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--steps", type=int, default=8)
     parser.add_argument("--input-image", type=Path, help="source image for img2img editing")
     parser.add_argument(
+        "--mask-image",
+        type=Path,
+        help="black/white edit mask; white pixels may change and black pixels are protected",
+    )
+    parser.add_argument(
+        "--mask-grow",
+        type=int,
+        default=6,
+        help="expand the editable mask by this many pixels for seam blending (default: 6)",
+    )
+    parser.add_argument(
         "--denoise",
         type=float,
         default=0.45,
@@ -175,11 +189,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--denoise must be between 0.0 and 1.0")
     if args.input_image is None and args.denoise != 0.45:
         parser.error("--denoise requires --input-image")
+    if args.mask_image is not None and args.input_image is None:
+        parser.error("--mask-image requires --input-image")
+    if args.mask_grow < 0 or args.mask_grow > 64:
+        parser.error("--mask-grow must be between 0 and 64")
+    if args.mask_image is None and args.mask_grow != 6:
+        parser.error("--mask-grow requires --mask-image")
 
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
     if args.workflow is None:
-        args.workflow = DEFAULT_IMG2IMG_WORKFLOW if args.input_image else DEFAULT_WORKFLOW
+        if args.mask_image:
+            args.workflow = DEFAULT_INPAINT_WORKFLOW
+        elif args.input_image:
+            args.workflow = DEFAULT_IMG2IMG_WORKFLOW
+        else:
+            args.workflow = DEFAULT_WORKFLOW
     return args
 
 
@@ -338,6 +363,22 @@ def inject_img2img_parameters(
         workflow["8"]["inputs"]["denoise"] = denoise
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab img2img node contract: {exc}") from exc
+
+
+def inject_inpaint_parameters(
+    workflow: dict[str, Any], *, prompt: str, seed: int, steps: int, denoise: float,
+    image: str, mask: str, mask_grow: int
+) -> None:
+    try:
+        workflow["4"]["inputs"]["text"] = prompt
+        workflow["6"]["inputs"]["image"] = image
+        workflow["8"]["inputs"]["seed"] = seed
+        workflow["8"]["inputs"]["steps"] = steps
+        workflow["8"]["inputs"]["denoise"] = denoise
+        workflow["11"]["inputs"]["grow_mask_by"] = mask_grow
+        workflow["12"]["inputs"]["image"] = mask
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"workflow does not match the RenderLab inpaint node contract: {exc}") from exc
 
 
 def upload_image(server: str, path: Path) -> str:
@@ -596,12 +637,26 @@ def main(argv: list[str] | None = None) -> int:
         input_source = args.input_image.expanduser().resolve() if args.input_image else None
         input_source_sha256 = sha256_file(input_source) if input_source else None
         uploaded_image = upload_image(args.server, input_source) if input_source else None
+        mask_source = args.mask_image.expanduser().resolve() if args.mask_image else None
+        mask_source_sha256 = sha256_file(mask_source) if mask_source else None
+        uploaded_mask = upload_image(args.server, mask_source) if mask_source else None
         for batch_index, (seed, effective_prompt) in enumerate(
             zip(seeds, effective_prompts, strict=True), start=1
         ):
             started_at = datetime.now(timezone.utc)
             workflow = load_workflow(args.workflow)
-            if uploaded_image is not None:
+            if uploaded_mask is not None:
+                inject_inpaint_parameters(
+                    workflow,
+                    prompt=effective_prompt,
+                    seed=seed,
+                    steps=args.steps,
+                    denoise=args.denoise,
+                    image=uploaded_image,
+                    mask=uploaded_mask,
+                    mask_grow=args.mask_grow,
+                )
+            elif uploaded_image is not None:
                 inject_img2img_parameters(
                     workflow,
                     prompt=effective_prompt,
@@ -649,7 +704,7 @@ def main(argv: list[str] | None = None) -> int:
                         else None
                     ),
                     "seed": seed,
-                    "mode": "img2img" if input_source else "txt2img",
+                    "mode": "inpaint" if mask_source else ("img2img" if input_source else "txt2img"),
                     "batch_index": batch_index,
                     "batch_count": render_count,
                     "width": None if input_source else args.width,
@@ -663,6 +718,17 @@ def main(argv: list[str] | None = None) -> int:
                             "comfy_input": uploaded_image,
                         }
                         if input_source
+                        else None
+                    ),
+                    "mask_image": (
+                        {
+                            "path": str(mask_source),
+                            "sha256": mask_source_sha256,
+                            "comfy_input": uploaded_mask,
+                            "white_is_editable": True,
+                            "grow_pixels": args.mask_grow,
+                        }
+                        if mask_source
                         else None
                     ),
                     "cfg": 1,

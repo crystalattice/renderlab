@@ -108,6 +108,19 @@ python -m renderlab "change the daytime scene to a rainy neon night" \
 RenderLab uploads the source to ComfyUI's input directory and records its local path,
 SHA-256, uploaded name, and denoise strength in the output sidecar.
 
+For a localized edit, provide a same-size black/white mask. White pixels are editable;
+black pixels are protected:
+
+```bash
+python -m renderlab "an elegant fitted black gothic dress with black lace" \
+  --input-image ./source.png \
+  --mask-image ./dress-mask.png \
+  --denoise 0.65
+```
+
+`--mask-grow` defaults to 6 pixels so the generated region overlaps its boundary rather
+than leaving a hard seam. Source and mask hashes are both recorded in provenance.
+
 Operational commands:
 
 ```bash

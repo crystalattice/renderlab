@@ -47,6 +47,37 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["8"]["inputs"]["latent_image"], ["11", 0])
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.35)
 
+    def test_inpaint_defaults_and_parameter_injection(self):
+        args = cli.parse_args(
+            [
+                "black gothic dress",
+                "--input-image",
+                "source.png",
+                "--mask-image",
+                "mask.png",
+            ]
+        )
+        self.assertEqual(args.workflow, cli.DEFAULT_INPAINT_WORKFLOW)
+        self.assertEqual(args.mask_grow, 6)
+
+        workflow = cli.load_workflow(args.workflow)
+        cli.inject_inpaint_parameters(
+            workflow,
+            prompt="black gothic dress",
+            seed=789,
+            steps=8,
+            denoise=0.65,
+            image="source.png",
+            mask="mask.png",
+            mask_grow=10,
+        )
+        self.assertEqual(workflow["6"]["inputs"]["image"], "source.png")
+        self.assertEqual(workflow["12"]["inputs"]["image"], "mask.png")
+        self.assertEqual(workflow["12"]["inputs"]["channel"], "red")
+        self.assertEqual(workflow["11"]["class_type"], "VAEEncodeForInpaint")
+        self.assertEqual(workflow["11"]["inputs"]["grow_mask_by"], 10)
+        self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.65)
+
     def test_upload_image_posts_multipart_and_returns_comfy_name(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
             source = Path(temporary_dir) / "source.png"
@@ -111,6 +142,62 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["source_image"]["path"], str(source.resolve()))
             self.assertEqual(metadata["source_image"]["sha256"], cli.sha256_file(source))
             self.assertEqual(metadata["source_image"]["comfy_input"], "renderlab/uploaded.png")
+
+    def test_inpaint_render_records_mask_provenance(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            source = root / "source.png"
+            source.write_bytes(b"source-png")
+            mask = root / "mask.png"
+            mask.write_bytes(b"mask-png")
+            output = root / "RenderLab_00001_.png"
+            output.write_bytes(b"inpainted-png")
+            history = {
+                "outputs": {
+                    "10": {
+                        "images": [
+                            {"filename": output.name, "subfolder": "", "type": "output"}
+                        ]
+                    }
+                }
+            }
+            with (
+                patch.object(
+                    cli,
+                    "upload_image",
+                    side_effect=["renderlab/source.png", "renderlab/mask.png"],
+                ) as upload,
+                patch.object(cli, "submit", return_value="prompt-inpaint") as submit,
+                patch.object(cli, "wait_for_history", return_value=history),
+                patch.object(cli.secrets, "randbits", return_value=321),
+            ):
+                result = cli.main(
+                    [
+                        "black gothic dress",
+                        "--input-image",
+                        str(source),
+                        "--mask-image",
+                        str(mask),
+                        "--mask-grow",
+                        "10",
+                        "--denoise",
+                        "0.65",
+                        "--output-dir",
+                        str(root),
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(upload.call_count, 2)
+            workflow = submit.call_args.args[1]
+            self.assertEqual(workflow["6"]["inputs"]["image"], "renderlab/source.png")
+            self.assertEqual(workflow["12"]["inputs"]["image"], "renderlab/mask.png")
+            metadata = json.loads(Path(str(output) + ".json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["mode"], "inpaint")
+            self.assertEqual(metadata["mask_image"]["path"], str(mask.resolve()))
+            self.assertEqual(metadata["mask_image"]["sha256"], cli.sha256_file(mask))
+            self.assertTrue(metadata["mask_image"]["white_is_editable"])
+            self.assertEqual(metadata["mask_image"]["grow_pixels"], 10)
 
     def test_find_saved_image(self):
         history = {
