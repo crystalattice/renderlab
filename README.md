@@ -96,6 +96,18 @@ python -m renderlab "starry night, giant robot silhouetted against the sky" \
   --count 3
 ```
 
+Modify a provided image with img2img. Lower denoise preserves more of the source; higher
+denoise permits larger changes:
+
+```bash
+python -m renderlab "change the daytime scene to a rainy neon night" \
+  --input-image ./source.png \
+  --denoise 0.45
+```
+
+RenderLab uploads the source to ComfyUI's input directory and records its local path,
+SHA-256, uploaded name, and denoise strength in the output sidecar.
+
 Operational commands:
 
 ```bash

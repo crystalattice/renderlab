@@ -20,8 +20,10 @@ from . import __version__
 PACKAGE_DIR = Path(__file__).resolve().parent
 REPO_DIR = PACKAGE_DIR.parent
 DEFAULT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8.json"
+DEFAULT_IMG2IMG_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_img2img.json"
 DEFAULT_OUTPUT_DIR = REPO_DIR / "output"
 MAX_SEED = (1 << 64) - 1
+SUPPORTED_INPUT_IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
 
 
 class RenderError(RuntimeError):
@@ -48,6 +50,8 @@ REQUIRED_WORKFLOW_NODES = (
     "KSampler",
     "VAEDecode",
     "SaveImage",
+    "LoadImage",
+    "VAEEncode",
 )
 
 REQUIRED_MODEL_CHOICES = (
@@ -111,6 +115,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--width", type=int, default=1024)
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--steps", type=int, default=8)
+    parser.add_argument("--input-image", type=Path, help="source image for img2img editing")
+    parser.add_argument(
+        "--denoise",
+        type=float,
+        default=0.45,
+        help="img2img change strength from 0.0 to 1.0 (default: 0.45)",
+    )
     parser.add_argument(
         "--count",
         type=int,
@@ -137,7 +148,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     add_server_argument(parser)
     parser.add_argument("--timeout", type=float, default=600.0, help="completion timeout in seconds")
     parser.add_argument("--poll-interval", type=float, default=1.0)
-    parser.add_argument("--workflow", type=Path, default=DEFAULT_WORKFLOW)
+    parser.add_argument("--workflow", type=Path)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -160,9 +171,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--timeout and --poll-interval must be greater than zero")
     if args.prompt_timeout <= 0:
         parser.error("--prompt-timeout must be greater than zero")
+    if not 0.0 <= args.denoise <= 1.0:
+        parser.error("--denoise must be between 0.0 and 1.0")
+    if args.input_image is None and args.denoise != 0.45:
+        parser.error("--denoise requires --input-image")
 
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
+    if args.workflow is None:
+        args.workflow = DEFAULT_IMG2IMG_WORKFLOW if args.input_image else DEFAULT_WORKFLOW
     return args
 
 
@@ -308,6 +325,69 @@ def inject_parameters(
         workflow["8"]["inputs"]["steps"] = steps
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab v1 node contract: {exc}") from exc
+
+
+def inject_img2img_parameters(
+    workflow: dict[str, Any], *, prompt: str, seed: int, steps: int, denoise: float, image: str
+) -> None:
+    try:
+        workflow["4"]["inputs"]["text"] = prompt
+        workflow["6"]["inputs"]["image"] = image
+        workflow["8"]["inputs"]["seed"] = seed
+        workflow["8"]["inputs"]["steps"] = steps
+        workflow["8"]["inputs"]["denoise"] = denoise
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"workflow does not match the RenderLab img2img node contract: {exc}") from exc
+
+
+def upload_image(server: str, path: Path) -> str:
+    source = path.expanduser().resolve()
+    if not source.is_file():
+        raise RenderError(f"input image does not exist: {source}")
+    suffix = source.suffix.lower()
+    if suffix not in SUPPORTED_INPUT_IMAGE_SUFFIXES:
+        raise RenderError(
+            f"unsupported input image extension {suffix or '(none)'}; expected one of "
+            f"{', '.join(sorted(SUPPORTED_INPUT_IMAGE_SUFFIXES))}"
+        )
+    try:
+        content = source.read_bytes()
+    except OSError as exc:
+        raise RenderError(f"cannot read input image {source}: {exc}") from exc
+
+    boundary = f"RenderLab-{uuid.uuid4().hex}"
+    remote_name = f"renderlab_{uuid.uuid4().hex}{suffix}"
+    parts = [
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="image"; filename="{remote_name}"\r\n'
+        "Content-Type: application/octet-stream\r\n\r\n".encode("utf-8"),
+        content,
+        (
+            f"\r\n--{boundary}\r\n"
+            'Content-Disposition: form-data; name="overwrite"\r\n\r\n'
+            "true\r\n"
+            f"--{boundary}--\r\n"
+        ).encode("utf-8"),
+    ]
+    body = b"".join(part if isinstance(part, bytes) else part.encode("utf-8") for part in parts)
+    request = Request(f"{server}/upload/image", data=body, method="POST")
+    request.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
+    try:
+        with urlopen(request, timeout=30.0) as response:
+            result = json.load(response)
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RenderError(f"image upload returned HTTP {exc.code}: {detail}") from exc
+    except (URLError, OSError, json.JSONDecodeError) as exc:
+        raise RenderError(f"image upload failed: {exc}") from exc
+    try:
+        name = str(result["name"])
+        subfolder = str(result.get("subfolder", "")).strip("/")
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"ComfyUI returned an invalid image upload response: {result!r}") from exc
+    if not name or name in {".", ".."} or "/" in name or "\\" in name or ".." in subfolder.split("/"):
+        raise RenderError(f"ComfyUI returned an unsafe image upload path: {result!r}")
+    return f"{subfolder}/{name}" if subfolder else name
 
 
 def request_json(
@@ -513,19 +593,32 @@ def main(argv: list[str] | None = None) -> int:
         batch_id = str(uuid.uuid4())
         workflow_source = args.workflow.expanduser().resolve()
         workflow_source_sha256 = sha256_file(workflow_source)
+        input_source = args.input_image.expanduser().resolve() if args.input_image else None
+        input_source_sha256 = sha256_file(input_source) if input_source else None
+        uploaded_image = upload_image(args.server, input_source) if input_source else None
         for batch_index, (seed, effective_prompt) in enumerate(
             zip(seeds, effective_prompts, strict=True), start=1
         ):
             started_at = datetime.now(timezone.utc)
             workflow = load_workflow(args.workflow)
-            inject_parameters(
-                workflow,
-                prompt=effective_prompt,
-                seed=seed,
-                width=args.width,
-                height=args.height,
-                steps=args.steps,
-            )
+            if uploaded_image is not None:
+                inject_img2img_parameters(
+                    workflow,
+                    prompt=effective_prompt,
+                    seed=seed,
+                    steps=args.steps,
+                    denoise=args.denoise,
+                    image=uploaded_image,
+                )
+            else:
+                inject_parameters(
+                    workflow,
+                    prompt=effective_prompt,
+                    seed=seed,
+                    width=args.width,
+                    height=args.height,
+                    steps=args.steps,
+                )
             submitted_workflow_sha256 = sha256_json(workflow)
             prompt_id = submit(args.server, workflow)
             print(f"[{batch_index}/{render_count}] prompt_id: {prompt_id}", file=sys.stderr)
@@ -556,11 +649,22 @@ def main(argv: list[str] | None = None) -> int:
                         else None
                     ),
                     "seed": seed,
+                    "mode": "img2img" if input_source else "txt2img",
                     "batch_index": batch_index,
                     "batch_count": render_count,
-                    "width": args.width,
-                    "height": args.height,
+                    "width": None if input_source else args.width,
+                    "height": None if input_source else args.height,
                     "steps": args.steps,
+                    "denoise": args.denoise if input_source else 1,
+                    "source_image": (
+                        {
+                            "path": str(input_source),
+                            "sha256": input_source_sha256,
+                            "comfy_input": uploaded_image,
+                        }
+                        if input_source
+                        else None
+                    ),
                     "cfg": 1,
                     "profile": "z_image_turbo_int8",
                     "models": {

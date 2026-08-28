@@ -1,4 +1,5 @@
 import json
+import io
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,7 +15,7 @@ class RenderLabCliTests(unittest.TestCase):
                 cli.parse_args(["--version"])
 
         self.assertEqual(raised.exception.code, 0)
-        stdout.write.assert_called_once_with("renderlab 0.1.0\n")
+        stdout.write.assert_called_once_with("renderlab 0.2.0\n")
 
     def test_inject_parameters(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
@@ -26,6 +27,90 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["6"]["inputs"]["height"], 1024)
         self.assertEqual(workflow["8"]["inputs"]["seed"], 123)
         self.assertEqual(workflow["8"]["inputs"]["steps"], 7)
+
+    def test_img2img_defaults_and_parameter_injection(self):
+        args = cli.parse_args(["make it rainy", "--input-image", "source.png"])
+        self.assertEqual(args.workflow, cli.DEFAULT_IMG2IMG_WORKFLOW)
+        self.assertEqual(args.denoise, 0.45)
+
+        workflow = cli.load_workflow(args.workflow)
+        cli.inject_img2img_parameters(
+            workflow,
+            prompt="make it rainy",
+            seed=456,
+            steps=8,
+            denoise=0.35,
+            image="renderlab/source.png",
+        )
+        self.assertEqual(workflow["4"]["inputs"]["text"], "make it rainy")
+        self.assertEqual(workflow["6"]["inputs"]["image"], "renderlab/source.png")
+        self.assertEqual(workflow["8"]["inputs"]["latent_image"], ["11", 0])
+        self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.35)
+
+    def test_upload_image_posts_multipart_and_returns_comfy_name(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            source = Path(temporary_dir) / "source.png"
+            source.write_bytes(b"test-png")
+            response = io.BytesIO(
+                json.dumps(
+                    {"name": "uploaded.png", "subfolder": "renderlab", "type": "input"}
+                ).encode("utf-8")
+            )
+            with patch.object(cli, "urlopen", return_value=response) as urlopen:
+                uploaded = cli.upload_image("http://127.0.0.1:8188", source)
+
+        self.assertEqual(uploaded, "renderlab/uploaded.png")
+        request = urlopen.call_args.args[0]
+        self.assertEqual(request.full_url, "http://127.0.0.1:8188/upload/image")
+        self.assertIn(b"test-png", request.data)
+        self.assertIn(b'name="overwrite"', request.data)
+
+    def test_img2img_render_records_source_provenance(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            source = root / "source.png"
+            source.write_bytes(b"source-png")
+            output = root / "RenderLab_00001_.png"
+            output.write_bytes(b"edited-png")
+            history = {
+                "outputs": {
+                    "10": {
+                        "images": [
+                            {"filename": output.name, "subfolder": "", "type": "output"}
+                        ]
+                    }
+                }
+            }
+            with (
+                patch.object(cli, "upload_image", return_value="renderlab/uploaded.png") as upload,
+                patch.object(cli, "submit", return_value="prompt-edit") as submit,
+                patch.object(cli, "wait_for_history", return_value=history),
+                patch.object(cli.secrets, "randbits", return_value=123),
+            ):
+                result = cli.main(
+                    [
+                        "make it rainy",
+                        "--input-image",
+                        str(source),
+                        "--denoise",
+                        "0.35",
+                        "--output-dir",
+                        str(root),
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            upload.assert_called_once_with("http://127.0.0.1:8188", source.resolve())
+            workflow = submit.call_args.args[1]
+            self.assertEqual(workflow["6"]["inputs"]["image"], "renderlab/uploaded.png")
+            self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.35)
+            metadata = json.loads(Path(str(output) + ".json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["mode"], "img2img")
+            self.assertEqual(metadata["denoise"], 0.35)
+            self.assertIsNone(metadata["width"])
+            self.assertEqual(metadata["source_image"]["path"], str(source.resolve()))
+            self.assertEqual(metadata["source_image"]["sha256"], cli.sha256_file(source))
+            self.assertEqual(metadata["source_image"]["comfy_input"], "renderlab/uploaded.png")
 
     def test_find_saved_image(self):
         history = {
@@ -69,7 +154,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
             self.assertEqual(metadata["schema_version"], 2)
-            self.assertEqual(metadata["renderlab_version"], "0.1.0")
+            self.assertEqual(metadata["renderlab_version"], "0.2.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
             self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())
