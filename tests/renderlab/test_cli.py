@@ -141,6 +141,7 @@ class RenderLabCliTests(unittest.TestCase):
         payload = request.call_args.args[2]
         self.assertEqual(request.call_args.kwargs["timeout"], 180.0)
         self.assertEqual(payload["model"], "tiny-model")
+        self.assertEqual(payload["chat_template_kwargs"], {"enable_thinking": False})
         self.assertEqual(payload["messages"][1]["content"], "starry mech")
         system_prompt = payload["messages"][0]["content"]
         self.assertIn("at least four", system_prompt)

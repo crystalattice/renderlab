@@ -246,6 +246,9 @@ def expand_prompts(
             "model": model,
             "temperature": 0.9,
             "max_tokens": 1536,
+            # Qwen-family reasoning models otherwise spend the entire completion budget
+            # producing reasoning_content and may never emit the requested JSON.
+            "chat_template_kwargs": {"enable_thinking": False},
             "json_schema": schema,
             "messages": [
                 {"role": "system", "content": instruction},
