@@ -139,6 +139,7 @@ class RenderLabCliTests(unittest.TestCase):
 
         self.assertEqual(prompts, ["desert mech", "alpine mech"])
         payload = request.call_args.args[2]
+        self.assertEqual(request.call_args.kwargs["timeout"], 180.0)
         self.assertEqual(payload["model"], "tiny-model")
         self.assertEqual(payload["messages"][1]["content"], "starry mech")
         system_prompt = payload["messages"][0]["content"]
@@ -151,6 +152,7 @@ class RenderLabCliTests(unittest.TestCase):
     def test_variations_default_to_whiskers_cpu_summarizer(self):
         args = cli.parse_args(["starry mech", "--variations", "2"])
         self.assertEqual(args.prompt_server, "http://127.0.0.1:8084")
+        self.assertEqual(args.prompt_timeout, 180.0)
 
     def test_variations_render_expanded_prompts_and_record_intent(self):
         with tempfile.TemporaryDirectory() as temporary_dir:

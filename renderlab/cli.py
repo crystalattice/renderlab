@@ -127,6 +127,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="OpenAI-compatible local prompt-expander server (default: Whiskers summarizer)",
     )
     parser.add_argument("--prompt-model", default="local")
+    parser.add_argument(
+        "--prompt-timeout",
+        type=float,
+        default=180.0,
+        help="prompt-expander request timeout in seconds",
+    )
     add_server_argument(parser)
     parser.add_argument("--timeout", type=float, default=600.0, help="completion timeout in seconds")
     parser.add_argument("--poll-interval", type=float, default=1.0)
@@ -151,6 +157,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             parser.error("--count and --variations cannot be used together")
     if args.timeout <= 0 or args.poll_interval <= 0:
         parser.error("--timeout and --poll-interval must be greater than zero")
+    if args.prompt_timeout <= 0:
+        parser.error("--prompt-timeout must be greater than zero")
 
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
@@ -193,7 +201,9 @@ def sha256_json(value: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def expand_prompts(server: str, model: str, intent: str, count: int) -> list[str]:
+def expand_prompts(
+    server: str, model: str, intent: str, count: int, timeout: float = 180.0
+) -> list[str]:
     director_briefs = (
         "1. World-first: radically change the environment and use a wide or unusual establishing "
         "composition; let the setting materially affect the subject.\n"
@@ -242,6 +252,7 @@ def expand_prompts(server: str, model: str, intent: str, count: int) -> list[str
                 {"role": "user", "content": intent},
             ],
         },
+        timeout=timeout,
     )
     try:
         content = result["choices"][0]["message"]["content"]
@@ -279,13 +290,19 @@ def inject_parameters(
         raise RenderError(f"workflow does not match the RenderLab v1 node contract: {exc}") from exc
 
 
-def request_json(method: str, url: str, payload: dict[str, Any] | None = None) -> Any:
+def request_json(
+    method: str,
+    url: str,
+    payload: dict[str, Any] | None = None,
+    *,
+    timeout: float = 30.0,
+) -> Any:
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     request = Request(url, data=body, method=method)
     if body is not None:
         request.add_header("Content-Type", "application/json")
     try:
-        with urlopen(request, timeout=30) as response:
+        with urlopen(request, timeout=timeout) as response:
             return json.load(response)
     except HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
@@ -457,7 +474,11 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.variations is not None:
             effective_prompts = expand_prompts(
-                args.prompt_server, args.prompt_model, args.prompt, args.variations
+                args.prompt_server,
+                args.prompt_model,
+                args.prompt,
+                args.variations,
+                args.prompt_timeout,
             )
         else:
             effective_prompts = [args.prompt] * args.count
