@@ -105,6 +105,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         prog="renderlab",
         description="Submit local text-to-image renders to ComfyUI.",
     )
+    parser.add_argument("--version", action="version", version=f"renderlab {__version__}")
     parser.add_argument("prompt", help="positive text prompt")
     parser.add_argument("--seed", type=int, help="fixed seed; random 64-bit seed by default")
     parser.add_argument("--width", type=int, default=1024)
@@ -124,7 +125,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--prompt-server",
         default="http://127.0.0.1:8084",
-        help="OpenAI-compatible local prompt-expander server (default: Whiskers summarizer)",
+        help="OpenAI-compatible local prompt-expander server (default: 127.0.0.1:8084)",
     )
     parser.add_argument("--prompt-model", default="local")
     parser.add_argument(

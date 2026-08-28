@@ -85,6 +85,7 @@ This fork includes a focused local CLI using the bundled Z-Image Turbo INT8 API 
 Start ComfyUI, then validate the required nodes and models:
 
 ```bash
+python -m renderlab --version
 python -m renderlab doctor
 ```
 

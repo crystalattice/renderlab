@@ -8,6 +8,14 @@ from renderlab import cli
 
 
 class RenderLabCliTests(unittest.TestCase):
+    def test_version_prints_renderlab_version(self):
+        with patch("sys.stdout") as stdout:
+            with self.assertRaises(SystemExit) as raised:
+                cli.parse_args(["--version"])
+
+        self.assertEqual(raised.exception.code, 0)
+        stdout.write.assert_called_once_with("renderlab 0.1.0\n")
+
     def test_inject_parameters(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
         cli.inject_parameters(
