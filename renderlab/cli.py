@@ -22,9 +22,35 @@ REPO_DIR = PACKAGE_DIR.parent
 DEFAULT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8.json"
 DEFAULT_IMG2IMG_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_img2img.json"
 DEFAULT_INPAINT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_inpaint.json"
+REALVISXL_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5.json"
 DEFAULT_OUTPUT_DIR = REPO_DIR / "output"
 MAX_SEED = (1 << 64) - 1
 SUPPORTED_INPUT_IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
+
+PROFILES = {
+    "z-image": {
+        "workflow": DEFAULT_WORKFLOW,
+        "steps": 8,
+        "cfg": 1,
+        "sampler": "res_multistep",
+        "scheduler": "simple",
+        "profile_name": "z_image_turbo_int8",
+        "models": {
+            "diffusion_model": "z_image_turbo_int8_convrot.safetensors",
+            "text_encoder": "qwen_3_4b_fp8_mixed.safetensors",
+            "vae": "ae.safetensors",
+        },
+    },
+    "realvisxl": {
+        "workflow": REALVISXL_WORKFLOW,
+        "steps": 30,
+        "cfg": 7,
+        "sampler": "dpmpp_2m",
+        "scheduler": "karras",
+        "profile_name": "realvisxl_v5_fp16",
+        "models": {"checkpoint": "RealVisXL_V5.0_fp16.safetensors"},
+    },
+}
 
 
 class RenderError(RuntimeError):
@@ -115,9 +141,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--version", action="version", version=f"renderlab {__version__}")
     parser.add_argument("prompt", help="positive text prompt")
     parser.add_argument("--seed", type=int, help="fixed seed; random 64-bit seed by default")
+    parser.add_argument(
+        "--profile",
+        choices=sorted(PROFILES),
+        default="z-image",
+        help="render profile (default: z-image)",
+    )
     parser.add_argument("--width", type=int, default=1024)
     parser.add_argument("--height", type=int, default=1024)
-    parser.add_argument("--steps", type=int, default=8)
+    parser.add_argument("--steps", type=int)
     parser.add_argument("--input-image", type=Path, help="source image for img2img editing")
     parser.add_argument(
         "--mask-image",
@@ -171,6 +203,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     args = parser.parse_args(argv)
 
+    if args.steps is None:
+        args.steps = PROFILES[args.profile]["steps"]
+
     if args.seed is not None and not 0 <= args.seed <= MAX_SEED:
         parser.error(f"--seed must be between 0 and {MAX_SEED}")
     for name in ("width", "height", "steps", "count"):
@@ -195,6 +230,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--mask-grow must be between 0 and 64")
     if args.mask_image is None and args.mask_grow != 6:
         parser.error("--mask-grow requires --mask-image")
+    if args.profile != "z-image" and args.input_image is not None:
+        parser.error(f"--profile {args.profile} does not support --input-image yet")
 
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
@@ -204,7 +241,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         elif args.input_image:
             args.workflow = DEFAULT_IMG2IMG_WORKFLOW
         else:
-            args.workflow = DEFAULT_WORKFLOW
+            args.workflow = PROFILES[args.profile]["workflow"]
     return args
 
 
@@ -731,13 +768,11 @@ def main(argv: list[str] | None = None) -> int:
                         if mask_source
                         else None
                     ),
-                    "cfg": 1,
-                    "profile": "z_image_turbo_int8",
-                    "models": {
-                        "diffusion_model": "z_image_turbo_int8_convrot.safetensors",
-                        "text_encoder": "qwen_3_4b_fp8_mixed.safetensors",
-                        "vae": "ae.safetensors",
-                    },
+                    "cfg": PROFILES[args.profile]["cfg"],
+                    "sampler": PROFILES[args.profile]["sampler"],
+                    "scheduler": PROFILES[args.profile]["scheduler"],
+                    "profile": PROFILES[args.profile]["profile_name"],
+                    "models": PROFILES[args.profile]["models"],
                     "server": args.server,
                     "workflow": str(workflow_source),
                     "workflow_source_sha256": workflow_source_sha256,

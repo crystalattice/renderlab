@@ -28,6 +28,34 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["8"]["inputs"]["seed"], 123)
         self.assertEqual(workflow["8"]["inputs"]["steps"], 7)
 
+    def test_realvisxl_profile_defaults_and_parameter_injection(self):
+        args = cli.parse_args(["a studio portrait", "--profile", "realvisxl"])
+        self.assertEqual(args.workflow, cli.REALVISXL_WORKFLOW)
+        self.assertEqual(args.steps, 30)
+
+        workflow = cli.load_workflow(args.workflow)
+        cli.inject_parameters(
+            workflow, prompt="a studio portrait", seed=321, width=832, height=1216, steps=24
+        )
+        self.assertEqual(workflow["1"]["class_type"], "CheckpointLoaderSimple")
+        self.assertEqual(
+            workflow["1"]["inputs"]["ckpt_name"], "RealVisXL_V5.0_fp16.safetensors"
+        )
+        self.assertEqual(workflow["4"]["inputs"]["text"], "a studio portrait")
+        self.assertEqual(workflow["6"]["inputs"]["width"], 832)
+        self.assertEqual(workflow["6"]["inputs"]["height"], 1216)
+        self.assertEqual(workflow["8"]["inputs"]["seed"], 321)
+        self.assertEqual(workflow["8"]["inputs"]["steps"], 24)
+        self.assertEqual(workflow["8"]["inputs"]["cfg"], 7)
+        self.assertEqual(workflow["8"]["inputs"]["sampler_name"], "dpmpp_2m")
+        self.assertEqual(workflow["8"]["inputs"]["scheduler"], "karras")
+
+    def test_realvisxl_rejects_img2img_until_profile_support_exists(self):
+        with self.assertRaises(SystemExit):
+            cli.parse_args(
+                ["change the dress", "--profile", "realvisxl", "--input-image", "source.png"]
+            )
+
     def test_img2img_defaults_and_parameter_injection(self):
         args = cli.parse_args(["make it rainy", "--input-image", "source.png"])
         self.assertEqual(args.workflow, cli.DEFAULT_IMG2IMG_WORKFLOW)

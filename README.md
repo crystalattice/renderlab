@@ -96,6 +96,18 @@ python -m renderlab "starry night, giant robot silhouetted against the sky" \
   --count 3
 ```
 
+For the photorealistic RealVisXL V5 profile, install
+`RealVisXL_V5.0_fp16.safetensors` under ComfyUI's checkpoints model path and run:
+
+```bash
+python -m renderlab "editorial portrait in a sunlit apartment" \
+  --profile realvisxl
+```
+
+The RealVisXL profile defaults to 30 steps, CFG 7, and DPM++ 2M with the Karras
+scheduler. Z-Image remains the default profile. RealVisXL input-image editing is not
+enabled yet.
+
 Modify a provided image with img2img. Lower denoise preserves more of the source; higher
 denoise permits larger changes:
 
