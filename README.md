@@ -121,9 +121,15 @@ python -m renderlab "starry night, giant robot, shooting stars" \
 The expander runs once before rendering. The original intent and every effective prompt
 are preserved separately in the provenance sidecars.
 
-The default `8084` endpoint matches Whiskers' CPU-only Qwen 2.5 summarizer. Start that
-llama.cpp server by itself with zero GPU layers; starting the complete Whiskers stack also
-loads its main GPU model and can compete with ComfyUI for VRAM.
+The default `8084` endpoint is the local prompt-expander service. GPT-OSS 20B Q4 is the
+validated director model: run its llama.cpp server CPU-only with zero GPU layers. Smaller
+models may satisfy the JSON contract while producing conservative variations that merely
+swap backgrounds.
+
+On the validated RTX 2060 Super 8 GB profile, stop Waldo before rendering. Waldo's
+GPU-offloaded model consumes enough VRAM to make Z-Image's text-encoder load fail or crash
+ComfyUI even when the prompt expander itself is CPU-only. A running CPU-only GPT-OSS prompt
+server is compatible with rendering.
 - Built-in tools for inpainting, outpainting, reference conditioning, masks and compositing, model merging, upscaling, frame interpolation, segmentation, depth estimation, and media processing.
 - Save and load workflows as JSON, or recover complete workflows and seeds from supported generated media.
 - Runs fully offline: core does not download anything unless you request it. Use `--disable-api-nodes` to disable the optional paid [Comfy API nodes](https://docs.comfy.org/tutorials/api-nodes/overview) and force all built-in functionality to stay offline.

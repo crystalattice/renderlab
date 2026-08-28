@@ -172,6 +172,15 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(args.prompt_server, "http://127.0.0.1:8084")
         self.assertEqual(args.prompt_timeout, 180.0)
 
+    def test_connection_reset_reports_probable_server_crash(self):
+        with patch.object(cli, "urlopen", side_effect=ConnectionResetError(104, "reset")):
+            with self.assertRaisesRegex(
+                cli.RenderError, "server reset the connection and may have crashed"
+            ) as raised:
+                cli.request_json("GET", "http://127.0.0.1:8188/history/prompt-1")
+
+        self.assertIn("GPU-offloaded Waldo", str(raised.exception))
+
     def test_variations_render_expanded_prompts_and_record_intent(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
             output_dir = Path(temporary_dir)

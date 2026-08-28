@@ -326,6 +326,12 @@ def request_json(
     except HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         raise RenderError(f"API returned HTTP {exc.code}: {detail}") from exc
+    except ConnectionResetError as exc:
+        raise RenderError(
+            "server reset the connection and may have crashed; check its terminal output. "
+            "If this happened while ComfyUI was rendering, stop other GPU workloads "
+            "(including GPU-offloaded Waldo), restart ComfyUI, and retry"
+        ) from exc
     except (URLError, OSError, json.JSONDecodeError) as exc:
         raise RenderError(f"API request failed: {exc}") from exc
 
