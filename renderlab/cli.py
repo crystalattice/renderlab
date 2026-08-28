@@ -23,6 +23,8 @@ DEFAULT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8.json"
 DEFAULT_IMG2IMG_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_img2img.json"
 DEFAULT_INPAINT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_inpaint.json"
 REALVISXL_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5.json"
+REALVISXL_IMG2IMG_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5_img2img.json"
+REALVISXL_INPAINT_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5_inpaint.json"
 DEFAULT_OUTPUT_DIR = REPO_DIR / "output"
 MAX_SEED = (1 << 64) - 1
 SUPPORTED_INPUT_IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -30,6 +32,8 @@ SUPPORTED_INPUT_IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif
 PROFILES = {
     "z-image": {
         "workflow": DEFAULT_WORKFLOW,
+        "img2img_workflow": DEFAULT_IMG2IMG_WORKFLOW,
+        "inpaint_workflow": DEFAULT_INPAINT_WORKFLOW,
         "steps": 8,
         "cfg": 1,
         "sampler": "res_multistep",
@@ -43,6 +47,8 @@ PROFILES = {
     },
     "realvisxl": {
         "workflow": REALVISXL_WORKFLOW,
+        "img2img_workflow": REALVISXL_IMG2IMG_WORKFLOW,
+        "inpaint_workflow": REALVISXL_INPAINT_WORKFLOW,
         "steps": 30,
         "cfg": 7,
         "sampler": "dpmpp_2m",
@@ -246,16 +252,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--mask-grow must be between 0 and 64")
     if args.mask_image is None and args.mask_grow != 6:
         parser.error("--mask-grow requires --mask-image")
-    if args.profile != "z-image" and args.input_image is not None:
-        parser.error(f"--profile {args.profile} does not support --input-image yet")
-
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
     if args.workflow is None:
         if args.mask_image:
-            args.workflow = DEFAULT_INPAINT_WORKFLOW
+            args.workflow = PROFILES[args.profile]["inpaint_workflow"]
         elif args.input_image:
-            args.workflow = DEFAULT_IMG2IMG_WORKFLOW
+            args.workflow = PROFILES[args.profile]["img2img_workflow"]
         else:
             args.workflow = PROFILES[args.profile]["workflow"]
     return args

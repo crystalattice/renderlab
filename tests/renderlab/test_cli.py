@@ -50,11 +50,42 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["8"]["inputs"]["sampler_name"], "dpmpp_2m")
         self.assertEqual(workflow["8"]["inputs"]["scheduler"], "karras")
 
-    def test_realvisxl_rejects_img2img_until_profile_support_exists(self):
-        with self.assertRaises(SystemExit):
-            cli.parse_args(
-                ["change the dress", "--profile", "realvisxl", "--input-image", "source.png"]
-            )
+    def test_realvisxl_selects_img2img_and_inpaint_workflows(self):
+        img2img = cli.parse_args(
+            ["change the dress", "--profile", "realvisxl", "--input-image", "source.png"]
+        )
+        self.assertEqual(img2img.workflow, cli.REALVISXL_IMG2IMG_WORKFLOW)
+        self.assertEqual(img2img.steps, 30)
+
+        inpaint = cli.parse_args(
+            [
+                "change the dress",
+                "--profile",
+                "realvisxl",
+                "--input-image",
+                "source.png",
+                "--mask-image",
+                "mask.png",
+            ]
+        )
+        self.assertEqual(inpaint.workflow, cli.REALVISXL_INPAINT_WORKFLOW)
+
+        workflow = cli.load_workflow(inpaint.workflow)
+        cli.inject_inpaint_parameters(
+            workflow,
+            prompt="change the dress",
+            seed=12,
+            steps=30,
+            denoise=0.7,
+            image="source.png",
+            mask="mask.png",
+            mask_grow=8,
+        )
+        self.assertEqual(workflow["1"]["class_type"], "CheckpointLoaderSimple")
+        self.assertEqual(workflow["6"]["inputs"]["image"], "source.png")
+        self.assertEqual(workflow["12"]["inputs"]["image"], "mask.png")
+        self.assertEqual(workflow["11"]["inputs"]["grow_mask_by"], 8)
+        self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.7)
 
     def test_realvisxl_render_records_profile_provenance(self):
         with tempfile.TemporaryDirectory() as temporary_dir:

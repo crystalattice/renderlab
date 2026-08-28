@@ -105,8 +105,9 @@ python -m renderlab "editorial portrait in a sunlit apartment" \
 ```
 
 The RealVisXL profile defaults to 30 steps, CFG 7, and DPM++ 2M with the Karras
-scheduler. Z-Image remains the default profile. RealVisXL input-image editing is not
-enabled yet.
+scheduler. Z-Image remains the default profile. `--input-image` and masked inpainting
+use the selected profile, so the same v2 editing commands work with
+`--profile realvisxl`.
 
 Validate either installed profile explicitly:
 
