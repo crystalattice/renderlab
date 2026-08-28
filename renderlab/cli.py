@@ -89,6 +89,19 @@ REQUIRED_MODEL_CHOICES = (
     ("VAELoader", "vae_name", "ae.safetensors"),
 )
 
+REALVISXL_REQUIRED_NODES = (
+    "CheckpointLoaderSimple",
+    "CLIPTextEncode",
+    "EmptyLatentImage",
+    "KSampler",
+    "VAEDecode",
+    "SaveImage",
+)
+
+REALVISXL_REQUIRED_MODEL_CHOICES = (
+    ("CheckpointLoaderSimple", "ckpt_name", "RealVisXL_V5.0_fp16.safetensors"),
+)
+
 
 def add_server_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--server", default="http://127.0.0.1:8188")
@@ -124,6 +137,9 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     add_server_argument(loras_parser)
 
     doctor_parser = subparsers.add_parser("doctor", help="validate the RenderLab runtime")
+    doctor_parser.add_argument(
+        "--profile", choices=sorted(PROFILES), default="z-image"
+    )
     add_server_argument(doctor_parser)
 
     args = parser.parse_args(argv)
@@ -577,12 +593,19 @@ def print_discovered_group(label: str, choices: list[str]) -> None:
         print("  (none)")
 
 
-def run_doctor(server: str) -> int:
+def run_doctor(server: str, profile: str = "z-image") -> int:
     failures = 0
     request_json("GET", f"{server}/system_stats")
     print(f"[ok] ComfyUI: {server}")
 
-    for node_name in REQUIRED_WORKFLOW_NODES:
+    if profile == "realvisxl":
+        required_nodes = REALVISXL_REQUIRED_NODES
+        required_models = REALVISXL_REQUIRED_MODEL_CHOICES
+    else:
+        required_nodes = REQUIRED_WORKFLOW_NODES
+        required_models = REQUIRED_MODEL_CHOICES
+
+    for node_name in required_nodes:
         result = request_json("GET", f"{server}/object_info/{quote(node_name, safe='')}")
         if node_name in result:
             print(f"[ok] node: {node_name}")
@@ -590,7 +613,7 @@ def run_doctor(server: str) -> int:
             print(f"[missing] node: {node_name}")
             failures += 1
 
-    for node_name, input_name, filename in REQUIRED_MODEL_CHOICES:
+    for node_name, input_name, filename in required_models:
         choices = discover_node_choices(server, node_name, input_name)
         if filename in choices:
             print(f"[ok] model: {filename}")
@@ -601,14 +624,14 @@ def run_doctor(server: str) -> int:
     if failures:
         print(f"RenderLab doctor found {failures} problem(s).", file=sys.stderr)
         return 1
-    print("RenderLab is ready.")
+    print(f"RenderLab profile {profile} is ready.")
     return 0
 
 
 def run_control_command(args: argparse.Namespace) -> int:
     try:
         if args.command == "doctor":
-            return run_doctor(args.server)
+            return run_doctor(args.server, args.profile)
 
         if args.command == "models":
             for label, node_name, input_name in MODEL_NODE_INPUTS:

@@ -108,6 +108,17 @@ The RealVisXL profile defaults to 30 steps, CFG 7, and DPM++ 2M with the Karras
 scheduler. Z-Image remains the default profile. RealVisXL input-image editing is not
 enabled yet.
 
+Validate either installed profile explicitly:
+
+```bash
+python -m renderlab doctor --profile z-image
+python -m renderlab doctor --profile realvisxl
+```
+
+Validated RTX 2060 Super 8 GB performance for RealVisXL at 1024x1024 and 30 steps is
+approximately 97 seconds for the first checkpoint load and 22.5 seconds warm. The
+832x1216 portrait profile rendered warm in approximately 22.7 seconds.
+
 Modify a provided image with img2img. Lower denoise preserves more of the source; higher
 denoise permits larger changes:
 

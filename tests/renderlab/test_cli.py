@@ -15,7 +15,7 @@ class RenderLabCliTests(unittest.TestCase):
                 cli.parse_args(["--version"])
 
         self.assertEqual(raised.exception.code, 0)
-        stdout.write.assert_called_once_with("renderlab 0.2.0\n")
+        stdout.write.assert_called_once_with("renderlab 0.3.0\n")
 
     def test_inject_parameters(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
@@ -55,6 +55,48 @@ class RenderLabCliTests(unittest.TestCase):
             cli.parse_args(
                 ["change the dress", "--profile", "realvisxl", "--input-image", "source.png"]
             )
+
+    def test_realvisxl_render_records_profile_provenance(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            output_dir = Path(temporary_dir)
+            image_path = output_dir / "RenderLab_00001_.png"
+            image_path.write_bytes(b"realvisxl-png")
+            history = {
+                "outputs": {
+                    "10": {
+                        "images": [
+                            {"filename": image_path.name, "subfolder": "", "type": "output"}
+                        ]
+                    }
+                }
+            }
+            with (
+                patch.object(cli.secrets, "randbits", return_value=456),
+                patch.object(cli, "submit", return_value="prompt-realvis"),
+                patch.object(cli, "wait_for_history", return_value=history),
+            ):
+                result = cli.main(
+                    [
+                        "an adult studio portrait",
+                        "--profile",
+                        "realvisxl",
+                        "--output-dir",
+                        str(output_dir),
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            metadata = json.loads(Path(str(image_path) + ".json").read_text())
+            self.assertEqual(metadata["renderlab_version"], "0.3.0")
+            self.assertEqual(metadata["profile"], "realvisxl_v5_fp16")
+            self.assertEqual(
+                metadata["models"],
+                {"checkpoint": "RealVisXL_V5.0_fp16.safetensors"},
+            )
+            self.assertEqual(metadata["steps"], 30)
+            self.assertEqual(metadata["cfg"], 7)
+            self.assertEqual(metadata["sampler"], "dpmpp_2m")
+            self.assertEqual(metadata["scheduler"], "karras")
 
     def test_img2img_defaults_and_parameter_injection(self):
         args = cli.parse_args(["make it rainy", "--input-image", "source.png"])
@@ -269,7 +311,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
             self.assertEqual(metadata["schema_version"], 2)
-            self.assertEqual(metadata["renderlab_version"], "0.2.0")
+            self.assertEqual(metadata["renderlab_version"], "0.3.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
             self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())
@@ -551,6 +593,24 @@ class RenderLabCliTests(unittest.TestCase):
             result = cli.main(["doctor"])
 
         self.assertEqual(result, 1)
+
+    def test_doctor_validates_realvisxl_profile(self):
+        def doctor_response(_method, url, _payload=None):
+            if url.endswith("/system_stats"):
+                return {"system": {}}
+            node_name = url.rsplit("/", 1)[-1]
+            response = {node_name: {"input": {"required": {}}}}
+            if node_name == "CheckpointLoaderSimple":
+                response[node_name]["input"]["required"]["ckpt_name"] = [
+                    ["RealVisXL_V5.0_fp16.safetensors"],
+                    {},
+                ]
+            return response
+
+        with patch.object(cli, "request_json", side_effect=doctor_response):
+            result = cli.main(["doctor", "--profile", "realvisxl"])
+
+        self.assertEqual(result, 0)
 
     def test_output_path_rejects_traversal(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
