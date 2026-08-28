@@ -246,9 +246,13 @@ def expand_prompts(
             "model": model,
             "temperature": 0.9,
             "max_tokens": 1536,
-            # Qwen-family reasoning models otherwise spend the entire completion budget
-            # producing reasoning_content and may never emit the requested JSON.
-            "chat_template_kwargs": {"enable_thinking": False},
+            # Keep Qwen and GPT-OSS reasoning models from spending the completion
+            # budget on reasoning_content without ever emitting the requested JSON.
+            "reasoning_effort": "low",
+            "chat_template_kwargs": {
+                "enable_thinking": False,
+                "reasoning_effort": "low",
+            },
             "json_schema": schema,
             "messages": [
                 {"role": "system", "content": instruction},
@@ -258,10 +262,22 @@ def expand_prompts(
         timeout=timeout,
     )
     try:
-        content = result["choices"][0]["message"]["content"]
+        choice = result["choices"][0]
+        content = choice["message"]["content"]
+        if (
+            not content
+            and choice.get("finish_reason") == "length"
+            and choice["message"].get("reasoning_content")
+        ):
+            raise RenderError(
+                "prompt expander exhausted its completion budget on reasoning without "
+                "returning JSON; update llama.cpp or use a model that honors low reasoning"
+            )
         start = content.index("{")
         end = content.rindex("}") + 1
         prompts = json.loads(content[start:end])["prompts"]
+    except RenderError:
+        raise
     except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise RenderError(f"prompt expander returned invalid JSON: {result!r}") from exc
     if (

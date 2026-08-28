@@ -141,7 +141,11 @@ class RenderLabCliTests(unittest.TestCase):
         payload = request.call_args.args[2]
         self.assertEqual(request.call_args.kwargs["timeout"], 180.0)
         self.assertEqual(payload["model"], "tiny-model")
-        self.assertEqual(payload["chat_template_kwargs"], {"enable_thinking": False})
+        self.assertEqual(payload["reasoning_effort"], "low")
+        self.assertEqual(
+            payload["chat_template_kwargs"],
+            {"enable_thinking": False, "reasoning_effort": "low"},
+        )
         self.assertEqual(payload["messages"][1]["content"], "starry mech")
         system_prompt = payload["messages"][0]["content"]
         self.assertIn("at least four", system_prompt)
@@ -149,6 +153,19 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertIn("Director briefs", system_prompt)
         self.assertEqual(payload["json_schema"]["properties"]["prompts"]["minItems"], 2)
         self.assertEqual(payload["json_schema"]["properties"]["prompts"]["maxItems"], 2)
+
+    def test_expand_prompts_reports_reasoning_budget_exhaustion(self):
+        response = {
+            "choices": [
+                {
+                    "finish_reason": "length",
+                    "message": {"content": "", "reasoning_content": "still thinking"},
+                }
+            ]
+        }
+        with patch.object(cli, "request_json", return_value=response):
+            with self.assertRaisesRegex(cli.RenderError, "exhausted its completion budget"):
+                cli.expand_prompts("http://127.0.0.1:8084", "local", "starry mech", 3)
 
     def test_variations_default_to_whiskers_cpu_summarizer(self):
         args = cli.parse_args(["starry mech", "--variations", "2"])
