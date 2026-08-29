@@ -182,6 +182,8 @@ python -m renderlab lora-sweep "adult woman in a bedroom, photographic" \
 
 Use `--denoises 0.3,0.5` to replace the default denoise axis. Output names encode both
 values, such as `LoRAI2I_D0_45_L0_5`, so comparisons remain mechanically identifiable.
+Preset sweeps vary model strength while retaining the preset's tested CLIP strength;
+for an explicit LoRA, `--clip-strength` can hold CLIP influence fixed independently.
 
 Both strengths default to `1.0` and accept values from `-10.0` through `10.0`. RenderLab
 routes the active model and text encoder through ComfyUI's `LoraLoader`; the LoRA filename
