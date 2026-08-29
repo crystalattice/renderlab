@@ -310,6 +310,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--timeout", type=float, default=600.0, help="completion timeout in seconds")
     parser.add_argument("--poll-interval", type=float, default=1.0)
     parser.add_argument("--workflow", type=Path)
+    parser.add_argument("--filename-prefix", default="RenderLab", help=argparse.SUPPRESS)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -362,6 +363,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--mask-feather must be between 1 and 31")
     if args.mask_image is None and args.mask_feather != 6:
         parser.error("--mask-feather requires --mask-image")
+    allowed_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+    if not args.filename_prefix or any(
+        character not in allowed_prefix for character in args.filename_prefix
+    ):
+        parser.error("--filename-prefix may contain only letters, digits, underscore, and hyphen")
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
     if args.workflow is None:
@@ -554,6 +560,20 @@ def inject_generation_controls(
         raise RenderError(
             f"workflow does not match the RenderLab guidance-control contract: {exc}"
         ) from exc
+
+
+def inject_filename_prefix(workflow: dict[str, Any], prefix: str) -> None:
+    save_nodes = [
+        node for node in workflow.values()
+        if isinstance(node, dict) and node.get("class_type") == "SaveImage"
+    ]
+    if not save_nodes:
+        raise RenderError("workflow has no SaveImage node")
+    for node in save_nodes:
+        try:
+            node["inputs"]["filename_prefix"] = prefix
+        except (KeyError, TypeError) as exc:
+            raise RenderError(f"SaveImage node has no filename_prefix input: {exc}") from exc
 
 
 def inject_lora(
@@ -1093,6 +1113,7 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
         "--timeout", str(args.timeout),
         "--poll-interval", str(args.poll_interval),
         "--output-dir", str(args.output_dir),
+        "--filename-prefix", f"RenderLabReplay_{uuid.uuid4().hex[:12]}",
     ]
     if metadata.get("negative_prompt") is not None:
         replay.extend(["--negative-prompt", str(metadata["negative_prompt"])])
@@ -1307,6 +1328,7 @@ def main(argv: list[str] | None = None) -> int:
                 negative_prompt=args.negative_prompt,
                 cfg=args.cfg,
             )
+            inject_filename_prefix(workflow, args.filename_prefix)
             if args.lora is not None:
                 inject_lora(
                     workflow,
@@ -1388,6 +1410,7 @@ def main(argv: list[str] | None = None) -> int:
                         else None
                     ),
                     "server": args.server,
+                    "filename_prefix": args.filename_prefix,
                     "workflow": str(workflow_source),
                     "workflow_source_sha256": workflow_source_sha256,
                     "submitted_workflow_sha256": submitted_workflow_sha256,

@@ -81,6 +81,14 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(parsed.lora_model_strength, 0.75)
         self.assertEqual(parsed.lora_clip_strength, 0.5)
         self.assertEqual(parsed.server, "http://comfy:8188")
+        self.assertRegex(parsed.filename_prefix, r"^RenderLabReplay_[0-9a-f]{12}$")
+
+    def test_filename_prefix_changes_only_save_nodes(self):
+        workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
+        original_sampler = json.loads(json.dumps(workflow["8"]))
+        cli.inject_filename_prefix(workflow, "RenderLabReplay_deadbeef1234")
+        self.assertEqual(workflow["10"]["inputs"]["filename_prefix"], "RenderLabReplay_deadbeef1234")
+        self.assertEqual(workflow["8"], original_sampler)
 
     def test_replay_inpaint_restores_verified_assets_and_mask_controls(self):
         with tempfile.TemporaryDirectory() as directory:
