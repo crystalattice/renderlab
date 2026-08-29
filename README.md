@@ -170,6 +170,19 @@ python -m renderlab lora-sweep "close portrait" \
 
 Each sweep image uses the ordinary render path and receives its own provenance sidecar.
 
+For img2img, add a source image. RenderLab holds the seed and prompt fixed, then renders
+a baseline plus every LoRA strength at denoise `0.25`, `0.45`, and `0.65`:
+
+```bash
+python -m renderlab lora-sweep "adult woman in a bedroom, photographic" \
+  --input-image ./source.png \
+  --lora "ArtfulNSFWV2SDXL.safetensors" \
+  --strengths 0.25,0.5,0.75
+```
+
+Use `--denoises 0.3,0.5` to replace the default denoise axis. Output names encode both
+values, such as `LoRAI2I_D0_45_L0_5`, so comparisons remain mechanically identifiable.
+
 Both strengths default to `1.0` and accept values from `-10.0` through `10.0`. RenderLab
 routes the active model and text encoder through ComfyUI's `LoraLoader`; the LoRA filename
 and resolved strengths are recorded in the output provenance sidecar. A LoRA built for
@@ -191,26 +204,9 @@ python -m renderlab "change the daytime scene to a rainy neon night" \
 RenderLab uploads the source to ComfyUI's input directory and records its local path,
 SHA-256, uploaded name, and denoise strength in the output sidecar.
 
-Expand the canvas with ComfyUI's native outpaint mask. Expansion values are pixels and
-must be multiples of eight; unspecified sides remain unchanged:
-
-```bash
-python -m renderlab "rainy city street, wet pavement, traffic, continuous photographic scene" \
-  --profile realvisxl \
-  --input-image ./source.png \
-  --outpaint-left 256 \
-  --outpaint-right 256 \
-  --outpaint-bottom 384
-```
-
-Outpaint defaults to full denoise in the new canvas and regenerates a 192-pixel overlap
-inside the source. Differential diffusion applies the graded outpaint mask across that
-overlap, giving the model enough room to remove the old image boundary instead of
-interpreting the source as a billboard, picture, or screen.
-`--outpaint-feather` changes that overlap. The protected center is composited from the
-uploaded source while the padded region and overlap come from generation. Describe the
-completed scene directly; avoid phrases such as "original frame," which image models may
-render literally.
+Outpainting is intentionally disabled. A normal RealVisXL checkpoint repeatedly rendered
+the source boundary as a literal billboard or screen; RenderLab will not expose that path
+again until it has a dedicated inpainting model and a visually validated workflow.
 
 For a localized edit, provide a same-size black/white mask. White pixels are editable;
 black pixels are protected:
