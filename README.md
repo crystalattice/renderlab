@@ -195,7 +195,7 @@ Expand the canvas with ComfyUI's native outpaint mask. Expansion values are pixe
 must be multiples of eight; unspecified sides remain unchanged:
 
 ```bash
-python -m renderlab "continue the rainy street beyond the original frame" \
+python -m renderlab "rainy city street, wet pavement, traffic, continuous photographic scene" \
   --profile realvisxl \
   --input-image ./source.png \
   --outpaint-left 256 \
@@ -203,9 +203,13 @@ python -m renderlab "continue the rainy street beyond the original frame" \
   --outpaint-bottom 384
 ```
 
-Outpaint defaults to full denoise in the new canvas and a 40-pixel feather into the
-source. `--outpaint-feather` changes that overlap. The center is composited from the
-uploaded source while only the padded region and feather boundary come from generation.
+Outpaint defaults to full denoise in the new canvas and regenerates a 192-pixel overlap
+inside the source. The deeper overlap gives the model enough room to remove the old
+image boundary instead of interpreting the source as a billboard, picture, or screen.
+`--outpaint-feather` changes that overlap. The protected center is composited from the
+uploaded source while the padded region and overlap come from generation. Describe the
+completed scene directly; avoid phrases such as "original frame," which image models may
+render literally.
 
 For a localized edit, provide a same-size black/white mask. White pixels are editable;
 black pixels are protected:
