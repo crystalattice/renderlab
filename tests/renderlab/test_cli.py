@@ -44,6 +44,8 @@ class RenderLabCliTests(unittest.TestCase):
     def test_replay_txt2img_restores_effective_render_settings(self):
         with tempfile.TemporaryDirectory() as directory:
             metadata_path = Path(directory) / "image.png.json"
+            output_path = Path(directory) / "image.png"
+            self.write_binary_png(output_path, [[0]])
             metadata_path.write_text(
                 json.dumps(
                     {
@@ -57,6 +59,7 @@ class RenderLabCliTests(unittest.TestCase):
                         "cfg": 7,
                         "width": 1024,
                         "height": 1024,
+                        "output": str(output_path),
                         "lora": {
                             "name": "style.safetensors",
                             "model_strength": 0.75,
@@ -97,6 +100,8 @@ class RenderLabCliTests(unittest.TestCase):
             mask = root / "mask.png"
             source.write_bytes(b"source")
             mask.write_bytes(b"mask")
+            output_path = root / "edit.png"
+            self.write_binary_png(output_path, [[0]])
             metadata_path = root / "edit.png.json"
             metadata_path.write_text(
                 json.dumps(
@@ -109,6 +114,7 @@ class RenderLabCliTests(unittest.TestCase):
                         "steps": 30,
                         "cfg": 7,
                         "denoise": 0.75,
+                        "output": str(output_path),
                         "source_image": {
                             "path": str(source), "sha256": cli.sha256_file(source)
                         },
@@ -135,6 +141,8 @@ class RenderLabCliTests(unittest.TestCase):
             root = Path(directory)
             source = root / "source.png"
             source.write_bytes(b"changed")
+            output_path = root / "edit.png"
+            self.write_binary_png(output_path, [[0]])
             metadata_path = root / "edit.png.json"
             metadata_path.write_text(
                 json.dumps(
@@ -142,6 +150,7 @@ class RenderLabCliTests(unittest.TestCase):
                         "mode": "img2img", "profile": "realvisxl_v5_fp16",
                         "effective_prompt": "edit", "seed": 1, "steps": 30, "cfg": 7,
                         "denoise": 0.5,
+                        "output": str(output_path),
                         "source_image": {"path": str(source), "sha256": "0" * 64},
                     }
                 ),
@@ -318,7 +327,7 @@ class RenderLabCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_dir:
             output_dir = Path(temporary_dir)
             image_path = output_dir / "RenderLab_00001_.png"
-            image_path.write_bytes(b"realvisxl-png")
+            self.write_binary_png(image_path, [[0]])
             history = {
                 "outputs": {
                     "10": {
@@ -551,7 +560,7 @@ class RenderLabCliTests(unittest.TestCase):
             source = root / "source.png"
             source.write_bytes(b"source-png")
             output = root / "RenderLab_00001_.png"
-            output.write_bytes(b"edited-png")
+            self.write_binary_png(output, [[0]])
             history = {
                 "outputs": {
                     "10": {
@@ -600,7 +609,7 @@ class RenderLabCliTests(unittest.TestCase):
             mask = root / "mask.png"
             mask.write_bytes(b"mask-png")
             output = root / "RenderLab_00001_.png"
-            output.write_bytes(b"inpainted-png")
+            self.write_binary_png(output, [[0]])
             history = {
                 "outputs": {
                     "10": {
@@ -667,7 +676,7 @@ class RenderLabCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_dir:
             output_dir = Path(temporary_dir)
             image_path = output_dir / "RenderLab_00001_.png"
-            image_path.write_bytes(b"png")
+            self.write_binary_png(image_path, [[0]])
             history = {
                 "outputs": {
                     "10": {
@@ -696,7 +705,8 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["renderlab_version"], "0.7.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
-            self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())
+            self.assertEqual(metadata["output_sha256"], cli.sha256_file(image_path))
+            self.assertEqual(metadata["output_pixel_sha256"], cli.pixel_sha256_file(image_path))
             self.assertEqual(
                 metadata["submitted_workflow_sha256"],
                 cli.sha256_json(metadata["submitted_workflow"]),
@@ -711,7 +721,7 @@ class RenderLabCliTests(unittest.TestCase):
             histories = []
             for index in range(1, 4):
                 image_path = output_dir / f"RenderLab_{index:05d}_.png"
-                image_path.write_bytes(b"png")
+                self.write_binary_png(image_path, [[index]])
                 histories.append(
                     {
                         "outputs": {
@@ -819,7 +829,7 @@ class RenderLabCliTests(unittest.TestCase):
             histories = []
             for index in range(1, 3):
                 image_path = output_dir / f"RenderLab_{index:05d}_.png"
-                image_path.write_bytes(b"png")
+                self.write_binary_png(image_path, [[index]])
                 histories.append(
                     {
                         "outputs": {

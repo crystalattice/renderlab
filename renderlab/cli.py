@@ -16,6 +16,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
+from PIL import Image, UnidentifiedImageError
+
 from . import __version__
 
 
@@ -311,6 +313,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--poll-interval", type=float, default=1.0)
     parser.add_argument("--workflow", type=Path)
     parser.add_argument("--filename-prefix", default="RenderLab", help=argparse.SUPPRESS)
+    parser.add_argument("--expected-pixel-sha256", help=argparse.SUPPRESS)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -414,6 +417,19 @@ def sha256_file(path: Path) -> str:
 def sha256_json(value: Any) -> str:
     encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def pixel_sha256_file(path: Path) -> str:
+    """Hash normalized RGBA pixels, excluding PNG encoding and metadata."""
+    try:
+        with Image.open(path) as image:
+            rgba = image.convert("RGBA")
+            digest = hashlib.sha256()
+            digest.update(struct.pack(">II", rgba.width, rgba.height))
+            digest.update(rgba.tobytes())
+            return digest.hexdigest()
+    except (OSError, UnidentifiedImageError) as exc:
+        raise RenderError(f"cannot decode image pixels from {path}: {exc}") from exc
 
 
 def expand_prompts(
@@ -1115,6 +1131,16 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
         "--output-dir", str(args.output_dir),
         "--filename-prefix", f"RenderLabReplay_{uuid.uuid4().hex[:12]}",
     ]
+    recorded_output = Path(str(metadata.get("output", ""))).expanduser()
+    adjacent_output = args.metadata.expanduser().resolve().with_suffix("")
+    if not recorded_output.is_file() and adjacent_output.is_file():
+        recorded_output = adjacent_output
+    if not recorded_output.is_file():
+        raise RenderError(
+            "replay source output is missing; expected the recorded output path or a PNG "
+            "adjacent to the sidecar"
+        )
+    replay.extend(["--expected-pixel-sha256", pixel_sha256_file(recorded_output.resolve())])
     if metadata.get("negative_prompt") is not None:
         replay.extend(["--negative-prompt", str(metadata["negative_prompt"])])
 
@@ -1343,6 +1369,17 @@ def main(argv: list[str] | None = None) -> int:
             history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
             image = find_saved_image(history)
             output_path = local_output_path(args.output_dir, image)
+            output_pixel_sha256 = pixel_sha256_file(output_path)
+            if (
+                args.expected_pixel_sha256 is not None
+                and output_pixel_sha256 != args.expected_pixel_sha256
+            ):
+                raise RenderError(
+                    "replay pixel mismatch: expected "
+                    f"{args.expected_pixel_sha256}, found {output_pixel_sha256}"
+                )
+            if args.expected_pixel_sha256 is not None:
+                print("replay pixels: identical", file=sys.stderr)
             finished_at = datetime.now(timezone.utc)
             metadata_path = write_metadata(
                 output_path,
@@ -1417,6 +1454,7 @@ def main(argv: list[str] | None = None) -> int:
                     "submitted_workflow": workflow,
                     "output": str(output_path),
                     "output_sha256": sha256_file(output_path),
+                    "output_pixel_sha256": output_pixel_sha256,
                     "started_at": started_at.isoformat(),
                     "finished_at": finished_at.isoformat(),
                     "duration_seconds": round((finished_at - started_at).total_seconds(), 3),

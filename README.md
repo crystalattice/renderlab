@@ -221,7 +221,9 @@ python -m renderlab replay ./output/RenderLab_00049_.png.json
 
 Replay gives the `SaveImage` node a unique `RenderLabReplay_...` prefix. This forces
 ComfyUI to write a new PNG even when every generation node is already cached; the sampler
-inputs remain identical, so the two output hashes can be compared directly.
+inputs remain identical. Because ComfyUI embeds the changed workflow in the PNG, raw file
+hashes will differ. RenderLab therefore records a normalized RGBA pixel hash and reports
+`replay pixels: identical` only when every decoded pixel matches the original.
 
 For img2img and inpainting, replay verifies the recorded source and mask SHA-256 hashes
 before submitting anything. A changed or missing input stops the replay rather than
