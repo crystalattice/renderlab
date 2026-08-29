@@ -219,6 +219,43 @@ class RenderLabCliTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             cli.parse_args(["a fox", "--lora", "fox.safetensors", "--lora-clip-strength", "11"])
 
+    def test_lora_preset_resolves_filename_and_tested_strengths(self):
+        args = cli.parse_args(["portrait", "--profile", "realvisxl", "--lora-preset", "realistic-eyes"])
+        self.assertEqual(args.lora, "Realistic_eyes.safetensors")
+        self.assertEqual(args.lora_model_strength, 0.4)
+        self.assertEqual(args.lora_clip_strength, 0.4)
+
+        overridden = cli.parse_args([
+            "portrait", "--lora-preset", "natural-body", "--lora-model-strength", "0.2"
+        ])
+        self.assertEqual(overridden.lora_model_strength, 0.2)
+        self.assertEqual(overridden.lora_clip_strength, 0.0)
+
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["portrait", "--lora", "x.safetensors", "--lora-preset", "samane"])
+
+    def test_lora_presets_command_lists_tested_settings(self):
+        args = cli.parse_control_args(["lora-presets"])
+        with patch("sys.stdout", new_callable=io.StringIO) as stdout:
+            result = cli.run_control_command(args)
+        self.assertEqual(result, 0)
+        self.assertIn("vaporwave\tRetro_80s_Vaporwave.safetensors\tmodel=0.75\tclip=0.75", stdout.getvalue())
+
+    def test_lora_sweep_builds_baseline_and_fixed_seed_strength_runs(self):
+        args = cli.parse_control_args([
+            "lora-sweep", "a portrait", "--lora-preset", "realistic-eyes",
+            "--strengths", "0.2,0.4", "--seed", "123",
+        ])
+        runs = cli.lora_sweep_arguments(args)
+        self.assertEqual(len(runs), 3)
+        self.assertNotIn("--lora", runs[0])
+        self.assertIn("LoRASweep_Base", runs[0])
+        for run in runs:
+            self.assertEqual(run[run.index("--seed") + 1], "123")
+        self.assertEqual(runs[1][runs[1].index("--lora") + 1], "Realistic_eyes.safetensors")
+        self.assertEqual(runs[1][runs[1].index("--lora-model-strength") + 1], "0.2")
+        self.assertEqual(runs[2][runs[2].index("--lora-clip-strength") + 1], "0.4")
+
     def test_lora_injection_routes_z_image_model_and_clip(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
         node_id = cli.inject_lora(
