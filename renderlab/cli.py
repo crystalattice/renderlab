@@ -124,6 +124,7 @@ REQUIRED_WORKFLOW_NODES = (
     "ImageToMask",
     "ImageCompositeMasked",
     "ImagePadForOutpaint",
+    "DifferentialDiffusion",
 )
 
 REQUIRED_MODEL_CHOICES = (
@@ -148,6 +149,7 @@ REALVISXL_REQUIRED_NODES = (
     "ImageToMask",
     "ImageCompositeMasked",
     "ImagePadForOutpaint",
+    "DifferentialDiffusion",
 )
 
 REALVISXL_REQUIRED_MODEL_CHOICES = (
@@ -901,6 +903,12 @@ def inject_outpaint_parameters(
             "right": right, "bottom": bottom, "feathering": feather,
         },
     }
+    model_source = workflow["8"]["inputs"]["model"]
+    workflow["19"] = {
+        "class_type": "DifferentialDiffusion",
+        "inputs": {"model": model_source},
+    }
+    workflow["8"]["inputs"]["model"] = ["19", 0]
     workflow["11"]["inputs"]["pixels"] = ["18", 0]
     workflow["11"]["inputs"]["mask"] = ["18", 1]
     workflow["17"]["inputs"]["destination"] = ["18", 0]
