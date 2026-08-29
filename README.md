@@ -150,6 +150,16 @@ python -m renderlab lora-presets
 python -m renderlab "close portrait" --profile realvisxl --lora-preset realistic-eyes
 ```
 
+Repeat `--lora-preset` to stack tested LoRAs in the given order. Presets are SDXL-only,
+so RenderLab rejects them unless `--profile realvisxl` is selected:
+
+```bash
+python -m renderlab "rainy street portrait" --profile realvisxl \
+  --lora-preset angelica \
+  --lora-preset realistic-eyes \
+  --lora-preset cyber-goth
+```
+
 An explicit strength option overrides that part of a preset. To compare a new LoRA
 without seed drift, render a no-LoRA baseline followed by a fixed-seed strength sweep:
 
