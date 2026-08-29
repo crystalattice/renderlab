@@ -73,13 +73,27 @@ PROFILES = {
     },
 }
 
+LORA_PRESETS = {
+    "angelica": ("SDXL_Angelica.safetensors", 0.75, 0.75, "Angelica character archetype"),
+    "artful-nsfw": ("ArtfulNSFWV2SDXL.safetensors", 0.3, 0.0, "erotic editorial style"),
+    "cyber-goth": ("90s_Cyber-goth_Sci-Fi.safetensors", 0.5, 0.5, "90s cyber-goth style"),
+    "dark-fantasy": ("Dark_Fantasy_Pulp_Pinup.safetensors", 0.5, 0.5, "dark fantasy pulp style"),
+    "marie-rose": ("Marie_Rose_Cosplay_outfit.safetensors", 0.75, 0.75, "Marie Rose outfit and character"),
+    "natural-body": ("natural breasts_epoch_5.safetensors", 0.3, 0.0, "natural body proportions"),
+    "pov": ("NsfwPovAllInOneLoraSdxl-000009.safetensors", 0.75, 0.75, "first-person composition"),
+    "realistic-eyes": ("Realistic_eyes.safetensors", 0.4, 0.4, "eye and face enhancement"),
+    "samane": ("SDXL_Samane.safetensors", 0.75, 0.75, "Samane character archetype"),
+    "vaporwave": ("Retro_80s_Vaporwave.safetensors", 0.75, 0.75, "retro vaporwave style"),
+}
+
 
 class RenderError(RuntimeError):
     pass
 
 
 CONTROL_COMMANDS = {
-    "jobs", "status", "cancel", "models", "loras", "doctor", "mask", "replay", "video"
+    "jobs", "status", "cancel", "models", "loras", "lora-presets", "lora-sweep",
+    "doctor", "mask", "replay", "video",
 }
 
 MODEL_NODE_INPUTS = (
@@ -172,6 +186,34 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     loras_parser = subparsers.add_parser("loras", help="list LoRAs visible to ComfyUI")
     add_server_argument(loras_parser)
 
+    presets_parser = subparsers.add_parser(
+        "lora-presets", help="list RenderLab's tested LoRA presets"
+    )
+    add_server_argument(presets_parser)
+
+    sweep_parser = subparsers.add_parser(
+        "lora-sweep", help="render a fixed-seed baseline and LoRA strength sweep"
+    )
+    sweep_parser.add_argument("prompt", help="positive text prompt")
+    sweep_lora = sweep_parser.add_mutually_exclusive_group(required=True)
+    sweep_lora.add_argument("--lora", help="LoRA filename visible to ComfyUI")
+    sweep_lora.add_argument("--lora-preset", choices=sorted(LORA_PRESETS))
+    sweep_parser.add_argument(
+        "--strengths", default="0.25,0.5,0.75,1.0",
+        help="comma-separated model and CLIP strengths (default: 0.25,0.5,0.75,1.0)",
+    )
+    sweep_parser.add_argument("--seed", type=int, help="fixed seed; one is generated when omitted")
+    sweep_parser.add_argument("--profile", choices=sorted(PROFILES), default="realvisxl")
+    sweep_parser.add_argument("--width", type=int, default=1024)
+    sweep_parser.add_argument("--height", type=int, default=1024)
+    sweep_parser.add_argument("--steps", type=int)
+    sweep_parser.add_argument("--cfg", type=float)
+    sweep_parser.add_argument("--negative-prompt")
+    sweep_parser.add_argument("--timeout", type=float, default=600.0)
+    sweep_parser.add_argument("--poll-interval", type=float, default=1.0)
+    sweep_parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    add_server_argument(sweep_parser)
+
     doctor_parser = subparsers.add_parser("doctor", help="validate the RenderLab runtime")
     doctor_parser.add_argument(
         "--profile", choices=sorted(PROFILES), default="z-image"
@@ -236,9 +278,21 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
         parser.error("--limit must be greater than zero")
-    if args.command in {"mask", "replay", "video"}:
+    if args.command in {"mask", "replay", "video", "lora-sweep"}:
         if args.timeout <= 0 or args.poll_interval <= 0:
             parser.error("--timeout and --poll-interval must be greater than zero")
+    if args.command == "lora-sweep":
+        if args.seed is not None and not 0 <= args.seed <= MAX_SEED:
+            parser.error(f"--seed must be between 0 and {MAX_SEED}")
+        for name in ("width", "height"):
+            if getattr(args, name) <= 0:
+                parser.error(f"--{name} must be greater than zero")
+        try:
+            args.strengths = [float(value.strip()) for value in args.strengths.split(",")]
+        except ValueError:
+            parser.error("--strengths must be comma-separated numbers")
+        if not args.strengths or any(not -10.0 <= value <= 10.0 for value in args.strengths):
+            parser.error("--strengths values must be between -10.0 and 10.0")
     if args.command == "mask":
         if not args.description.strip():
             parser.error("description must not be empty")
@@ -295,20 +349,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--negative-prompt",
         help="replace the profile's negative prompt; pass an empty string to clear it",
     )
-    parser.add_argument(
+    lora_group = parser.add_mutually_exclusive_group()
+    lora_group.add_argument(
         "--lora",
         help="LoRA filename visible to ComfyUI; use `renderlab loras` to list choices",
+    )
+    lora_group.add_argument(
+        "--lora-preset",
+        choices=sorted(LORA_PRESETS),
+        help="tested LoRA and strength combination; use `renderlab lora-presets` to list",
     )
     parser.add_argument(
         "--lora-model-strength",
         type=float,
-        default=1.0,
+        default=None,
         help="LoRA strength applied to the diffusion model (default: 1.0)",
     )
     parser.add_argument(
         "--lora-clip-strength",
         type=float,
-        default=1.0,
+        default=None,
         help="LoRA strength applied to the text encoder (default: 1.0)",
     )
     parser.add_argument("--input-image", type=Path, help="source image for img2img editing")
@@ -395,11 +455,24 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--timeout and --poll-interval must be greater than zero")
     if args.prompt_timeout <= 0:
         parser.error("--prompt-timeout must be greater than zero")
+    if args.lora_preset is not None:
+        preset_name, preset_model, preset_clip, _ = LORA_PRESETS[args.lora_preset]
+        args.lora = preset_name
+        if args.lora_model_strength is None:
+            args.lora_model_strength = preset_model
+        if args.lora_clip_strength is None:
+            args.lora_clip_strength = preset_clip
+    if args.lora is not None:
+        if args.lora_model_strength is None:
+            args.lora_model_strength = 1.0
+        if args.lora_clip_strength is None:
+            args.lora_clip_strength = 1.0
     for name in ("lora_model_strength", "lora_clip_strength"):
-        if not -10.0 <= getattr(args, name) <= 10.0:
+        value = getattr(args, name)
+        if value is not None and not -10.0 <= value <= 10.0:
             parser.error(f"--{name.replace('_', '-')} must be between -10.0 and 10.0")
     if args.lora is None and (
-        args.lora_model_strength != 1.0 or args.lora_clip_strength != 1.0
+        args.lora_model_strength is not None or args.lora_clip_strength is not None
     ):
         parser.error("--lora-model-strength and --lora-clip-strength require --lora")
     if not 0.0 <= args.denoise <= 1.0:
@@ -1387,6 +1460,41 @@ def run_video(args: argparse.Namespace) -> int:
     return 0
 
 
+def lora_sweep_arguments(args: argparse.Namespace) -> list[list[str]]:
+    seed = args.seed if args.seed is not None else secrets.randbits(64)
+    lora_name = args.lora
+    if args.lora_preset is not None:
+        lora_name = LORA_PRESETS[args.lora_preset][0]
+    common = [
+        args.prompt,
+        "--profile", args.profile,
+        "--seed", str(seed),
+        "--width", str(args.width),
+        "--height", str(args.height),
+        "--timeout", str(args.timeout),
+        "--poll-interval", str(args.poll_interval),
+        "--output-dir", str(args.output_dir),
+        "--server", args.server,
+    ]
+    if args.steps is not None:
+        common.extend(("--steps", str(args.steps)))
+    if args.cfg is not None:
+        common.extend(("--cfg", str(args.cfg)))
+    if args.negative_prompt is not None:
+        common.extend(("--negative-prompt", args.negative_prompt))
+
+    runs = [common + ["--filename-prefix", "LoRASweep_Base"]]
+    for strength in args.strengths:
+        label = str(strength).replace("-", "neg").replace(".", "_")
+        runs.append(common + [
+            "--lora", lora_name,
+            "--lora-model-strength", str(strength),
+            "--lora-clip-strength", str(strength),
+            "--filename-prefix", f"LoRASweep_{label}",
+        ])
+    return runs
+
+
 def run_control_command(args: argparse.Namespace) -> int:
     try:
         if args.command == "video":
@@ -1412,6 +1520,20 @@ def run_control_command(args: argparse.Namespace) -> int:
             print_discovered_group(
                 "loras", discover_node_choices(args.server, "LoraLoader", "lora_name")
             )
+            return 0
+
+        if args.command == "lora-presets":
+            for key, (name, model, clip, description) in LORA_PRESETS.items():
+                print(f"{key}\t{name}\tmodel={model:g}\tclip={clip:g}\t{description}")
+            return 0
+
+        if args.command == "lora-sweep":
+            runs = lora_sweep_arguments(args)
+            for index, render_argv in enumerate(runs, start=1):
+                print(f"sweep [{index}/{len(runs)}]", file=sys.stderr)
+                result = main(render_argv)
+                if result != 0:
+                    return result
             return 0
 
         if args.command == "jobs":
