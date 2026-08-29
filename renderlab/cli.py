@@ -123,8 +123,6 @@ REQUIRED_WORKFLOW_NODES = (
     "ImageBlur",
     "ImageToMask",
     "ImageCompositeMasked",
-    "ImagePadForOutpaint",
-    "DifferentialDiffusion",
 )
 
 REQUIRED_MODEL_CHOICES = (
@@ -148,8 +146,6 @@ REALVISXL_REQUIRED_NODES = (
     "ImageBlur",
     "ImageToMask",
     "ImageCompositeMasked",
-    "ImagePadForOutpaint",
-    "DifferentialDiffusion",
 )
 
 REALVISXL_REQUIRED_MODEL_CHOICES = (
@@ -215,6 +211,14 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     sweep_parser.add_argument("--steps", type=int)
     sweep_parser.add_argument("--cfg", type=float)
     sweep_parser.add_argument("--negative-prompt")
+    sweep_parser.add_argument(
+        "--input-image", type=Path,
+        help="source image for an img2img LoRA sweep",
+    )
+    sweep_parser.add_argument(
+        "--denoises", default=None,
+        help="comma-separated img2img denoise strengths (default with input: 0.25,0.45,0.65)",
+    )
     sweep_parser.add_argument("--timeout", type=float, default=600.0)
     sweep_parser.add_argument("--poll-interval", type=float, default=1.0)
     sweep_parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -308,6 +312,22 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
             parser.error("--strengths must be comma-separated numbers")
         if not args.strengths or any(not -10.0 <= value <= 10.0 for value in args.strengths):
             parser.error("--strengths values must be between -10.0 and 10.0")
+        if args.denoises is not None and args.input_image is None:
+            parser.error("--denoises requires --input-image")
+        denoises = args.denoises
+        if args.input_image is not None and denoises is None:
+            denoises = "0.25,0.45,0.65"
+        try:
+            args.denoises = (
+                [float(value.strip()) for value in denoises.split(",")]
+                if denoises is not None else None
+            )
+        except ValueError:
+            parser.error("--denoises must be comma-separated numbers")
+        if args.denoises is not None and (
+            not args.denoises or any(not 0.0 <= value <= 1.0 for value in args.denoises)
+        ):
+            parser.error("--denoises values must be between 0.0 and 1.0")
     if args.command == "mask":
         if not args.description.strip():
             parser.error("description must not be empty")
@@ -551,6 +571,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("outpainting requires --input-image")
     if args.outpaint and args.mask_image is not None:
         parser.error("outpainting and --mask-image cannot be used together")
+    if args.outpaint:
+        parser.error(
+            "outpainting is disabled until RenderLab has a dedicated inpainting model"
+        )
     if not 0 <= args.outpaint_feather <= 256:
         parser.error("--outpaint-feather must be between 0 and 256")
     if not args.outpaint and args.outpaint_feather != DEFAULT_OUTPAINT_FEATHER:
@@ -1646,16 +1670,27 @@ def lora_sweep_arguments(args: argparse.Namespace) -> list[list[str]]:
         common.extend(("--cfg", str(args.cfg)))
     if args.negative_prompt is not None:
         common.extend(("--negative-prompt", args.negative_prompt))
+    denoises = args.denoises if args.denoises is not None else [None]
+    if args.input_image is not None:
+        common.extend(("--input-image", str(args.input_image)))
 
-    runs = [common + ["--filename-prefix", "LoRASweep_Base"]]
-    for strength in args.strengths:
-        label = str(strength).replace("-", "neg").replace(".", "_")
-        runs.append(common + [
-            "--lora", lora_name,
-            "--lora-model-strength", str(strength),
-            "--lora-clip-strength", str(strength),
-            "--filename-prefix", f"LoRASweep_{label}",
-        ])
+    runs = []
+    for denoise in denoises:
+        run_common = list(common)
+        prefix = "LoRASweep"
+        if denoise is not None:
+            denoise_label = str(denoise).replace(".", "_")
+            prefix = f"LoRAI2I_D{denoise_label}"
+            run_common.extend(("--denoise", str(denoise)))
+        runs.append(run_common + ["--filename-prefix", f"{prefix}_Base"])
+        for strength in args.strengths:
+            label = str(strength).replace("-", "neg").replace(".", "_")
+            runs.append(run_common + [
+                "--lora", lora_name,
+                "--lora-model-strength", str(strength),
+                "--lora-clip-strength", str(strength),
+                "--filename-prefix", f"{prefix}_L{label}",
+            ])
     return runs
 
 
