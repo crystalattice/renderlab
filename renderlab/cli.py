@@ -248,6 +248,11 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
         "replay", help="rerun a render from its provenance sidecar"
     )
     replay_parser.add_argument("metadata", type=Path, help="RenderLab output .json sidecar")
+    replay_seed = replay_parser.add_mutually_exclusive_group()
+    replay_seed.add_argument(
+        "--new-seed", action="store_true", help="restore all settings with a new random seed"
+    )
+    replay_seed.add_argument("--seed", type=int, help="restore all settings with this seed")
     replay_parser.add_argument("--timeout", type=float, default=600.0)
     replay_parser.add_argument("--poll-interval", type=float, default=1.0)
     replay_parser.add_argument(
@@ -281,6 +286,8 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     if args.command in {"mask", "replay", "video", "lora-sweep"}:
         if args.timeout <= 0 or args.poll_interval <= 0:
             parser.error("--timeout and --poll-interval must be greater than zero")
+    if args.command == "replay" and args.seed is not None and not 0 <= args.seed <= MAX_SEED:
+        parser.error(f"--seed must be between 0 and {MAX_SEED}")
     if args.command == "lora-sweep":
         if args.lora_preset is not None and args.profile != "realvisxl":
             parser.error("RenderLab LoRA presets are SDXL-only and require --profile realvisxl")
@@ -427,6 +434,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--workflow", type=Path)
     parser.add_argument("--filename-prefix", default="RenderLab", help=argparse.SUPPRESS)
     parser.add_argument("--expected-pixel-sha256", help=argparse.SUPPRESS)
+    parser.add_argument("--replay-source", help=argparse.SUPPRESS)
+    parser.add_argument("--replay-kind", choices=("exact", "new-seed"), help=argparse.SUPPRESS)
+    parser.add_argument("--parent-seed", type=int, help=argparse.SUPPRESS)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -1283,7 +1293,7 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
     try:
         profile = profile_names[metadata["profile"]]
         prompt = metadata["effective_prompt"]
-        seed = metadata["seed"]
+        parent_seed = metadata["seed"]
         steps = metadata["steps"]
         cfg = metadata["cfg"]
     except (KeyError, TypeError) as exc:
@@ -1294,14 +1304,25 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
     replay = [
         prompt,
         "--profile", profile,
-        "--seed", str(seed),
+        "--seed", str(
+            args.seed if args.seed is not None
+            else secrets.randbits(64) if args.new_seed
+            else parent_seed
+        ),
         "--steps", str(steps),
         "--cfg", str(cfg),
         "--server", args.server,
         "--timeout", str(args.timeout),
         "--poll-interval", str(args.poll_interval),
         "--output-dir", str(args.output_dir),
-        "--filename-prefix", f"RenderLabReplay_{uuid.uuid4().hex[:12]}",
+        "--filename-prefix", (
+            f"RenderLabVariant_{uuid.uuid4().hex[:12]}"
+            if args.new_seed or args.seed is not None
+            else f"RenderLabReplay_{uuid.uuid4().hex[:12]}"
+        ),
+        "--replay-source", str(args.metadata.expanduser().resolve()),
+        "--replay-kind", "new-seed" if args.new_seed or args.seed is not None else "exact",
+        "--parent-seed", str(parent_seed),
     ]
     recorded_output = Path(str(metadata.get("output", ""))).expanduser()
     adjacent_output = args.metadata.expanduser().resolve().with_suffix("")
@@ -1312,7 +1333,8 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
             "replay source output is missing; expected the recorded output path or a PNG "
             "adjacent to the sidecar"
         )
-    replay.extend(["--expected-pixel-sha256", pixel_sha256_file(recorded_output.resolve())])
+    if not args.new_seed and args.seed is None:
+        replay.extend(["--expected-pixel-sha256", pixel_sha256_file(recorded_output.resolve())])
     if metadata.get("negative_prompt") is not None:
         replay.extend(["--negative-prompt", str(metadata["negative_prompt"])])
 
@@ -1740,6 +1762,15 @@ def main(argv: list[str] | None = None) -> int:
                             "variation_count": render_count,
                         }
                         if args.variations is not None
+                        else None
+                    ),
+                    "replay": (
+                        {
+                            "kind": args.replay_kind,
+                            "source_metadata": args.replay_source,
+                            "parent_seed": args.parent_seed,
+                        }
+                        if args.replay_source is not None
                         else None
                     ),
                     "seed": seed,
