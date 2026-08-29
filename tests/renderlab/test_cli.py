@@ -204,24 +204,38 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.65)
 
     def test_mask_command_defaults_and_parameter_injection(self):
-        args = cli.parse_control_args(["mask", "source.png", "torso and hips"])
+        args = cli.parse_control_args(
+            ["mask", "source.png", "chest, abdomen, pelvis", "--within", "woman"]
+        )
         self.assertEqual(args.threshold, 0.5)
         self.assertEqual(args.refine_iterations, 2)
+        self.assertEqual(args.within, "woman")
 
         workflow = cli.load_workflow(cli.SAM3_MASK_WORKFLOW)
         cli.inject_mask_parameters(
             workflow,
             image="renderlab/source.png",
-            description="torso and hips",
+            description="chest, abdomen, pelvis",
             threshold=0.4,
             refine_iterations=3,
+            within="woman",
         )
         self.assertEqual(workflow["2"]["inputs"]["image"], "renderlab/source.png")
-        self.assertEqual(workflow["3"]["inputs"]["text"], "torso and hips")
+        text_nodes = [
+            node["inputs"]["text"] for node in workflow.values()
+            if node["class_type"] == "CLIPTextEncode"
+        ]
+        self.assertEqual(text_nodes, ["woman", "chest", "abdomen", "pelvis"])
         self.assertEqual(workflow["4"]["class_type"], "SAM3_Detect")
         self.assertEqual(workflow["4"]["inputs"]["threshold"], 0.4)
         self.assertEqual(workflow["4"]["inputs"]["refine_iterations"], 3)
-        self.assertEqual(workflow["5"]["class_type"], "MaskToImage")
+        operations = [
+            node["inputs"]["operation"] for node in workflow.values()
+            if node["class_type"] == "MaskComposite"
+        ]
+        self.assertEqual(operations, ["and", "and", "and", "or", "or"])
+        self.assertEqual(sum(node["class_type"] == "MaskToImage" for node in workflow.values()), 1)
+        self.assertEqual(sum(node["class_type"] == "SaveImage" for node in workflow.values()), 1)
 
     def test_mask_command_writes_validated_binary_mask_metadata(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
@@ -229,7 +243,10 @@ class RenderLabCliTests(unittest.TestCase):
             source = root / "source.png"
             source.write_bytes(b"source")
             mask = root / "RenderLabMask_00001_.png"
-            self.write_binary_png(mask, [[0, 255], [0, 255]])
+            self.write_binary_png(
+                mask,
+                [[0, 0, 0, 0], [0, 255, 255, 0], [0, 255, 255, 0], [0, 0, 0, 0]],
+            )
             history = {
                 "outputs": {
                     "6": {
@@ -257,8 +274,9 @@ class RenderLabCliTests(unittest.TestCase):
             metadata = json.loads(Path(str(mask) + ".json").read_text())
             self.assertEqual(metadata["mode"], "mask")
             self.assertEqual(metadata["model"], "sam3.1_multiplex_fp16.safetensors")
-            self.assertEqual(metadata["mask"]["white_pixels"], 2)
-            self.assertEqual(metadata["mask"]["black_pixels"], 2)
+            self.assertEqual(metadata["mask"]["white_pixels"], 4)
+            self.assertEqual(metadata["mask"]["black_pixels"], 12)
+            self.assertFalse(metadata["mask"]["touches_border"])
             self.assertTrue(metadata["mask"]["white_is_editable"])
 
     def test_binary_mask_validation_rejects_empty_mask(self):
@@ -266,6 +284,13 @@ class RenderLabCliTests(unittest.TestCase):
             mask = Path(temporary_dir) / "empty.png"
             self.write_binary_png(mask, [[0, 0], [0, 0]])
             with self.assertRaisesRegex(cli.RenderError, "found no matching region"):
+                cli.validate_binary_mask_png(mask)
+
+    def test_binary_mask_validation_rejects_border_contamination(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            mask = Path(temporary_dir) / "border.png"
+            self.write_binary_png(mask, [[255, 0], [0, 0]])
+            with self.assertRaisesRegex(cli.RenderError, "touches the image boundary"):
                 cli.validate_binary_mask_png(mask)
 
     def test_upload_image_posts_multipart_and_returns_comfy_name(self):

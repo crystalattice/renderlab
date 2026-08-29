@@ -155,7 +155,16 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
         "mask", help="create a binary edit mask with ComfyUI's native SAM3"
     )
     mask_parser.add_argument("input_image", type=Path, help="image to segment")
-    mask_parser.add_argument("description", help="object or region to make editable")
+    mask_parser.add_argument(
+        "description", help="comma-separated objects or regions to make editable"
+    )
+    mask_parser.add_argument(
+        "--within", help="keep only target pixels inside this enclosing object, e.g. person"
+    )
+    mask_parser.add_argument(
+        "--allow-border", action="store_true",
+        help="allow selected pixels to touch the image boundary",
+    )
     mask_parser.add_argument("--threshold", type=float, default=0.5)
     mask_parser.add_argument("--refine-iterations", type=int, default=2)
     mask_parser.add_argument("--timeout", type=float, default=600.0)
@@ -466,15 +475,76 @@ def inject_inpaint_parameters(
 
 def inject_mask_parameters(
     workflow: dict[str, Any], *, image: str, description: str,
-    threshold: float, refine_iterations: int
+    threshold: float, refine_iterations: int, within: str | None = None
 ) -> None:
+    targets = [target.strip() for target in description.split(",") if target.strip()]
+    if not targets:
+        raise RenderError("mask description contains no targets")
     try:
         workflow["2"]["inputs"]["image"] = image
-        workflow["3"]["inputs"]["text"] = description
-        workflow["4"]["inputs"]["threshold"] = threshold
-        workflow["4"]["inputs"]["refine_iterations"] = refine_iterations
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab SAM3 mask contract: {exc}") from exc
+
+    next_id = 3
+
+    def detection(text: str) -> str:
+        nonlocal next_id
+        text_id = str(next_id)
+        detect_id = str(next_id + 1)
+        next_id += 2
+        workflow[text_id] = {
+            "class_type": "CLIPTextEncode",
+            "inputs": {"text": text, "clip": ["1", 1]},
+        }
+        workflow[detect_id] = {
+            "class_type": "SAM3_Detect",
+            "inputs": {
+                "model": ["1", 0], "image": ["2", 0],
+                "conditioning": [text_id, 0], "threshold": threshold,
+                "refine_iterations": refine_iterations, "individual_masks": False,
+            },
+        }
+        return detect_id
+
+    enclosure_id = detection(within.strip()) if within and within.strip() else None
+    target_masks = []
+    for target in targets:
+        target_id = detection(target)
+        if enclosure_id is not None:
+            intersect_id = str(next_id)
+            next_id += 1
+            workflow[intersect_id] = {
+                "class_type": "MaskComposite",
+                "inputs": {
+                    "destination": [target_id, 0], "source": [enclosure_id, 0],
+                    "x": 0, "y": 0, "operation": "and",
+                },
+            }
+            target_id = intersect_id
+        target_masks.append(target_id)
+
+    combined_id = target_masks[0]
+    for target_id in target_masks[1:]:
+        union_id = str(next_id)
+        next_id += 1
+        workflow[union_id] = {
+            "class_type": "MaskComposite",
+            "inputs": {
+                "destination": [combined_id, 0], "source": [target_id, 0],
+                "x": 0, "y": 0, "operation": "or",
+            },
+        }
+        combined_id = union_id
+
+    image_id = str(next_id)
+    save_id = str(next_id + 1)
+    workflow[image_id] = {
+        "class_type": "MaskToImage", "inputs": {"mask": [combined_id, 0]}
+    }
+    workflow[save_id] = {
+        "class_type": "SaveImage",
+        "inputs": {"filename_prefix": "RenderLabMask", "images": [image_id, 0]},
+    }
 
 
 def upload_image(server: str, path: Path) -> str:
@@ -600,7 +670,7 @@ def local_output_path(output_dir: Path, image: dict[str, str]) -> Path:
     return path
 
 
-def validate_binary_mask_png(path: Path) -> dict[str, int]:
+def validate_binary_mask_png(path: Path, *, allow_border: bool = False) -> dict[str, int]:
     """Validate the simple 8-bit PNG emitted by ComfyUI's MaskToImage node."""
     try:
         data = path.read_bytes()
@@ -640,6 +710,7 @@ def validate_binary_mask_png(path: Path) -> dict[str, int]:
         raise RenderError("generated mask PNG has invalid scanline data")
     previous = bytearray(stride)
     white = black = 0
+    selected = bytearray(width * height)
     for row_index in range(height):
         start = row_index * (stride + 1)
         filter_type = raw[start]
@@ -678,6 +749,7 @@ def validate_binary_mask_png(path: Path) -> dict[str, int]:
                 raise RenderError("generated SAM3 mask is not strictly black and white")
             if value == 255:
                 white += 1
+                selected[row_index * width + pixel_start // channels] = 1
             else:
                 black += 1
     if white == 0:
@@ -686,7 +758,56 @@ def validate_binary_mask_png(path: Path) -> dict[str, int]:
         )
     if black == 0:
         raise RenderError("SAM3 selected the entire image; use a more specific description")
-    return {"width": width, "height": height, "white_pixels": white, "black_pixels": black}
+    border_selected = any(selected[x] or selected[(height - 1) * width + x] for x in range(width))
+    border_selected = border_selected or any(
+        selected[y * width] or selected[y * width + width - 1] for y in range(height)
+    )
+    if border_selected and not allow_border:
+        raise RenderError(
+            "SAM3 mask touches the image boundary; likely background contamination. "
+            "Use --allow-border only when the intended subject really reaches the frame edge"
+        )
+
+    visited = bytearray(width * height)
+    component_sizes = []
+    for start_index, is_selected in enumerate(selected):
+        if not is_selected or visited[start_index]:
+            continue
+        visited[start_index] = 1
+        stack = [start_index]
+        size = 0
+        while stack:
+            index = stack.pop()
+            size += 1
+            x = index % width
+            y = index // width
+            neighbors = []
+            if x:
+                neighbors.append(index - 1)
+            if x + 1 < width:
+                neighbors.append(index + 1)
+            if y:
+                neighbors.append(index - width)
+            if y + 1 < height:
+                neighbors.append(index + width)
+            for neighbor in neighbors:
+                if selected[neighbor] and not visited[neighbor]:
+                    visited[neighbor] = 1
+                    stack.append(neighbor)
+        component_sizes.append(size)
+
+    significant_floor = max(16, white // 500)
+    significant_components = sum(size >= significant_floor for size in component_sizes)
+    if significant_components > 8:
+        raise RenderError(
+            f"SAM3 mask contains {significant_components} scattered regions; "
+            "use fewer, more concrete targets"
+        )
+    return {
+        "width": width, "height": height, "white_pixels": white, "black_pixels": black,
+        "components": len(component_sizes), "significant_components": significant_components,
+        "touches_border": int(border_selected),
+    }
 
 
 def run_mask(args: argparse.Namespace) -> int:
@@ -700,12 +821,13 @@ def run_mask(args: argparse.Namespace) -> int:
         description=args.description.strip(),
         threshold=args.threshold,
         refine_iterations=args.refine_iterations,
+        within=args.within,
     )
     prompt_id = submit(args.server, workflow)
     print(f"prompt_id: {prompt_id}", file=sys.stderr)
     history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
     output_path = local_output_path(args.output_dir, find_saved_image(history))
-    stats = validate_binary_mask_png(output_path)
+    stats = validate_binary_mask_png(output_path, allow_border=args.allow_border)
     metadata_path = write_metadata(
         output_path,
         {
@@ -714,6 +836,9 @@ def run_mask(args: argparse.Namespace) -> int:
             "prompt_id": prompt_id,
             "mode": "mask",
             "description": args.description.strip(),
+            "targets": [target.strip() for target in args.description.split(",") if target.strip()],
+            "within": args.within.strip() if args.within else None,
+            "allow_border": args.allow_border,
             "threshold": args.threshold,
             "refine_iterations": args.refine_iterations,
             "model": "sam3.1_multiplex_fp16.safetensors",

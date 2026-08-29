@@ -150,14 +150,18 @@ To generate the mask automatically, install
 the existing object or body region to select:
 
 ```bash
-python -m renderlab mask ./source.png "torso and hips"
+python -m renderlab mask ./source.png "chest, abdomen, pelvis" --within "person"
 ```
 
 The command uses ComfyUI's built-in `SAM3_Detect` node and writes a
-`RenderLabMask_....png` file. It rejects empty, full-frame, grayscale, and image-bearing
-masks; accepted output is strictly black and white, with white pixels editable. Use the
-printed path directly with `--mask-image`. If SAM3 finds nothing, use a simpler noun or
-lower `--threshold` from its default of `0.5`.
+`RenderLabMask_....png` file. Comma-separated targets are detected independently and
+combined; `--within` intersects every target with an enclosing object so a body-region
+request cannot select similar-looking furniture or background. It rejects empty,
+full-frame, border-touching, excessively scattered, grayscale, and image-bearing masks;
+accepted output is strictly black and white, with white pixels editable. Use the printed
+path directly with `--mask-image`. If SAM3 finds nothing, use simpler nouns or lower
+`--threshold` from its default of `0.5`. `--allow-border` overrides the border guard for
+subjects that legitimately extend beyond the frame.
 
 Operational commands:
 
