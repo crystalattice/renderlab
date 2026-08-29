@@ -505,6 +505,42 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["8"]["inputs"]["latent_image"], ["11", 0])
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.35)
 
+    def test_outpaint_uses_native_padding_mask_and_preserves_source_canvas(self):
+        args = cli.parse_args([
+            "continue the rainy street", "--profile", "realvisxl",
+            "--input-image", "source.png", "--outpaint-left", "256",
+            "--outpaint-right", "128", "--outpaint-feather", "48",
+        ])
+        self.assertTrue(args.outpaint)
+        self.assertEqual(args.denoise, 1.0)
+        self.assertEqual(args.workflow, cli.REALVISXL_INPAINT_WORKFLOW)
+
+        workflow = cli.load_workflow(args.workflow)
+        cli.inject_outpaint_parameters(
+            workflow, prompt=args.prompt, seed=123, steps=args.steps,
+            denoise=args.denoise, image="uploaded.png",
+            left=args.outpaint_left, top=args.outpaint_top,
+            right=args.outpaint_right, bottom=args.outpaint_bottom,
+            feather=args.outpaint_feather,
+        )
+        self.assertEqual(workflow["18"]["class_type"], "ImagePadForOutpaint")
+        self.assertEqual(workflow["18"]["inputs"]["left"], 256)
+        self.assertEqual(workflow["18"]["inputs"]["right"], 128)
+        self.assertEqual(workflow["18"]["inputs"]["feathering"], 48)
+        self.assertEqual(workflow["11"]["inputs"]["pixels"], ["18", 0])
+        self.assertEqual(workflow["11"]["inputs"]["mask"], ["18", 1])
+        self.assertEqual(workflow["17"]["inputs"]["destination"], ["18", 0])
+        self.assertEqual(workflow["17"]["inputs"]["mask"], ["18", 1])
+        self.assertNotIn("12", workflow)
+
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["extend", "--outpaint-left", "100"])
+        with self.assertRaises(SystemExit):
+            cli.parse_args([
+                "extend", "--input-image", "source.png", "--mask-image", "mask.png",
+                "--outpaint-left", "128",
+            ])
+
     def test_inpaint_defaults_and_parameter_injection(self):
         args = cli.parse_args(
             [
