@@ -204,8 +204,9 @@ python -m renderlab "rainy city street, wet pavement, traffic, continuous photog
 ```
 
 Outpaint defaults to full denoise in the new canvas and regenerates a 192-pixel overlap
-inside the source. The deeper overlap gives the model enough room to remove the old
-image boundary instead of interpreting the source as a billboard, picture, or screen.
+inside the source. Differential diffusion applies the graded outpaint mask across that
+overlap, giving the model enough room to remove the old image boundary instead of
+interpreting the source as a billboard, picture, or screen.
 `--outpaint-feather` changes that overlap. The protected center is composited from the
 uploaded source while the padded region and overlap come from generation. Describe the
 completed scene directly; avoid phrases such as "original frame," which image models may
