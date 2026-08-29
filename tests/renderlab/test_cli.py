@@ -533,6 +533,12 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["17"]["inputs"]["mask"], ["18", 1])
         self.assertNotIn("12", workflow)
 
+        default_args = cli.parse_args([
+            "continue the rainy street", "--input-image", "source.png",
+            "--outpaint-bottom", "384",
+        ])
+        self.assertEqual(default_args.outpaint_feather, 192)
+
         with self.assertRaises(SystemExit):
             cli.parse_args(["extend", "--outpaint-left", "100"])
         with self.assertRaises(SystemExit):
