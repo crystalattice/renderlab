@@ -226,13 +226,40 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(args.lora_clip_strength, 0.4)
 
         overridden = cli.parse_args([
-            "portrait", "--lora-preset", "natural-body", "--lora-model-strength", "0.2"
+            "portrait", "--profile", "realvisxl", "--lora-preset", "natural-body",
+            "--lora-model-strength", "0.2"
         ])
         self.assertEqual(overridden.lora_model_strength, 0.2)
         self.assertEqual(overridden.lora_clip_strength, 0.0)
 
         with self.assertRaises(SystemExit):
             cli.parse_args(["portrait", "--lora", "x.safetensors", "--lora-preset", "samane"])
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["portrait", "--lora-preset", "samane"])
+
+    def test_lora_presets_stack_in_order_and_replay(self):
+        args = cli.parse_args([
+            "portrait", "--profile", "realvisxl",
+            "--lora-preset", "angelica", "--lora-preset", "realistic-eyes",
+        ])
+        self.assertEqual(
+            [lora["name"] for lora in args.loras],
+            ["SDXL_Angelica.safetensors", "Realistic_eyes.safetensors"],
+        )
+        workflow = cli.load_workflow(cli.REALVISXL_WORKFLOW)
+        node_ids = [
+            cli.inject_lora(
+                workflow,
+                name=lora["name"],
+                model_strength=lora["model_strength"],
+                clip_strength=lora["clip_strength"],
+            )
+            for lora in args.loras
+        ]
+        self.assertEqual(workflow[node_ids[1]]["inputs"]["model"], [node_ids[0], 0])
+        self.assertEqual(workflow[node_ids[1]]["inputs"]["clip"], [node_ids[0], 1])
+        self.assertEqual(workflow["8"]["inputs"]["model"], [node_ids[1], 0])
+        self.assertEqual(workflow["4"]["inputs"]["clip"], [node_ids[1], 1])
 
     def test_lora_presets_command_lists_tested_settings(self):
         args = cli.parse_control_args(["lora-presets"])
