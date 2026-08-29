@@ -282,6 +282,8 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
         if args.timeout <= 0 or args.poll_interval <= 0:
             parser.error("--timeout and --poll-interval must be greater than zero")
     if args.command == "lora-sweep":
+        if args.lora_preset is not None and args.profile != "realvisxl":
+            parser.error("RenderLab LoRA presets are SDXL-only and require --profile realvisxl")
         if args.seed is not None and not 0 <= args.seed <= MAX_SEED:
             parser.error(f"--seed must be between 0 and {MAX_SEED}")
         for name in ("width", "height"):
@@ -357,6 +359,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     lora_group.add_argument(
         "--lora-preset",
         choices=sorted(LORA_PRESETS),
+        action="append",
         help="tested LoRA and strength combination; use `renderlab lora-presets` to list",
     )
     parser.add_argument(
@@ -455,18 +458,48 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--timeout and --poll-interval must be greater than zero")
     if args.prompt_timeout <= 0:
         parser.error("--prompt-timeout must be greater than zero")
+    if args.lora_preset is not None and args.profile != "realvisxl":
+        parser.error("RenderLab LoRA presets are SDXL-only and require --profile realvisxl")
+    if args.lora_preset is not None and len(args.lora_preset) > 1 and (
+        args.lora_model_strength is not None or args.lora_clip_strength is not None
+    ):
+        parser.error("explicit LoRA strengths cannot override a multi-preset stack")
+    args.loras = []
     if args.lora_preset is not None:
-        preset_name, preset_model, preset_clip, _ = LORA_PRESETS[args.lora_preset]
-        args.lora = preset_name
-        if args.lora_model_strength is None:
-            args.lora_model_strength = preset_model
-        if args.lora_clip_strength is None:
-            args.lora_clip_strength = preset_clip
+        for preset in args.lora_preset:
+            preset_name, preset_model, preset_clip, _ = LORA_PRESETS[preset]
+            args.loras.append(
+                {
+                    "preset": preset,
+                    "name": preset_name,
+                    "model_strength": (
+                        args.lora_model_strength
+                        if args.lora_model_strength is not None else preset_model
+                    ),
+                    "clip_strength": (
+                        args.lora_clip_strength
+                        if args.lora_clip_strength is not None else preset_clip
+                    ),
+                }
+            )
+        if len(args.loras) == 1:
+            args.lora = args.loras[0]["name"]
+            args.lora_model_strength = args.loras[0]["model_strength"]
+            args.lora_clip_strength = args.loras[0]["clip_strength"]
     if args.lora is not None:
         if args.lora_model_strength is None:
             args.lora_model_strength = 1.0
         if args.lora_clip_strength is None:
             args.lora_clip_strength = 1.0
+        if not args.loras:
+            args.loras.append(
+                {
+                    "preset": None,
+                    "name": args.lora,
+                    "model_strength": args.lora_model_strength,
+                    "clip_strength": args.lora_clip_strength,
+                }
+            )
     for name in ("lora_model_strength", "lora_clip_strength"):
         value = getattr(args, name)
         if value is not None and not -10.0 <= value <= 10.0:
@@ -722,6 +755,7 @@ def inject_lora(
     model_source: list[Any] | None = None
     clip_source: list[Any] | None = None
     numeric_ids: list[int] = []
+    existing_loras: list[tuple[int, str]] = []
     for node_id, node in workflow.items():
         try:
             numeric_ids.append(int(node_id))
@@ -735,6 +769,13 @@ def inject_lora(
             model_source = [node_id, 0]
         elif class_type == "CLIPLoader":
             clip_source = [node_id, 0]
+        elif class_type == "LoraLoader":
+            existing_loras.append((int(node_id), node_id))
+
+    if existing_loras:
+        _, latest_lora = max(existing_loras)
+        model_source = [latest_lora, 0]
+        clip_source = [latest_lora, 1]
 
     if model_source is None or clip_source is None:
         raise RenderError("workflow has no compatible model and CLIP loaders for --lora")
@@ -1299,13 +1340,35 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
         replay.extend(["--mask-grow", str(mask["grow_pixels"])])
         replay.extend(["--mask-feather", str(mask["feather_pixels"])])
 
-    lora = metadata.get("lora")
-    if lora is not None:
-        if not isinstance(lora, dict):
-            raise RenderError("render provenance has invalid LoRA settings")
-        replay.extend(["--lora", str(lora["name"])])
-        replay.extend(["--lora-model-strength", str(lora["model_strength"])])
-        replay.extend(["--lora-clip-strength", str(lora["clip_strength"])])
+    loras = metadata.get("loras")
+    if loras is not None:
+        if not isinstance(loras, list) or any(not isinstance(lora, dict) for lora in loras):
+            raise RenderError("render provenance has invalid LoRA stack")
+        presets = [lora.get("preset") for lora in loras]
+        uses_preset_defaults = all(
+            isinstance(preset, str)
+            and lora.get("model_strength") == LORA_PRESETS[preset][1]
+            and lora.get("clip_strength") == LORA_PRESETS[preset][2]
+            for preset, lora in zip(presets, loras, strict=True)
+        )
+        if uses_preset_defaults:
+            for preset in presets:
+                replay.extend(["--lora-preset", preset])
+        elif len(loras) == 1:
+            lora = loras[0]
+            replay.extend(["--lora", str(lora["name"])])
+            replay.extend(["--lora-model-strength", str(lora["model_strength"])])
+            replay.extend(["--lora-clip-strength", str(lora["clip_strength"])])
+        else:
+            raise RenderError("raw multi-LoRA stacks cannot yet be replayed")
+    else:
+        lora = metadata.get("lora")
+        if lora is not None:
+            if not isinstance(lora, dict):
+                raise RenderError("render provenance has invalid LoRA settings")
+            replay.extend(["--lora", str(lora["name"])])
+            replay.extend(["--lora-model-strength", str(lora["model_strength"])])
+            replay.extend(["--lora-clip-strength", str(lora["clip_strength"])])
     return replay
 
 
@@ -1631,12 +1694,12 @@ def main(argv: list[str] | None = None) -> int:
                 cfg=args.cfg,
             )
             inject_filename_prefix(workflow, args.filename_prefix)
-            if args.lora is not None:
+            for lora in args.loras:
                 inject_lora(
                     workflow,
-                    name=args.lora,
-                    model_strength=args.lora_model_strength,
-                    clip_strength=args.lora_clip_strength,
+                    name=lora["name"],
+                    model_strength=lora["model_strength"],
+                    clip_strength=lora["clip_strength"],
                 )
             submitted_workflow_sha256 = sha256_json(workflow)
             prompt_id = submit(args.server, workflow)
@@ -1722,6 +1785,7 @@ def main(argv: list[str] | None = None) -> int:
                         if args.lora is not None
                         else None
                     ),
+                    "loras": args.loras or None,
                     "server": args.server,
                     "filename_prefix": args.filename_prefix,
                     "workflow": str(workflow_source),
