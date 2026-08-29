@@ -315,6 +315,16 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(runs[1][runs[1].index("--lora-model-strength") + 1], "0.2")
         self.assertEqual(runs[2][runs[2].index("--lora-clip-strength") + 1], "0.4")
 
+        artful = cli.parse_control_args([
+            "lora-sweep", "nude portrait", "--lora-preset", "artful-nsfw",
+            "--strengths", "0.3,0.6",
+        ])
+        artful_runs = cli.lora_sweep_arguments(artful)
+        self.assertEqual(
+            [run[run.index("--lora-clip-strength") + 1] for run in artful_runs[1:]],
+            ["0.0", "0.0"],
+        )
+
     def test_lora_sweep_builds_img2img_denoise_strength_matrix(self):
         args = cli.parse_control_args([
             "lora-sweep", "change the outfit", "--lora", "nsfw.safetensors",
