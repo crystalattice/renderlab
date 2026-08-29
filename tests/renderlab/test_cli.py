@@ -315,6 +315,30 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(runs[1][runs[1].index("--lora-model-strength") + 1], "0.2")
         self.assertEqual(runs[2][runs[2].index("--lora-clip-strength") + 1], "0.4")
 
+    def test_lora_sweep_builds_img2img_denoise_strength_matrix(self):
+        args = cli.parse_control_args([
+            "lora-sweep", "change the outfit", "--lora", "nsfw.safetensors",
+            "--input-image", "source.png", "--denoises", "0.3,0.5",
+            "--strengths", "0.25,0.75", "--seed", "456",
+        ])
+        runs = cli.lora_sweep_arguments(args)
+        self.assertEqual(len(runs), 6)
+        self.assertEqual(
+            [run[run.index("--denoise") + 1] for run in runs],
+            ["0.3", "0.3", "0.3", "0.5", "0.5", "0.5"],
+        )
+        for run in runs:
+            self.assertEqual(run[run.index("--input-image") + 1], "source.png")
+            self.assertEqual(run[run.index("--seed") + 1], "456")
+        self.assertIn("LoRAI2I_D0_3_Base", runs[0])
+        self.assertIn("LoRAI2I_D0_5_L0_75", runs[-1])
+
+        defaults = cli.parse_control_args([
+            "lora-sweep", "change the outfit", "--lora", "nsfw.safetensors",
+            "--input-image", "source.png",
+        ])
+        self.assertEqual(defaults.denoises, [0.25, 0.45, 0.65])
+
     def test_lora_injection_routes_z_image_model_and_clip(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
         node_id = cli.inject_lora(
@@ -505,55 +529,10 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["8"]["inputs"]["latent_image"], ["11", 0])
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.35)
 
-    def test_outpaint_uses_native_padding_mask_and_preserves_source_canvas(self):
-        args = cli.parse_args([
-            "continue the rainy street", "--profile", "realvisxl",
-            "--input-image", "source.png", "--outpaint-left", "256",
-            "--outpaint-right", "128", "--outpaint-feather", "48",
-        ])
-        self.assertTrue(args.outpaint)
-        self.assertEqual(args.denoise, 1.0)
-        self.assertEqual(args.workflow, cli.REALVISXL_INPAINT_WORKFLOW)
-
-        workflow = cli.load_workflow(args.workflow)
-        cli.inject_outpaint_parameters(
-            workflow, prompt=args.prompt, seed=123, steps=args.steps,
-            denoise=args.denoise, image="uploaded.png",
-            left=args.outpaint_left, top=args.outpaint_top,
-            right=args.outpaint_right, bottom=args.outpaint_bottom,
-            feather=args.outpaint_feather,
-        )
-        self.assertEqual(workflow["18"]["class_type"], "ImagePadForOutpaint")
-        self.assertEqual(workflow["18"]["inputs"]["left"], 256)
-        self.assertEqual(workflow["18"]["inputs"]["right"], 128)
-        self.assertEqual(workflow["18"]["inputs"]["feathering"], 48)
-        self.assertEqual(workflow["19"]["class_type"], "DifferentialDiffusion")
-        self.assertEqual(workflow["19"]["inputs"]["model"], ["1", 0])
-        self.assertEqual(workflow["8"]["inputs"]["model"], ["19", 0])
-        self.assertEqual(workflow["11"]["inputs"]["pixels"], ["18", 0])
-        self.assertEqual(workflow["11"]["inputs"]["mask"], ["18", 1])
-        self.assertEqual(workflow["17"]["inputs"]["destination"], ["18", 0])
-        self.assertEqual(workflow["17"]["inputs"]["mask"], ["18", 1])
-        self.assertNotIn("12", workflow)
-
-        lora_id = cli.inject_lora(
-            workflow, name="style.safetensors", model_strength=0.5, clip_strength=0.5
-        )
-        self.assertEqual(workflow["19"]["inputs"]["model"], [lora_id, 0])
-        self.assertEqual(workflow["8"]["inputs"]["model"], ["19", 0])
-
-        default_args = cli.parse_args([
-            "continue the rainy street", "--input-image", "source.png",
-            "--outpaint-bottom", "384",
-        ])
-        self.assertEqual(default_args.outpaint_feather, 192)
-
-        with self.assertRaises(SystemExit):
-            cli.parse_args(["extend", "--outpaint-left", "100"])
+    def test_outpaint_is_rejected_without_a_dedicated_model(self):
         with self.assertRaises(SystemExit):
             cli.parse_args([
-                "extend", "--input-image", "source.png", "--mask-image", "mask.png",
-                "--outpaint-left", "128",
+                "extend", "--input-image", "source.png", "--outpaint-left", "256",
             ])
 
     def test_inpaint_defaults_and_parameter_injection(self):
