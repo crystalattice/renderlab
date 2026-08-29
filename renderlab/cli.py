@@ -154,6 +154,8 @@ REALVISXL_REQUIRED_MODEL_CHOICES = (
     ("CheckpointLoaderSimple", "ckpt_name", "RealVisXL_V5.0_fp16.safetensors"),
 )
 
+DEFAULT_OUTPAINT_FEATHER = 192
+
 
 def add_server_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--server", default="http://127.0.0.1:8188")
@@ -406,8 +408,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--outpaint-right", type=int, default=0)
     parser.add_argument("--outpaint-bottom", type=int, default=0)
     parser.add_argument(
-        "--outpaint-feather", type=int, default=40,
-        help="blend width between the source and expanded canvas (default: 40)",
+        "--outpaint-feather", type=int, default=DEFAULT_OUTPAINT_FEATHER,
+        help=(
+            "overlap regenerated inside the source image to hide the old canvas edge "
+            f"(default: {DEFAULT_OUTPAINT_FEATHER})"
+        ),
     )
     parser.add_argument(
         "--denoise",
@@ -546,7 +551,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("outpainting and --mask-image cannot be used together")
     if not 0 <= args.outpaint_feather <= 256:
         parser.error("--outpaint-feather must be between 0 and 256")
-    if not args.outpaint and args.outpaint_feather != 40:
+    if not args.outpaint and args.outpaint_feather != DEFAULT_OUTPAINT_FEATHER:
         parser.error("--outpaint-feather requires an outpaint expansion value")
     if args.outpaint and args.denoise == 0.45:
         args.denoise = 1.0
