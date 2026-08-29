@@ -85,6 +85,38 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(parsed.lora_clip_strength, 0.5)
         self.assertEqual(parsed.server, "http://comfy:8188")
         self.assertRegex(parsed.filename_prefix, r"^RenderLabReplay_[0-9a-f]{12}$")
+        self.assertEqual(parsed.replay_kind, "exact")
+        self.assertEqual(parsed.parent_seed, 271828)
+
+    def test_replay_new_seed_changes_only_seed_and_disables_pixel_check(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output_path = root / "image.png"
+            self.write_binary_png(output_path, [[0]])
+            metadata_path = root / "image.png.json"
+            metadata_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "txt2img", "profile": "realvisxl_v5_fp16",
+                        "effective_prompt": "rainy portrait", "seed": 100,
+                        "steps": 30, "cfg": 7, "width": 1024, "height": 1024,
+                        "output": str(output_path), "negative_prompt": "watermark",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            control = cli.parse_control_args([
+                "replay", str(metadata_path), "--new-seed"
+            ])
+            with patch.object(cli.secrets, "randbits", return_value=200):
+                replay = cli.replay_arguments(control)
+            parsed = cli.parse_args(replay)
+
+        self.assertEqual(parsed.seed, 200)
+        self.assertEqual(parsed.parent_seed, 100)
+        self.assertEqual(parsed.replay_kind, "new-seed")
+        self.assertIsNone(parsed.expected_pixel_sha256)
+        self.assertRegex(parsed.filename_prefix, r"^RenderLabVariant_[0-9a-f]{12}$")
 
     def test_filename_prefix_changes_only_save_nodes(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
