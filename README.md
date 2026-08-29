@@ -145,6 +145,20 @@ python -m renderlab "an elegant fitted black gothic dress with black lace" \
 `--mask-grow` defaults to 6 pixels so the generated region overlaps its boundary rather
 than leaving a hard seam. Source and mask hashes are both recorded in provenance.
 
+To generate the mask automatically, install
+`sam3.1_multiplex_fp16.safetensors` under ComfyUI's checkpoints model path, then describe
+the existing object or body region to select:
+
+```bash
+python -m renderlab mask ./source.png "torso and hips"
+```
+
+The command uses ComfyUI's built-in `SAM3_Detect` node and writes a
+`RenderLabMask_....png` file. It rejects empty, full-frame, grayscale, and image-bearing
+masks; accepted output is strictly black and white, with white pixels editable. Use the
+printed path directly with `--mask-image`. If SAM3 finds nothing, use a simpler noun or
+lower `--threshold` from its default of `0.5`.
+
 Operational commands:
 
 ```bash

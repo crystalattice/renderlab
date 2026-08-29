@@ -2,6 +2,8 @@ import json
 import io
 import tempfile
 import unittest
+import struct
+import zlib
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,6 +11,28 @@ from renderlab import cli
 
 
 class RenderLabCliTests(unittest.TestCase):
+    @staticmethod
+    def write_binary_png(path: Path, rows: list[list[int]]) -> None:
+        height = len(rows)
+        width = len(rows[0])
+        raw = b"".join(
+            b"\x00" + b"".join(bytes((value, value, value)) for value in row)
+            for row in rows
+        )
+
+        def chunk(kind: bytes, value: bytes) -> bytes:
+            return (
+                struct.pack(">I", len(value)) + kind + value
+                + struct.pack(">I", zlib.crc32(kind + value) & 0xFFFFFFFF)
+            )
+
+        path.write_bytes(
+            b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw))
+            + chunk(b"IEND", b"")
+        )
+
     def test_version_prints_renderlab_version(self):
         with patch("sys.stdout") as stdout:
             with self.assertRaises(SystemExit) as raised:
@@ -178,6 +202,71 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["11"]["class_type"], "VAEEncodeForInpaint")
         self.assertEqual(workflow["11"]["inputs"]["grow_mask_by"], 10)
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.65)
+
+    def test_mask_command_defaults_and_parameter_injection(self):
+        args = cli.parse_control_args(["mask", "source.png", "torso and hips"])
+        self.assertEqual(args.threshold, 0.5)
+        self.assertEqual(args.refine_iterations, 2)
+
+        workflow = cli.load_workflow(cli.SAM3_MASK_WORKFLOW)
+        cli.inject_mask_parameters(
+            workflow,
+            image="renderlab/source.png",
+            description="torso and hips",
+            threshold=0.4,
+            refine_iterations=3,
+        )
+        self.assertEqual(workflow["2"]["inputs"]["image"], "renderlab/source.png")
+        self.assertEqual(workflow["3"]["inputs"]["text"], "torso and hips")
+        self.assertEqual(workflow["4"]["class_type"], "SAM3_Detect")
+        self.assertEqual(workflow["4"]["inputs"]["threshold"], 0.4)
+        self.assertEqual(workflow["4"]["inputs"]["refine_iterations"], 3)
+        self.assertEqual(workflow["5"]["class_type"], "MaskToImage")
+
+    def test_mask_command_writes_validated_binary_mask_metadata(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            root = Path(temporary_dir)
+            source = root / "source.png"
+            source.write_bytes(b"source")
+            mask = root / "RenderLabMask_00001_.png"
+            self.write_binary_png(mask, [[0, 255], [0, 255]])
+            history = {
+                "outputs": {
+                    "6": {
+                        "images": [
+                            {"filename": mask.name, "subfolder": "", "type": "output"}
+                        ]
+                    }
+                }
+            }
+            with (
+                patch.object(cli, "upload_image", return_value="renderlab/source.png"),
+                patch.object(cli, "submit", return_value="prompt-mask") as submit,
+                patch.object(cli, "wait_for_history", return_value=history),
+            ):
+                result = cli.main(
+                    [
+                        "mask", str(source), "torso and hips",
+                        "--threshold", "0.4", "--output-dir", str(root),
+                    ]
+                )
+
+            self.assertEqual(result, 0)
+            workflow = submit.call_args.args[1]
+            self.assertEqual(workflow["3"]["inputs"]["text"], "torso and hips")
+            metadata = json.loads(Path(str(mask) + ".json").read_text())
+            self.assertEqual(metadata["mode"], "mask")
+            self.assertEqual(metadata["model"], "sam3.1_multiplex_fp16.safetensors")
+            self.assertEqual(metadata["mask"]["white_pixels"], 2)
+            self.assertEqual(metadata["mask"]["black_pixels"], 2)
+            self.assertTrue(metadata["mask"]["white_is_editable"])
+
+    def test_binary_mask_validation_rejects_empty_mask(self):
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            mask = Path(temporary_dir) / "empty.png"
+            self.write_binary_png(mask, [[0, 0], [0, 0]])
+            with self.assertRaisesRegex(cli.RenderError, "found no matching region"):
+                cli.validate_binary_mask_png(mask)
 
     def test_upload_image_posts_multipart_and_returns_comfy_name(self):
         with tempfile.TemporaryDirectory() as temporary_dir:

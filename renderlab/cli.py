@@ -4,9 +4,11 @@ import argparse
 import hashlib
 import json
 import secrets
+import struct
 import sys
 import time
 import uuid
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -25,6 +27,7 @@ DEFAULT_INPAINT_WORKFLOW = PACKAGE_DIR / "workflows" / "z_image_turbo_int8_inpai
 REALVISXL_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5.json"
 REALVISXL_IMG2IMG_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5_img2img.json"
 REALVISXL_INPAINT_WORKFLOW = PACKAGE_DIR / "workflows" / "realvisxl_v5_inpaint.json"
+SAM3_MASK_WORKFLOW = PACKAGE_DIR / "workflows" / "sam3_mask.json"
 DEFAULT_OUTPUT_DIR = REPO_DIR / "output"
 MAX_SEED = (1 << 64) - 1
 SUPPORTED_INPUT_IMAGE_SUFFIXES = {".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tif", ".tiff", ".webp"}
@@ -63,7 +66,7 @@ class RenderError(RuntimeError):
     pass
 
 
-CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras", "doctor"}
+CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras", "doctor", "mask"}
 
 MODEL_NODE_INPUTS = (
     ("diffusion_models", "UNETLoader", "unet_name"),
@@ -148,9 +151,33 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     )
     add_server_argument(doctor_parser)
 
+    mask_parser = subparsers.add_parser(
+        "mask", help="create a binary edit mask with ComfyUI's native SAM3"
+    )
+    mask_parser.add_argument("input_image", type=Path, help="image to segment")
+    mask_parser.add_argument("description", help="object or region to make editable")
+    mask_parser.add_argument("--threshold", type=float, default=0.5)
+    mask_parser.add_argument("--refine-iterations", type=int, default=2)
+    mask_parser.add_argument("--timeout", type=float, default=600.0)
+    mask_parser.add_argument("--poll-interval", type=float, default=1.0)
+    mask_parser.add_argument(
+        "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR,
+        help="filesystem path matching the ComfyUI output directory",
+    )
+    add_server_argument(mask_parser)
+
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
         parser.error("--limit must be greater than zero")
+    if args.command == "mask":
+        if not args.description.strip():
+            parser.error("description must not be empty")
+        if not 0.0 <= args.threshold <= 1.0:
+            parser.error("--threshold must be between 0.0 and 1.0")
+        if not 0 <= args.refine_iterations <= 5:
+            parser.error("--refine-iterations must be between 0 and 5")
+        if args.timeout <= 0 or args.poll_interval <= 0:
+            parser.error("--timeout and --poll-interval must be greater than zero")
     args.server = validate_server(parser, args.server)
     return args
 
@@ -437,6 +464,19 @@ def inject_inpaint_parameters(
         raise RenderError(f"workflow does not match the RenderLab inpaint node contract: {exc}") from exc
 
 
+def inject_mask_parameters(
+    workflow: dict[str, Any], *, image: str, description: str,
+    threshold: float, refine_iterations: int
+) -> None:
+    try:
+        workflow["2"]["inputs"]["image"] = image
+        workflow["3"]["inputs"]["text"] = description
+        workflow["4"]["inputs"]["threshold"] = threshold
+        workflow["4"]["inputs"]["refine_iterations"] = refine_iterations
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"workflow does not match the RenderLab SAM3 mask contract: {exc}") from exc
+
+
 def upload_image(server: str, path: Path) -> str:
     source = path.expanduser().resolve()
     if not source.is_file():
@@ -560,6 +600,143 @@ def local_output_path(output_dir: Path, image: dict[str, str]) -> Path:
     return path
 
 
+def validate_binary_mask_png(path: Path) -> dict[str, int]:
+    """Validate the simple 8-bit PNG emitted by ComfyUI's MaskToImage node."""
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        raise RenderError(f"cannot read generated mask {path}: {exc}") from exc
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise RenderError(f"generated mask is not a PNG: {path}")
+
+    offset = 8
+    width = height = bit_depth = color_type = interlace = None
+    compressed = bytearray()
+    while offset + 12 <= len(data):
+        length = struct.unpack(">I", data[offset:offset + 4])[0]
+        chunk_type = data[offset + 4:offset + 8]
+        chunk_data = data[offset + 8:offset + 8 + length]
+        offset += 12 + length
+        if chunk_type == b"IHDR" and len(chunk_data) == 13:
+            width, height, bit_depth, color_type, _, _, interlace = struct.unpack(
+                ">IIBBBBB", chunk_data
+            )
+        elif chunk_type == b"IDAT":
+            compressed.extend(chunk_data)
+        elif chunk_type == b"IEND":
+            break
+
+    channels = {0: 1, 2: 3, 4: 2, 6: 4}.get(color_type)
+    if not width or not height or bit_depth != 8 or channels is None or interlace != 0:
+        raise RenderError("generated mask PNG uses an unsupported pixel format")
+    try:
+        raw = zlib.decompress(compressed)
+    except zlib.error as exc:
+        raise RenderError(f"generated mask PNG is corrupt: {exc}") from exc
+
+    stride = width * channels
+    expected = height * (stride + 1)
+    if len(raw) != expected:
+        raise RenderError("generated mask PNG has invalid scanline data")
+    previous = bytearray(stride)
+    white = black = 0
+    for row_index in range(height):
+        start = row_index * (stride + 1)
+        filter_type = raw[start]
+        encoded = raw[start + 1:start + 1 + stride]
+        row = bytearray(stride)
+        for index, value in enumerate(encoded):
+            left = row[index - channels] if index >= channels else 0
+            up = previous[index]
+            upper_left = previous[index - channels] if index >= channels else 0
+            if filter_type == 0:
+                decoded = value
+            elif filter_type == 1:
+                decoded = value + left
+            elif filter_type == 2:
+                decoded = value + up
+            elif filter_type == 3:
+                decoded = value + ((left + up) // 2)
+            elif filter_type == 4:
+                predictor = left + up - upper_left
+                distances = (
+                    abs(predictor - left), abs(predictor - up), abs(predictor - upper_left)
+                )
+                decoded = value + (left if distances[0] <= min(distances[1:]) else
+                                   up if distances[1] <= distances[2] else upper_left)
+            else:
+                raise RenderError(f"generated mask PNG uses invalid filter {filter_type}")
+            row[index] = decoded & 0xFF
+        previous = row
+        for pixel_start in range(0, stride, channels):
+            if color_type in {0, 4}:
+                rgb = row[pixel_start:pixel_start + 1]
+            else:
+                rgb = row[pixel_start:pixel_start + 3]
+            value = rgb[0]
+            if any(channel != value for channel in rgb) or value not in {0, 255}:
+                raise RenderError("generated SAM3 mask is not strictly black and white")
+            if value == 255:
+                white += 1
+            else:
+                black += 1
+    if white == 0:
+        raise RenderError(
+            "SAM3 found no matching region; try a simpler description or lower --threshold"
+        )
+    if black == 0:
+        raise RenderError("SAM3 selected the entire image; use a more specific description")
+    return {"width": width, "height": height, "white_pixels": white, "black_pixels": black}
+
+
+def run_mask(args: argparse.Namespace) -> int:
+    source = args.input_image.expanduser().resolve()
+    source_sha256 = sha256_file(source)
+    uploaded = upload_image(args.server, source)
+    workflow = load_workflow(SAM3_MASK_WORKFLOW)
+    inject_mask_parameters(
+        workflow,
+        image=uploaded,
+        description=args.description.strip(),
+        threshold=args.threshold,
+        refine_iterations=args.refine_iterations,
+    )
+    prompt_id = submit(args.server, workflow)
+    print(f"prompt_id: {prompt_id}", file=sys.stderr)
+    history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
+    output_path = local_output_path(args.output_dir, find_saved_image(history))
+    stats = validate_binary_mask_png(output_path)
+    metadata_path = write_metadata(
+        output_path,
+        {
+            "schema_version": 2,
+            "renderlab_version": __version__,
+            "prompt_id": prompt_id,
+            "mode": "mask",
+            "description": args.description.strip(),
+            "threshold": args.threshold,
+            "refine_iterations": args.refine_iterations,
+            "model": "sam3.1_multiplex_fp16.safetensors",
+            "source_image": {
+                "path": str(source), "sha256": source_sha256, "comfy_input": uploaded
+            },
+            "mask": {**stats, "white_is_editable": True},
+            "output": str(output_path),
+            "output_sha256": sha256_file(output_path),
+            "submitted_workflow": workflow,
+            "submitted_workflow_sha256": sha256_json(workflow),
+        },
+    )
+    print(output_path)
+    print(f"metadata: {metadata_path}", file=sys.stderr)
+    print(
+        f"editable pixels: {stats['white_pixels']} / "
+        f"{stats['white_pixels'] + stats['black_pixels']}",
+        file=sys.stderr,
+    )
+    return 0
+
+
 def write_metadata(path: Path, metadata: dict[str, Any]) -> Path:
     if not path.is_file():
         raise RenderError(
@@ -633,6 +810,9 @@ def run_doctor(server: str, profile: str = "z-image") -> int:
 
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "mask":
+            return run_mask(args)
+
         if args.command == "doctor":
             return run_doctor(args.server, args.profile)
 
