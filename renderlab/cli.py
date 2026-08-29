@@ -123,6 +123,7 @@ REQUIRED_WORKFLOW_NODES = (
     "ImageBlur",
     "ImageToMask",
     "ImageCompositeMasked",
+    "ImagePadForOutpaint",
 )
 
 REQUIRED_MODEL_CHOICES = (
@@ -146,6 +147,7 @@ REALVISXL_REQUIRED_NODES = (
     "ImageBlur",
     "ImageToMask",
     "ImageCompositeMasked",
+    "ImagePadForOutpaint",
 )
 
 REALVISXL_REQUIRED_MODEL_CHOICES = (
@@ -399,6 +401,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=6,
         help="blur the final mask edge by this many pixels when compositing (default: 6)",
     )
+    parser.add_argument("--outpaint-left", type=int, default=0)
+    parser.add_argument("--outpaint-top", type=int, default=0)
+    parser.add_argument("--outpaint-right", type=int, default=0)
+    parser.add_argument("--outpaint-bottom", type=int, default=0)
+    parser.add_argument(
+        "--outpaint-feather", type=int, default=40,
+        help="blend width between the source and expanded canvas (default: 40)",
+    )
     parser.add_argument(
         "--denoise",
         type=float,
@@ -524,6 +534,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--denoise requires --input-image")
     if args.mask_image is not None and args.input_image is None:
         parser.error("--mask-image requires --input-image")
+    outpaint_values = (
+        args.outpaint_left, args.outpaint_top, args.outpaint_right, args.outpaint_bottom
+    )
+    args.outpaint = any(outpaint_values)
+    if any(value < 0 or value % 8 for value in outpaint_values):
+        parser.error("outpaint expansion values must be non-negative multiples of 8")
+    if args.outpaint and args.input_image is None:
+        parser.error("outpainting requires --input-image")
+    if args.outpaint and args.mask_image is not None:
+        parser.error("outpainting and --mask-image cannot be used together")
+    if not 0 <= args.outpaint_feather <= 256:
+        parser.error("--outpaint-feather must be between 0 and 256")
+    if not args.outpaint and args.outpaint_feather != 40:
+        parser.error("--outpaint-feather requires an outpaint expansion value")
+    if args.outpaint and args.denoise == 0.45:
+        args.denoise = 1.0
     if args.mask_grow < 0 or args.mask_grow > 64:
         parser.error("--mask-grow must be between 0 and 64")
     if args.mask_image is None and args.mask_grow != 6:
@@ -540,7 +566,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
     if args.workflow is None:
-        if args.mask_image:
+        if args.mask_image or args.outpaint:
             args.workflow = PROFILES[args.profile]["inpaint_workflow"]
         elif args.input_image:
             args.workflow = PROFILES[args.profile]["img2img_workflow"]
@@ -845,6 +871,38 @@ def inject_inpaint_parameters(
         workflow["15"]["inputs"]["blur_radius"] = mask_feather
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab inpaint node contract: {exc}") from exc
+
+
+def inject_outpaint_parameters(
+    workflow: dict[str, Any], *, prompt: str, seed: int, steps: int, denoise: float,
+    image: str, left: int, top: int, right: int, bottom: int, feather: int
+) -> None:
+    """Convert the inpaint graph to native canvas expansion around one source image."""
+    inject_inpaint_parameters(
+        workflow,
+        prompt=prompt,
+        seed=seed,
+        steps=steps,
+        denoise=denoise,
+        image=image,
+        mask="unused",
+        mask_grow=0,
+        mask_feather=1,
+    )
+    workflow["18"] = {
+        "class_type": "ImagePadForOutpaint",
+        "inputs": {
+            "image": ["6", 0], "left": left, "top": top,
+            "right": right, "bottom": bottom, "feathering": feather,
+        },
+    }
+    workflow["11"]["inputs"]["pixels"] = ["18", 0]
+    workflow["11"]["inputs"]["mask"] = ["18", 1]
+    workflow["17"]["inputs"]["destination"] = ["18", 0]
+    workflow["17"]["inputs"]["mask"] = ["18", 1]
+    workflow.pop("12", None)
+    for node_id in ("13", "14", "15", "16"):
+        workflow.pop(node_id, None)
 
 
 def inject_mask_parameters(
@@ -1264,7 +1322,7 @@ def load_render_metadata(path: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError) as exc:
         raise RenderError(f"cannot load render metadata {source}: {exc}") from exc
     if not isinstance(metadata, dict) or metadata.get("mode") not in {
-        "txt2img", "img2img", "inpaint"
+        "txt2img", "img2img", "inpaint", "outpaint"
     }:
         raise RenderError(f"{source} is not RenderLab render provenance")
     return metadata
@@ -1361,6 +1419,14 @@ def replay_arguments(args: argparse.Namespace) -> list[str]:
         replay.extend(["--mask-image", replay_asset(mask, "mask image")])
         replay.extend(["--mask-grow", str(mask["grow_pixels"])])
         replay.extend(["--mask-feather", str(mask["feather_pixels"])])
+
+    if mode == "outpaint":
+        outpaint = metadata.get("outpaint")
+        if not isinstance(outpaint, dict):
+            raise RenderError("outpaint provenance is missing expansion settings")
+        for side in ("left", "top", "right", "bottom"):
+            replay.extend([f"--outpaint-{side}", str(outpaint[side])])
+        replay.extend(["--outpaint-feather", str(outpaint["feather"])])
 
     loras = metadata.get("loras")
     if loras is not None:
@@ -1680,7 +1746,21 @@ def main(argv: list[str] | None = None) -> int:
         ):
             started_at = datetime.now(timezone.utc)
             workflow = load_workflow(args.workflow)
-            if uploaded_mask is not None:
+            if args.outpaint:
+                inject_outpaint_parameters(
+                    workflow,
+                    prompt=effective_prompt,
+                    seed=seed,
+                    steps=args.steps,
+                    denoise=args.denoise,
+                    image=uploaded_image,
+                    left=args.outpaint_left,
+                    top=args.outpaint_top,
+                    right=args.outpaint_right,
+                    bottom=args.outpaint_bottom,
+                    feather=args.outpaint_feather,
+                )
+            elif uploaded_mask is not None:
                 inject_inpaint_parameters(
                     workflow,
                     prompt=effective_prompt,
@@ -1774,7 +1854,11 @@ def main(argv: list[str] | None = None) -> int:
                         else None
                     ),
                     "seed": seed,
-                    "mode": "inpaint" if mask_source else ("img2img" if input_source else "txt2img"),
+                    "mode": (
+                        "outpaint" if args.outpaint else
+                        "inpaint" if mask_source else
+                        "img2img" if input_source else "txt2img"
+                    ),
                     "batch_index": batch_index,
                     "batch_count": render_count,
                     "width": None if input_source else args.width,
@@ -1800,6 +1884,17 @@ def main(argv: list[str] | None = None) -> int:
                             "feather_pixels": args.mask_feather,
                         }
                         if mask_source
+                        else None
+                    ),
+                    "outpaint": (
+                        {
+                            "left": args.outpaint_left,
+                            "top": args.outpaint_top,
+                            "right": args.outpaint_right,
+                            "bottom": args.outpaint_bottom,
+                            "feather": args.outpaint_feather,
+                        }
+                        if args.outpaint
                         else None
                     ),
                     "cfg": args.cfg,
