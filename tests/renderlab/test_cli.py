@@ -39,7 +39,115 @@ class RenderLabCliTests(unittest.TestCase):
                 cli.parse_args(["--version"])
 
         self.assertEqual(raised.exception.code, 0)
-        stdout.write.assert_called_once_with("renderlab 0.6.0\n")
+        stdout.write.assert_called_once_with("renderlab 0.7.0\n")
+
+    def test_replay_txt2img_restores_effective_render_settings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            metadata_path = Path(directory) / "image.png.json"
+            metadata_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "mode": "txt2img",
+                        "profile": "realvisxl_v5_fp16",
+                        "effective_prompt": "a red bowl",
+                        "negative_prompt": "bananas, yellow fruit",
+                        "seed": 271828,
+                        "steps": 30,
+                        "cfg": 7,
+                        "width": 1024,
+                        "height": 1024,
+                        "lora": {
+                            "name": "style.safetensors",
+                            "model_strength": 0.75,
+                            "clip_strength": 0.5,
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            control = cli.parse_control_args(
+                ["replay", str(metadata_path), "--server", "http://comfy:8188"]
+            )
+            replay = cli.replay_arguments(control)
+
+        parsed = cli.parse_args(replay)
+        self.assertEqual(parsed.prompt, "a red bowl")
+        self.assertEqual(parsed.profile, "realvisxl")
+        self.assertEqual(parsed.seed, 271828)
+        self.assertEqual(parsed.negative_prompt, "bananas, yellow fruit")
+        self.assertEqual((parsed.width, parsed.height), (1024, 1024))
+        self.assertEqual(parsed.lora, "style.safetensors")
+        self.assertEqual(parsed.lora_model_strength, 0.75)
+        self.assertEqual(parsed.lora_clip_strength, 0.5)
+        self.assertEqual(parsed.server, "http://comfy:8188")
+
+    def test_replay_inpaint_restores_verified_assets_and_mask_controls(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.png"
+            mask = root / "mask.png"
+            source.write_bytes(b"source")
+            mask.write_bytes(b"mask")
+            metadata_path = root / "edit.png.json"
+            metadata_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "inpaint",
+                        "profile": "realvisxl_v5_fp16",
+                        "effective_prompt": "black lace",
+                        "negative_prompt": "",
+                        "seed": 42,
+                        "steps": 30,
+                        "cfg": 7,
+                        "denoise": 0.75,
+                        "source_image": {
+                            "path": str(source), "sha256": cli.sha256_file(source)
+                        },
+                        "mask_image": {
+                            "path": str(mask), "sha256": cli.sha256_file(mask),
+                            "grow_pixels": 0, "feather_pixels": 1,
+                        },
+                        "lora": None,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            replay = cli.replay_arguments(cli.parse_control_args(["replay", str(metadata_path)]))
+            parsed = cli.parse_args(replay)
+
+        self.assertEqual(parsed.input_image, source.resolve())
+        self.assertEqual(parsed.mask_image, mask.resolve())
+        self.assertEqual(parsed.denoise, 0.75)
+        self.assertEqual(parsed.mask_grow, 0)
+        self.assertEqual(parsed.mask_feather, 1)
+
+    def test_replay_rejects_changed_source_asset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.png"
+            source.write_bytes(b"changed")
+            metadata_path = root / "edit.png.json"
+            metadata_path.write_text(
+                json.dumps(
+                    {
+                        "mode": "img2img", "profile": "realvisxl_v5_fp16",
+                        "effective_prompt": "edit", "seed": 1, "steps": 30, "cfg": 7,
+                        "denoise": 0.5,
+                        "source_image": {"path": str(source), "sha256": "0" * 64},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(cli.RenderError, "source image hash changed"):
+                cli.replay_arguments(cli.parse_control_args(["replay", str(metadata_path)]))
+
+    def test_replay_rejects_mask_provenance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            metadata_path = Path(directory) / "mask.png.json"
+            metadata_path.write_text(json.dumps({"mode": "mask"}), encoding="utf-8")
+            with self.assertRaisesRegex(cli.RenderError, "not RenderLab render provenance"):
+                cli.replay_arguments(cli.parse_control_args(["replay", str(metadata_path)]))
 
     def test_profile_cfg_defaults_and_validation(self):
         self.assertEqual(cli.parse_args(["fox"]).cfg, 1)
@@ -239,7 +347,7 @@ class RenderLabCliTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             metadata = json.loads(Path(str(image_path) + ".json").read_text())
-            self.assertEqual(metadata["renderlab_version"], "0.6.0")
+            self.assertEqual(metadata["renderlab_version"], "0.7.0")
             self.assertEqual(metadata["profile"], "realvisxl_v5_fp16")
             self.assertEqual(
                 metadata["models"],
@@ -577,7 +685,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
             self.assertEqual(metadata["schema_version"], 2)
-            self.assertEqual(metadata["renderlab_version"], "0.6.0")
+            self.assertEqual(metadata["renderlab_version"], "0.7.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
             self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())

@@ -211,6 +211,19 @@ python -m renderlab loras
 Every output receives an adjacent JSON provenance sidecar containing the resolved seed,
 effective workflow, hashes, model filenames, timing, and batch identity.
 
+Replay any completed render from that sidecar. RenderLab restores the effective prompt,
+seed, profile, dimensions, steps, CFG, negative prompt, LoRA settings, and image-edit
+controls instead of asking you to reconstruct the command by hand:
+
+```bash
+python -m renderlab replay ./output/RenderLab_00049_.png.json
+```
+
+For img2img and inpainting, replay verifies the recorded source and mask SHA-256 hashes
+before submitting anything. A changed or missing input stops the replay rather than
+quietly producing a different experiment. `--server`, `--output-dir`, `--timeout`, and
+`--poll-interval` may be supplied after the sidecar path for a different runtime location.
+
 For semantic variation rather than seed-only variation, point RenderLab at a local
 OpenAI-compatible prompt model (for example, llama.cpp server) and request variations:
 

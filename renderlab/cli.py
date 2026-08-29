@@ -66,7 +66,7 @@ class RenderError(RuntimeError):
     pass
 
 
-CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras", "doctor", "mask"}
+CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras", "doctor", "mask", "replay"}
 
 MODEL_NODE_INPUTS = (
     ("diffusion_models", "UNETLoader", "unet_name"),
@@ -188,9 +188,24 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     )
     add_server_argument(mask_parser)
 
+    replay_parser = subparsers.add_parser(
+        "replay", help="rerun a render from its provenance sidecar"
+    )
+    replay_parser.add_argument("metadata", type=Path, help="RenderLab output .json sidecar")
+    replay_parser.add_argument("--timeout", type=float, default=600.0)
+    replay_parser.add_argument("--poll-interval", type=float, default=1.0)
+    replay_parser.add_argument(
+        "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR,
+        help="filesystem path matching the ComfyUI output directory",
+    )
+    add_server_argument(replay_parser)
+
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
         parser.error("--limit must be greater than zero")
+    if args.command in {"mask", "replay"}:
+        if args.timeout <= 0 or args.poll_interval <= 0:
+            parser.error("--timeout and --poll-interval must be greater than zero")
     if args.command == "mask":
         if not args.description.strip():
             parser.error("description must not be empty")
@@ -198,8 +213,6 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
             parser.error("--threshold must be between 0.0 and 1.0")
         if not 0 <= args.refine_iterations <= 5:
             parser.error("--refine-iterations must be between 0 and 5")
-        if args.timeout <= 0 or args.poll_interval <= 0:
-            parser.error("--timeout and --poll-interval must be greater than zero")
     args.server = validate_server(parser, args.server)
     return args
 
@@ -1026,6 +1039,98 @@ def write_metadata(path: Path, metadata: dict[str, Any]) -> Path:
     return metadata_path
 
 
+def load_render_metadata(path: Path) -> dict[str, Any]:
+    source = path.expanduser().resolve()
+    try:
+        metadata = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RenderError(f"cannot load render metadata {source}: {exc}") from exc
+    if not isinstance(metadata, dict) or metadata.get("mode") not in {
+        "txt2img", "img2img", "inpaint"
+    }:
+        raise RenderError(f"{source} is not RenderLab render provenance")
+    return metadata
+
+
+def replay_asset(record: dict[str, Any], label: str) -> str:
+    try:
+        path = Path(record["path"]).expanduser().resolve()
+        expected_hash = record["sha256"]
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"{label} provenance is missing {exc}") from exc
+    actual_hash = sha256_file(path)
+    if actual_hash != expected_hash:
+        raise RenderError(
+            f"{label} hash changed: expected {expected_hash}, found {actual_hash} at {path}"
+        )
+    return str(path)
+
+
+def replay_arguments(args: argparse.Namespace) -> list[str]:
+    """Translate one render sidecar back into normal render CLI arguments."""
+    metadata = load_render_metadata(args.metadata)
+    profile_names = {
+        values["profile_name"]: name for name, values in PROFILES.items()
+    }
+    try:
+        profile = profile_names[metadata["profile"]]
+        prompt = metadata["effective_prompt"]
+        seed = metadata["seed"]
+        steps = metadata["steps"]
+        cfg = metadata["cfg"]
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"render provenance is missing replay field {exc}") from exc
+    if not isinstance(prompt, str) or not prompt:
+        raise RenderError("render provenance has an invalid effective prompt")
+
+    replay = [
+        prompt,
+        "--profile", profile,
+        "--seed", str(seed),
+        "--steps", str(steps),
+        "--cfg", str(cfg),
+        "--server", args.server,
+        "--timeout", str(args.timeout),
+        "--poll-interval", str(args.poll_interval),
+        "--output-dir", str(args.output_dir),
+    ]
+    if metadata.get("negative_prompt") is not None:
+        replay.extend(["--negative-prompt", str(metadata["negative_prompt"])])
+
+    mode = metadata["mode"]
+    if mode == "txt2img":
+        try:
+            replay.extend([
+                "--width", str(metadata["width"]),
+                "--height", str(metadata["height"]),
+            ])
+        except KeyError as exc:
+            raise RenderError(f"render provenance is missing replay field {exc}") from exc
+    else:
+        source = metadata.get("source_image")
+        if not isinstance(source, dict):
+            raise RenderError("image-edit provenance is missing source_image")
+        replay.extend(["--input-image", replay_asset(source, "source image")])
+        replay.extend(["--denoise", str(metadata["denoise"])])
+
+    if mode == "inpaint":
+        mask = metadata.get("mask_image")
+        if not isinstance(mask, dict):
+            raise RenderError("inpaint provenance is missing mask_image")
+        replay.extend(["--mask-image", replay_asset(mask, "mask image")])
+        replay.extend(["--mask-grow", str(mask["grow_pixels"])])
+        replay.extend(["--mask-feather", str(mask["feather_pixels"])])
+
+    lora = metadata.get("lora")
+    if lora is not None:
+        if not isinstance(lora, dict):
+            raise RenderError("render provenance has invalid LoRA settings")
+        replay.extend(["--lora", str(lora["name"])])
+        replay.extend(["--lora-model-strength", str(lora["model_strength"])])
+        replay.extend(["--lora-clip-strength", str(lora["clip_strength"])])
+    return replay
+
+
 def discover_node_choices(server: str, node_name: str, input_name: str) -> list[str]:
     result = request_json("GET", f"{server}/object_info/{quote(node_name, safe='')}")
     try:
@@ -1086,6 +1191,9 @@ def run_doctor(server: str, profile: str = "z-image") -> int:
 
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "replay":
+            return main(replay_arguments(args))
+
         if args.command == "mask":
             return run_mask(args)
 
