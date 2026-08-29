@@ -202,7 +202,11 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     sweep_lora.add_argument("--lora-preset", choices=sorted(LORA_PRESETS))
     sweep_parser.add_argument(
         "--strengths", default="0.25,0.5,0.75,1.0",
-        help="comma-separated model and CLIP strengths (default: 0.25,0.5,0.75,1.0)",
+        help="comma-separated model strengths (default: 0.25,0.5,0.75,1.0)",
+    )
+    sweep_parser.add_argument(
+        "--clip-strength", type=float, default=None,
+        help="fixed CLIP strength; presets use their tested value, otherwise model strength",
     )
     sweep_parser.add_argument("--seed", type=int, help="fixed seed; one is generated when omitted")
     sweep_parser.add_argument("--profile", choices=sorted(PROFILES), default="realvisxl")
@@ -312,6 +316,8 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
             parser.error("--strengths must be comma-separated numbers")
         if not args.strengths or any(not -10.0 <= value <= 10.0 for value in args.strengths):
             parser.error("--strengths values must be between -10.0 and 10.0")
+        if args.clip_strength is not None and not -10.0 <= args.clip_strength <= 10.0:
+            parser.error("--clip-strength must be between -10.0 and 10.0")
         if args.denoises is not None and args.input_image is None:
             parser.error("--denoises requires --input-image")
         denoises = args.denoises
@@ -1651,8 +1657,11 @@ def run_video(args: argparse.Namespace) -> int:
 def lora_sweep_arguments(args: argparse.Namespace) -> list[list[str]]:
     seed = args.seed if args.seed is not None else secrets.randbits(64)
     lora_name = args.lora
+    fixed_clip_strength = args.clip_strength
     if args.lora_preset is not None:
         lora_name = LORA_PRESETS[args.lora_preset][0]
+        if fixed_clip_strength is None:
+            fixed_clip_strength = LORA_PRESETS[args.lora_preset][2]
     common = [
         args.prompt,
         "--profile", args.profile,
@@ -1685,10 +1694,11 @@ def lora_sweep_arguments(args: argparse.Namespace) -> list[list[str]]:
         runs.append(run_common + ["--filename-prefix", f"{prefix}_Base"])
         for strength in args.strengths:
             label = str(strength).replace("-", "neg").replace(".", "_")
+            clip_strength = strength if fixed_clip_strength is None else fixed_clip_strength
             runs.append(run_common + [
                 "--lora", lora_name,
                 "--lora-model-strength", str(strength),
-                "--lora-clip-strength", str(strength),
+                "--lora-clip-strength", str(clip_strength),
                 "--filename-prefix", f"{prefix}_L{label}",
             ])
     return runs
