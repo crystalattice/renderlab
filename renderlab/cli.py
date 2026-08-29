@@ -222,6 +222,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--steps", type=int)
     parser.add_argument(
+        "--cfg",
+        type=float,
+        help="classifier-free guidance strength (profile default when omitted)",
+    )
+    parser.add_argument(
+        "--negative-prompt",
+        help="replace the profile's negative prompt; pass an empty string to clear it",
+    )
+    parser.add_argument(
         "--lora",
         help="LoRA filename visible to ComfyUI; use `renderlab loras` to list choices",
     )
@@ -298,12 +307,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
     if args.steps is None:
         args.steps = PROFILES[args.profile]["steps"]
+    if args.cfg is None:
+        args.cfg = PROFILES[args.profile]["cfg"]
 
     if args.seed is not None and not 0 <= args.seed <= MAX_SEED:
         parser.error(f"--seed must be between 0 and {MAX_SEED}")
     for name in ("width", "height", "steps", "count"):
         if getattr(args, name) <= 0:
             parser.error(f"--{name.replace('_', '-')} must be greater than zero")
+    if not 0.0 <= args.cfg <= 100.0:
+        parser.error("--cfg must be between 0.0 and 100.0")
+    if args.negative_prompt and args.cfg <= 1.0:
+        parser.error("a non-empty --negative-prompt requires --cfg greater than 1.0")
     if args.variations is not None:
         if args.variations <= 0:
             parser.error("--variations must be greater than zero")
@@ -488,6 +503,44 @@ def inject_parameters(
         workflow["8"]["inputs"]["steps"] = steps
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab v1 node contract: {exc}") from exc
+
+
+def inject_generation_controls(
+    workflow: dict[str, Any], *, negative_prompt: str | None, cfg: float
+) -> str | None:
+    """Apply shared guidance controls and return the effective negative prompt."""
+    try:
+        workflow["8"]["inputs"]["cfg"] = cfg
+        negative_node = workflow["5"]
+        if negative_prompt is not None:
+            if negative_node["class_type"] == "ConditioningZeroOut":
+                negative_node.clear()
+                negative_node.update(
+                    {
+                        "class_type": "CLIPTextEncode",
+                        "inputs": {
+                            "text": negative_prompt,
+                            "clip": list(workflow["4"]["inputs"]["clip"]),
+                        },
+                    }
+                )
+            elif negative_node["class_type"] == "CLIPTextEncode":
+                negative_node["inputs"]["text"] = negative_prompt
+            else:
+                raise RenderError(
+                    "workflow negative node is not CLIPTextEncode or ConditioningZeroOut"
+                )
+        if negative_node["class_type"] == "CLIPTextEncode":
+            return str(negative_node["inputs"]["text"])
+        if negative_node["class_type"] == "ConditioningZeroOut":
+            return None
+        raise RenderError("workflow has an unsupported negative conditioning node")
+    except RenderError:
+        raise
+    except (KeyError, TypeError, ValueError) as exc:
+        raise RenderError(
+            f"workflow does not match the RenderLab guidance-control contract: {exc}"
+        ) from exc
 
 
 def inject_lora(
@@ -1141,6 +1194,11 @@ def main(argv: list[str] | None = None) -> int:
                     height=args.height,
                     steps=args.steps,
                 )
+            effective_negative_prompt = inject_generation_controls(
+                workflow,
+                negative_prompt=args.negative_prompt,
+                cfg=args.cfg,
+            )
             if args.lora is not None:
                 inject_lora(
                     workflow,
@@ -1166,6 +1224,7 @@ def main(argv: list[str] | None = None) -> int:
                     "intent": args.prompt,
                     "prompt": effective_prompt,
                     "effective_prompt": effective_prompt,
+                    "negative_prompt": effective_negative_prompt,
                     "prompt_expander": (
                         {
                             "server": args.prompt_server,
@@ -1206,7 +1265,7 @@ def main(argv: list[str] | None = None) -> int:
                         if mask_source
                         else None
                     ),
-                    "cfg": PROFILES[args.profile]["cfg"],
+                    "cfg": args.cfg,
                     "sampler": PROFILES[args.profile]["sampler"],
                     "scheduler": PROFILES[args.profile]["scheduler"],
                     "profile": PROFILES[args.profile]["profile_name"],

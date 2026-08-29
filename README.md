@@ -109,6 +109,21 @@ scheduler. Z-Image remains the default profile. `--input-image` and masked inpai
 use the selected profile, so the same v2 editing commands work with
 `--profile realvisxl`.
 
+Override classifier-free guidance and the profile's negative prompt explicitly:
+
+```bash
+python -m renderlab "studio photograph of a red convertible" \
+  --profile realvisxl \
+  --cfg 6.5 \
+  --negative-prompt "people, text, watermark, distorted wheels"
+```
+
+RealVisXL has a built-in anatomy-quality negative prompt when the option is omitted;
+`--negative-prompt ""` clears it. Z-Image normally uses zeroed negative conditioning at
+CFG 1. Supplying a negative prompt converts that path to text conditioning, but a
+non-empty negative prompt requires CFG greater than 1 because CFG 1 cannot use it. The
+resolved negative prompt and CFG are recorded in every provenance sidecar.
+
 Validate either installed profile explicitly:
 
 ```bash

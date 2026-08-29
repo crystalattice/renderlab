@@ -39,7 +39,47 @@ class RenderLabCliTests(unittest.TestCase):
                 cli.parse_args(["--version"])
 
         self.assertEqual(raised.exception.code, 0)
-        stdout.write.assert_called_once_with("renderlab 0.5.0\n")
+        stdout.write.assert_called_once_with("renderlab 0.6.0\n")
+
+    def test_profile_cfg_defaults_and_validation(self):
+        self.assertEqual(cli.parse_args(["fox"]).cfg, 1)
+        self.assertEqual(cli.parse_args(["fox", "--profile", "realvisxl"]).cfg, 7)
+        self.assertEqual(cli.parse_args(["fox", "--cfg", "2.5"]).cfg, 2.5)
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["fox", "--cfg", "101"])
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["fox", "--negative-prompt", "dogs"])
+
+    def test_z_image_negative_prompt_replaces_zero_conditioning(self):
+        workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
+        effective = cli.inject_generation_controls(
+            workflow, negative_prompt="dogs, watermark", cfg=2.0
+        )
+        self.assertEqual(effective, "dogs, watermark")
+        self.assertEqual(workflow["5"]["class_type"], "CLIPTextEncode")
+        self.assertEqual(workflow["5"]["inputs"]["text"], "dogs, watermark")
+        self.assertEqual(workflow["5"]["inputs"]["clip"], ["2", 0])
+        self.assertEqual(workflow["8"]["inputs"]["cfg"], 2.0)
+        lora_id = cli.inject_lora(
+            workflow,
+            name="style.safetensors",
+            model_strength=0.8,
+            clip_strength=0.8,
+        )
+        self.assertEqual(workflow["4"]["inputs"]["clip"], [lora_id, 1])
+        self.assertEqual(workflow["5"]["inputs"]["clip"], [lora_id, 1])
+
+    def test_realvis_negative_prompt_can_be_replaced_or_cleared(self):
+        workflow = cli.load_workflow(cli.REALVISXL_WORKFLOW)
+        effective = cli.inject_generation_controls(
+            workflow, negative_prompt="watermark", cfg=6.5
+        )
+        self.assertEqual(effective, "watermark")
+        self.assertEqual(workflow["5"]["inputs"]["text"], "watermark")
+        self.assertEqual(workflow["8"]["inputs"]["cfg"], 6.5)
+        self.assertEqual(
+            cli.inject_generation_controls(workflow, negative_prompt="", cfg=7), ""
+        )
 
     def test_lora_arguments_require_lora_and_validate_strengths(self):
         args = cli.parse_args(
@@ -188,6 +228,10 @@ class RenderLabCliTests(unittest.TestCase):
                         "0.8",
                         "--lora-clip-strength",
                         "0.6",
+                        "--cfg",
+                        "6.5",
+                        "--negative-prompt",
+                        "watermark, text",
                         "--output-dir",
                         str(output_dir),
                     ]
@@ -195,14 +239,15 @@ class RenderLabCliTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             metadata = json.loads(Path(str(image_path) + ".json").read_text())
-            self.assertEqual(metadata["renderlab_version"], "0.5.0")
+            self.assertEqual(metadata["renderlab_version"], "0.6.0")
             self.assertEqual(metadata["profile"], "realvisxl_v5_fp16")
             self.assertEqual(
                 metadata["models"],
                 {"checkpoint": "RealVisXL_V5.0_fp16.safetensors"},
             )
             self.assertEqual(metadata["steps"], 30)
-            self.assertEqual(metadata["cfg"], 7)
+            self.assertEqual(metadata["cfg"], 6.5)
+            self.assertEqual(metadata["negative_prompt"], "watermark, text")
             self.assertEqual(metadata["sampler"], "dpmpp_2m")
             self.assertEqual(metadata["scheduler"], "karras")
             self.assertEqual(
@@ -532,7 +577,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
             self.assertEqual(metadata["schema_version"], 2)
-            self.assertEqual(metadata["renderlab_version"], "0.5.0")
+            self.assertEqual(metadata["renderlab_version"], "0.6.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
             self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())
