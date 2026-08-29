@@ -39,7 +39,7 @@ class RenderLabCliTests(unittest.TestCase):
                 cli.parse_args(["--version"])
 
         self.assertEqual(raised.exception.code, 0)
-        stdout.write.assert_called_once_with("renderlab 0.7.0\n")
+        stdout.write.assert_called_once_with("renderlab 0.8.0\n")
 
     def test_replay_txt2img_restores_effective_render_settings(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -364,7 +364,7 @@ class RenderLabCliTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             metadata = json.loads(Path(str(image_path) + ".json").read_text())
-            self.assertEqual(metadata["renderlab_version"], "0.7.0")
+            self.assertEqual(metadata["renderlab_version"], "0.8.0")
             self.assertEqual(metadata["profile"], "realvisxl_v5_fp16")
             self.assertEqual(
                 metadata["models"],
@@ -702,7 +702,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
             self.assertEqual(metadata["schema_version"], 2)
-            self.assertEqual(metadata["renderlab_version"], "0.7.0")
+            self.assertEqual(metadata["renderlab_version"], "0.8.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
             self.assertEqual(metadata["output_sha256"], cli.sha256_file(image_path))

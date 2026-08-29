@@ -230,6 +230,26 @@ before submitting anything. A changed or missing input stops the replay rather t
 quietly producing a different experiment. `--server`, `--output-dir`, `--timeout`, and
 `--poll-interval` may be supplied after the sidecar path for a different runtime location.
 
+### MiniMax H3 text-to-video
+
+Check that ComfyUI exposes the H3 nodes and all four model files, then render a video:
+
+```bash
+python -m renderlab video --check
+python -m renderlab video \
+  "A red fox trots through a moonlit forest, cinematic tracking shot" \
+  --seed 1001
+```
+
+The local H3 profile defaults to 608x352, a nominal five seconds, 20 steps, 24 fps,
+and native generated audio. H3 requires a specific frame grid, so five requested seconds
+becomes 124 frames (5.167 seconds); both durations are recorded in provenance. Override
+these controls with `--width`, `--height`, `--duration`, and `--steps`.
+
+On an RTX 2060 Super 8 GB, a five-second H3 render is expected to take minutes rather
+than seconds and the default timeout is two hours. Stop other GPU-offloaded workloads
+before rendering. ComfyUI should remain running so its loaded models can stay warm.
+
 For semantic variation rather than seed-only variation, point RenderLab at a local
 OpenAI-compatible prompt model (for example, llama.cpp server) and request variations:
 

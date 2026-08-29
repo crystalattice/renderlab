@@ -19,6 +19,16 @@ from urllib.request import Request, urlopen
 from PIL import Image, UnidentifiedImageError
 
 from . import __version__
+from .video import (
+    H3_AUDIO_VAE,
+    H3_CLIP,
+    H3_FPS,
+    H3_REQUIRED_NODES,
+    H3_UNET,
+    H3_VIDEO_VAE,
+    build_h3_t2v_workflow,
+    h3_frame_count,
+)
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -68,7 +78,9 @@ class RenderError(RuntimeError):
     pass
 
 
-CONTROL_COMMANDS = {"jobs", "status", "cancel", "models", "loras", "doctor", "mask", "replay"}
+CONTROL_COMMANDS = {
+    "jobs", "status", "cancel", "models", "loras", "doctor", "mask", "replay", "video"
+}
 
 MODEL_NODE_INPUTS = (
     ("diffusion_models", "UNETLoader", "unet_name"),
@@ -202,10 +214,29 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     )
     add_server_argument(replay_parser)
 
+    video_parser = subparsers.add_parser(
+        "video", help="render text-to-video with the local MiniMax H3 profile"
+    )
+    video_parser.add_argument("prompt", nargs="?", help="text prompt for the video")
+    video_parser.add_argument("--check", action="store_true", help="check nodes and models only")
+    video_parser.add_argument("--seed", type=int, help="fixed seed; random 64-bit seed by default")
+    video_parser.add_argument("--width", type=int, default=608)
+    video_parser.add_argument("--height", type=int, default=352)
+    video_parser.add_argument("--duration", type=float, default=5.0, help="nominal seconds")
+    video_parser.add_argument("--steps", type=int, default=20)
+    video_parser.add_argument("--timeout", type=float, default=7200.0)
+    video_parser.add_argument("--poll-interval", type=float, default=10.0)
+    video_parser.add_argument("--filename-prefix", default="RenderLabVideo")
+    video_parser.add_argument(
+        "--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR,
+        help="filesystem path matching the ComfyUI output directory",
+    )
+    add_server_argument(video_parser)
+
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
         parser.error("--limit must be greater than zero")
-    if args.command in {"mask", "replay"}:
+    if args.command in {"mask", "replay", "video"}:
         if args.timeout <= 0 or args.poll_interval <= 0:
             parser.error("--timeout and --poll-interval must be greater than zero")
     if args.command == "mask":
@@ -215,6 +246,25 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
             parser.error("--threshold must be between 0.0 and 1.0")
         if not 0 <= args.refine_iterations <= 5:
             parser.error("--refine-iterations must be between 0 and 5")
+    if args.command == "video":
+        if not args.check and (args.prompt is None or not args.prompt.strip()):
+            parser.error("prompt is required unless --check is used")
+        if args.seed is not None and not 0 <= args.seed <= MAX_SEED:
+            parser.error(f"--seed must be between 0 and {MAX_SEED}")
+        for name in ("width", "height", "steps"):
+            if getattr(args, name) <= 0:
+                parser.error(f"--{name} must be greater than zero")
+        if args.width % 16 or args.height % 16:
+            parser.error("--width and --height must be divisible by 16")
+        if args.duration <= 0:
+            parser.error("--duration must be greater than zero")
+        allowed_prefix = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+        if not args.filename_prefix or any(
+            character not in allowed_prefix for character in args.filename_prefix
+        ):
+            parser.error(
+                "--filename-prefix may contain only letters, digits, underscore, and hyphen"
+            )
     args.server = validate_server(parser, args.server)
     return args
 
@@ -862,6 +912,14 @@ def find_saved_image(history: dict[str, Any]) -> dict[str, str]:
     raise RenderError("completed render has no SaveImage output")
 
 
+def find_saved_output(history: dict[str, Any]) -> dict[str, str]:
+    """Find a SaveImage or SaveVideo artifact in ComfyUI history."""
+    try:
+        return find_saved_image(history)
+    except RenderError as exc:
+        raise RenderError("completed render has no saved output") from exc
+
+
 def local_output_path(output_dir: Path, image: dict[str, str]) -> Path:
     root = output_dir.expanduser().resolve()
     path = (root / image["subfolder"] / image["filename"]).resolve()
@@ -1236,8 +1294,104 @@ def run_doctor(server: str, profile: str = "z-image") -> int:
     return 0
 
 
+def run_video_check(server: str) -> int:
+    failures = 0
+    request_json("GET", f"{server}/system_stats")
+    print(f"[ok] ComfyUI: {server}")
+    object_info = request_json("GET", f"{server}/object_info")
+    for node_name in sorted(H3_REQUIRED_NODES):
+        if node_name in object_info:
+            print(f"[ok] node: {node_name}")
+        else:
+            print(f"[missing] node: {node_name}")
+            failures += 1
+    required_models = (
+        ("UNETLoader", "unet_name", H3_UNET),
+        ("CLIPLoader", "clip_name", H3_CLIP),
+        ("VAELoader", "vae_name", H3_VIDEO_VAE),
+        ("VAELoader", "vae_name", H3_AUDIO_VAE),
+    )
+    for node_name, input_name, filename in required_models:
+        choices = discover_node_choices(server, node_name, input_name)
+        if filename in choices:
+            print(f"[ok] model: {filename}")
+        else:
+            print(f"[missing] model: {filename}")
+            failures += 1
+    if failures:
+        print(f"RenderLab video check found {failures} problem(s).", file=sys.stderr)
+        return 1
+    print("RenderLab MiniMax H3 text-to-video is ready.")
+    return 0
+
+
+def run_video(args: argparse.Namespace) -> int:
+    if args.check:
+        return run_video_check(args.server)
+    seed = args.seed if args.seed is not None else secrets.randbits(64)
+    frame_count = h3_frame_count(args.duration)
+    workflow = build_h3_t2v_workflow(
+        prompt=args.prompt.strip(), seed=seed, width=args.width, height=args.height,
+        seconds=args.duration, steps=args.steps, filename_prefix=args.filename_prefix,
+    )
+    started_at = datetime.now(timezone.utc)
+    prompt_id = submit(args.server, workflow)
+    print(f"prompt_id: {prompt_id}", file=sys.stderr)
+    print(f"seed: {seed}", file=sys.stderr)
+    print(
+        f"frames: {frame_count} at {H3_FPS} fps ({frame_count / H3_FPS:.3f}s)",
+        file=sys.stderr,
+    )
+    history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
+    output_path = local_output_path(args.output_dir, find_saved_output(history))
+    finished_at = datetime.now(timezone.utc)
+    metadata_path = write_metadata(
+        output_path,
+        {
+            "schema_version": 2,
+            "renderlab_version": __version__,
+            "prompt_id": prompt_id,
+            "mode": "t2v",
+            "profile": "minimax_h3_int8",
+            "prompt": args.prompt.strip(),
+            "effective_prompt": args.prompt.strip(),
+            "seed": seed,
+            "width": args.width,
+            "height": args.height,
+            "requested_duration_seconds": args.duration,
+            "frame_count": frame_count,
+            "fps": H3_FPS,
+            "actual_duration_seconds": frame_count / H3_FPS,
+            "steps": args.steps,
+            "sampler": "res_multistep",
+            "scheduler": "simple",
+            "models": {
+                "diffusion_model": H3_UNET,
+                "text_encoder": H3_CLIP,
+                "video_vae": H3_VIDEO_VAE,
+                "audio_vae": H3_AUDIO_VAE,
+            },
+            "native_audio": True,
+            "server": args.server,
+            "submitted_workflow": workflow,
+            "submitted_workflow_sha256": sha256_json(workflow),
+            "output": str(output_path),
+            "output_sha256": sha256_file(output_path),
+            "started_at": started_at.isoformat(),
+            "finished_at": finished_at.isoformat(),
+            "render_seconds": (finished_at - started_at).total_seconds(),
+        },
+    )
+    print(output_path)
+    print(f"metadata: {metadata_path}", file=sys.stderr)
+    return 0
+
+
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "video":
+            return run_video(args)
+
         if args.command == "replay":
             return main(replay_arguments(args))
 
