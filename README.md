@@ -247,6 +247,17 @@ controls instead of asking you to reconstruct the command by hand:
 python -m renderlab replay ./output/RenderLab_00049_.png.json
 ```
 
+Restore the same prompt, profile, dimensions, controls, inputs, and LoRA stack while
+changing only the seed:
+
+```bash
+python -m renderlab replay ./output/RenderLab_00049_.png.json --new-seed
+python -m renderlab replay ./output/RenderLab_00049_.png.json --seed 424242
+```
+
+Variant sidecars record the parent sidecar and parent seed. Pixel-identity verification
+is intentionally limited to exact replay because a new seed is supposed to change pixels.
+
 Replay gives the `SaveImage` node a unique `RenderLabReplay_...` prefix. This forces
 ComfyUI to write a new PNG even when every generation node is already cached; the sampler
 inputs remain identical. Because ComfyUI embeds the changed workflow in the PNG, raw file
