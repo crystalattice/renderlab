@@ -68,11 +68,51 @@
       "vae": ["3", 0]
     }
   },
+  "13": {
+    "class_type": "GrowMask",
+    "inputs": {
+      "mask": ["12", 0],
+      "expand": 6,
+      "tapered_corners": true
+    }
+  },
+  "14": {
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": ["13", 0]
+    }
+  },
+  "15": {
+    "class_type": "ImageBlur",
+    "inputs": {
+      "image": ["14", 0],
+      "blur_radius": 6,
+      "sigma": 2.0
+    }
+  },
+  "16": {
+    "class_type": "ImageToMask",
+    "inputs": {
+      "image": ["15", 0],
+      "channel": "red"
+    }
+  },
+  "17": {
+    "class_type": "ImageCompositeMasked",
+    "inputs": {
+      "destination": ["6", 0],
+      "source": ["9", 0],
+      "x": 0,
+      "y": 0,
+      "resize_source": false,
+      "mask": ["16", 0]
+    }
+  },
   "10": {
     "class_type": "SaveImage",
     "inputs": {
       "filename_prefix": "RenderLab",
-      "images": ["9", 0]
+      "images": ["17", 0]
     }
   },
   "11": {

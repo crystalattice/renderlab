@@ -104,11 +104,17 @@ class RenderLabCliTests(unittest.TestCase):
             image="source.png",
             mask="mask.png",
             mask_grow=8,
+            mask_feather=5,
         )
         self.assertEqual(workflow["1"]["class_type"], "CheckpointLoaderSimple")
         self.assertEqual(workflow["6"]["inputs"]["image"], "source.png")
         self.assertEqual(workflow["12"]["inputs"]["image"], "mask.png")
         self.assertEqual(workflow["11"]["inputs"]["grow_mask_by"], 8)
+        self.assertEqual(workflow["13"]["inputs"]["expand"], 8)
+        self.assertEqual(workflow["15"]["inputs"]["blur_radius"], 5)
+        self.assertEqual(workflow["17"]["class_type"], "ImageCompositeMasked")
+        self.assertEqual(workflow["17"]["inputs"]["destination"], ["6", 0])
+        self.assertEqual(workflow["10"]["inputs"]["images"], ["17", 0])
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.7)
 
     def test_realvisxl_render_records_profile_provenance(self):
@@ -195,12 +201,18 @@ class RenderLabCliTests(unittest.TestCase):
             image="source.png",
             mask="mask.png",
             mask_grow=10,
+            mask_feather=7,
         )
         self.assertEqual(workflow["6"]["inputs"]["image"], "source.png")
         self.assertEqual(workflow["12"]["inputs"]["image"], "mask.png")
         self.assertEqual(workflow["12"]["inputs"]["channel"], "red")
         self.assertEqual(workflow["11"]["class_type"], "VAEEncodeForInpaint")
         self.assertEqual(workflow["11"]["inputs"]["grow_mask_by"], 10)
+        self.assertEqual(workflow["13"]["inputs"]["expand"], 10)
+        self.assertEqual(workflow["15"]["inputs"]["blur_radius"], 7)
+        self.assertEqual(workflow["16"]["class_type"], "ImageToMask")
+        self.assertEqual(workflow["17"]["inputs"]["source"], ["9", 0])
+        self.assertEqual(workflow["10"]["inputs"]["images"], ["17", 0])
         self.assertEqual(workflow["8"]["inputs"]["denoise"], 0.65)
 
     def test_mask_command_defaults_and_parameter_injection(self):
@@ -395,6 +407,8 @@ class RenderLabCliTests(unittest.TestCase):
                         str(mask),
                         "--mask-grow",
                         "10",
+                        "--mask-feather",
+                        "8",
                         "--denoise",
                         "0.65",
                         "--output-dir",
@@ -413,6 +427,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["mask_image"]["sha256"], cli.sha256_file(mask))
             self.assertTrue(metadata["mask_image"]["white_is_editable"])
             self.assertEqual(metadata["mask_image"]["grow_pixels"], 10)
+            self.assertEqual(metadata["mask_image"]["feather_pixels"], 8)
 
     def test_find_saved_image(self):
         history = {

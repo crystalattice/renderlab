@@ -90,6 +90,11 @@ REQUIRED_WORKFLOW_NODES = (
     "VAEEncode",
     "LoadImageMask",
     "VAEEncodeForInpaint",
+    "GrowMask",
+    "MaskToImage",
+    "ImageBlur",
+    "ImageToMask",
+    "ImageCompositeMasked",
 )
 
 REQUIRED_MODEL_CHOICES = (
@@ -105,6 +110,14 @@ REALVISXL_REQUIRED_NODES = (
     "KSampler",
     "VAEDecode",
     "SaveImage",
+    "LoadImage",
+    "LoadImageMask",
+    "VAEEncodeForInpaint",
+    "GrowMask",
+    "MaskToImage",
+    "ImageBlur",
+    "ImageToMask",
+    "ImageCompositeMasked",
 )
 
 REALVISXL_REQUIRED_MODEL_CHOICES = (
@@ -221,6 +234,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="expand the editable mask by this many pixels for seam blending (default: 6)",
     )
     parser.add_argument(
+        "--mask-feather",
+        type=int,
+        default=6,
+        help="blur the final mask edge by this many pixels when compositing (default: 6)",
+    )
+    parser.add_argument(
         "--denoise",
         type=float,
         default=0.45,
@@ -288,6 +307,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--mask-grow must be between 0 and 64")
     if args.mask_image is None and args.mask_grow != 6:
         parser.error("--mask-grow requires --mask-image")
+    if args.mask_feather < 1 or args.mask_feather > 31:
+        parser.error("--mask-feather must be between 1 and 31")
+    if args.mask_image is None and args.mask_feather != 6:
+        parser.error("--mask-feather requires --mask-image")
     args.server = validate_server(parser, args.server)
     args.prompt_server = validate_server(parser, args.prompt_server)
     if args.workflow is None:
@@ -459,7 +482,7 @@ def inject_img2img_parameters(
 
 def inject_inpaint_parameters(
     workflow: dict[str, Any], *, prompt: str, seed: int, steps: int, denoise: float,
-    image: str, mask: str, mask_grow: int
+    image: str, mask: str, mask_grow: int, mask_feather: int = 6
 ) -> None:
     try:
         workflow["4"]["inputs"]["text"] = prompt
@@ -469,6 +492,8 @@ def inject_inpaint_parameters(
         workflow["8"]["inputs"]["denoise"] = denoise
         workflow["11"]["inputs"]["grow_mask_by"] = mask_grow
         workflow["12"]["inputs"]["image"] = mask
+        workflow["13"]["inputs"]["expand"] = mask_grow
+        workflow["15"]["inputs"]["blur_radius"] = mask_feather
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab inpaint node contract: {exc}") from exc
 
@@ -1023,6 +1048,7 @@ def main(argv: list[str] | None = None) -> int:
                     image=uploaded_image,
                     mask=uploaded_mask,
                     mask_grow=args.mask_grow,
+                    mask_feather=args.mask_feather,
                 )
             elif uploaded_image is not None:
                 inject_img2img_parameters(
@@ -1095,6 +1121,7 @@ def main(argv: list[str] | None = None) -> int:
                             "comfy_input": uploaded_mask,
                             "white_is_editable": True,
                             "grow_pixels": args.mask_grow,
+                            "feather_pixels": args.mask_feather,
                         }
                         if mask_source
                         else None

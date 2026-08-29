@@ -143,7 +143,10 @@ python -m renderlab "an elegant fitted black gothic dress with black lace" \
 ```
 
 `--mask-grow` defaults to 6 pixels so the generated region overlaps its boundary rather
-than leaving a hard seam. Source and mask hashes are both recorded in provenance.
+than leaving a hard seam. The decoded edit is composited back over the original through
+that grown mask, with a 6-pixel edge blur controlled by `--mask-feather`. Pixels outside
+the composite mask therefore remain byte-for-byte sourced from the input instead of the
+model's re-decoded approximation. Source and mask hashes are both recorded in provenance.
 
 To generate the mask automatically, install
 `sam3.1_multiplex_fp16.safetensors` under ComfyUI's checkpoints model path, then describe
