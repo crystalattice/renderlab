@@ -191,6 +191,22 @@ python -m renderlab "change the daytime scene to a rainy neon night" \
 RenderLab uploads the source to ComfyUI's input directory and records its local path,
 SHA-256, uploaded name, and denoise strength in the output sidecar.
 
+Expand the canvas with ComfyUI's native outpaint mask. Expansion values are pixels and
+must be multiples of eight; unspecified sides remain unchanged:
+
+```bash
+python -m renderlab "continue the rainy street beyond the original frame" \
+  --profile realvisxl \
+  --input-image ./source.png \
+  --outpaint-left 256 \
+  --outpaint-right 256 \
+  --outpaint-bottom 384
+```
+
+Outpaint defaults to full denoise in the new canvas and a 40-pixel feather into the
+source. `--outpaint-feather` changes that overlap. The center is composited from the
+uploaded source while only the padded region and feather boundary come from generation.
+
 For a localized edit, provide a same-size black/white mask. White pixels are editable;
 black pixels are protected:
 
