@@ -527,11 +527,20 @@ class RenderLabCliTests(unittest.TestCase):
         self.assertEqual(workflow["18"]["inputs"]["left"], 256)
         self.assertEqual(workflow["18"]["inputs"]["right"], 128)
         self.assertEqual(workflow["18"]["inputs"]["feathering"], 48)
+        self.assertEqual(workflow["19"]["class_type"], "DifferentialDiffusion")
+        self.assertEqual(workflow["19"]["inputs"]["model"], ["1", 0])
+        self.assertEqual(workflow["8"]["inputs"]["model"], ["19", 0])
         self.assertEqual(workflow["11"]["inputs"]["pixels"], ["18", 0])
         self.assertEqual(workflow["11"]["inputs"]["mask"], ["18", 1])
         self.assertEqual(workflow["17"]["inputs"]["destination"], ["18", 0])
         self.assertEqual(workflow["17"]["inputs"]["mask"], ["18", 1])
         self.assertNotIn("12", workflow)
+
+        lora_id = cli.inject_lora(
+            workflow, name="style.safetensors", model_strength=0.5, clip_strength=0.5
+        )
+        self.assertEqual(workflow["19"]["inputs"]["model"], [lora_id, 0])
+        self.assertEqual(workflow["8"]["inputs"]["model"], ["19", 0])
 
         default_args = cli.parse_args([
             "continue the rainy street", "--input-image", "source.png",
