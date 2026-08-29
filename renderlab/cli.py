@@ -221,6 +221,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--width", type=int, default=1024)
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--steps", type=int)
+    parser.add_argument(
+        "--lora",
+        help="LoRA filename visible to ComfyUI; use `renderlab loras` to list choices",
+    )
+    parser.add_argument(
+        "--lora-model-strength",
+        type=float,
+        default=1.0,
+        help="LoRA strength applied to the diffusion model (default: 1.0)",
+    )
+    parser.add_argument(
+        "--lora-clip-strength",
+        type=float,
+        default=1.0,
+        help="LoRA strength applied to the text encoder (default: 1.0)",
+    )
     parser.add_argument("--input-image", type=Path, help="source image for img2img editing")
     parser.add_argument(
         "--mask-image",
@@ -297,6 +313,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         parser.error("--timeout and --poll-interval must be greater than zero")
     if args.prompt_timeout <= 0:
         parser.error("--prompt-timeout must be greater than zero")
+    for name in ("lora_model_strength", "lora_clip_strength"):
+        if not -10.0 <= getattr(args, name) <= 10.0:
+            parser.error(f"--{name.replace('_', '-')} must be between -10.0 and 10.0")
+    if args.lora is None and (
+        args.lora_model_strength != 1.0 or args.lora_clip_strength != 1.0
+    ):
+        parser.error("--lora-model-strength and --lora-clip-strength require --lora")
     if not 0.0 <= args.denoise <= 1.0:
         parser.error("--denoise must be between 0.0 and 1.0")
     if args.input_image is None and args.denoise != 0.45:
@@ -465,6 +488,56 @@ def inject_parameters(
         workflow["8"]["inputs"]["steps"] = steps
     except (KeyError, TypeError) as exc:
         raise RenderError(f"workflow does not match the RenderLab v1 node contract: {exc}") from exc
+
+
+def inject_lora(
+    workflow: dict[str, Any], *, name: str, model_strength: float, clip_strength: float
+) -> str:
+    """Insert one LoraLoader and route the graph's model and CLIP through it."""
+    model_source: list[Any] | None = None
+    clip_source: list[Any] | None = None
+    numeric_ids: list[int] = []
+    for node_id, node in workflow.items():
+        try:
+            numeric_ids.append(int(node_id))
+            class_type = node["class_type"]
+        except (TypeError, ValueError, KeyError):
+            continue
+        if class_type == "CheckpointLoaderSimple":
+            model_source = [node_id, 0]
+            clip_source = [node_id, 1]
+        elif class_type == "UNETLoader":
+            model_source = [node_id, 0]
+        elif class_type == "CLIPLoader":
+            clip_source = [node_id, 0]
+
+    if model_source is None or clip_source is None:
+        raise RenderError("workflow has no compatible model and CLIP loaders for --lora")
+
+    lora_id = str(max(numeric_ids, default=0) + 1)
+    for node_id, node in workflow.items():
+        if node_id == lora_id or not isinstance(node, dict):
+            continue
+        inputs = node.get("inputs")
+        if not isinstance(inputs, dict):
+            continue
+        for input_name, value in inputs.items():
+            if value == model_source:
+                inputs[input_name] = [lora_id, 0]
+            elif value == clip_source:
+                inputs[input_name] = [lora_id, 1]
+
+    workflow[lora_id] = {
+        "class_type": "LoraLoader",
+        "inputs": {
+            "model": model_source,
+            "clip": clip_source,
+            "lora_name": name,
+            "strength_model": model_strength,
+            "strength_clip": clip_strength,
+        },
+    }
+    return lora_id
 
 
 def inject_img2img_parameters(
@@ -1068,6 +1141,13 @@ def main(argv: list[str] | None = None) -> int:
                     height=args.height,
                     steps=args.steps,
                 )
+            if args.lora is not None:
+                inject_lora(
+                    workflow,
+                    name=args.lora,
+                    model_strength=args.lora_model_strength,
+                    clip_strength=args.lora_clip_strength,
+                )
             submitted_workflow_sha256 = sha256_json(workflow)
             prompt_id = submit(args.server, workflow)
             print(f"[{batch_index}/{render_count}] prompt_id: {prompt_id}", file=sys.stderr)
@@ -1131,6 +1211,15 @@ def main(argv: list[str] | None = None) -> int:
                     "scheduler": PROFILES[args.profile]["scheduler"],
                     "profile": PROFILES[args.profile]["profile_name"],
                     "models": PROFILES[args.profile]["models"],
+                    "lora": (
+                        {
+                            "name": args.lora,
+                            "model_strength": args.lora_model_strength,
+                            "clip_strength": args.lora_clip_strength,
+                        }
+                        if args.lora is not None
+                        else None
+                    ),
                     "server": args.server,
                     "workflow": str(workflow_source),
                     "workflow_source_sha256": workflow_source_sha256,

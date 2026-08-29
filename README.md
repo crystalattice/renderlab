@@ -116,6 +116,23 @@ python -m renderlab doctor --profile z-image
 python -m renderlab doctor --profile realvisxl
 ```
 
+Apply one installed LoRA to either profile with independent model and text-encoder
+strengths. The LoRA must match the selected model architecture:
+
+```bash
+python -m renderlab loras
+python -m renderlab "editorial portrait in a sunlit apartment" \
+  --profile realvisxl \
+  --lora "styles/example-sdxl.safetensors" \
+  --lora-model-strength 0.8 \
+  --lora-clip-strength 0.8
+```
+
+Both strengths default to `1.0` and accept values from `-10.0` through `10.0`. RenderLab
+routes the active model and text encoder through ComfyUI's `LoraLoader`; the LoRA filename
+and resolved strengths are recorded in the output provenance sidecar. A LoRA built for
+SDXL will not work with Z-Image, and vice versa.
+
 Validated RTX 2060 Super 8 GB performance for RealVisXL at 1024x1024 and 30 steps is
 approximately 97 seconds for the first checkpoint load and 22.5 seconds warm. The
 832x1216 portrait profile rendered warm in approximately 22.7 seconds.

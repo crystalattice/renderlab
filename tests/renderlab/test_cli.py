@@ -39,7 +39,48 @@ class RenderLabCliTests(unittest.TestCase):
                 cli.parse_args(["--version"])
 
         self.assertEqual(raised.exception.code, 0)
-        stdout.write.assert_called_once_with("renderlab 0.3.0\n")
+        stdout.write.assert_called_once_with("renderlab 0.5.0\n")
+
+    def test_lora_arguments_require_lora_and_validate_strengths(self):
+        args = cli.parse_args(
+            ["a fox", "--lora", "fox.safetensors", "--lora-model-strength", "0.7"]
+        )
+        self.assertEqual(args.lora, "fox.safetensors")
+        self.assertEqual(args.lora_model_strength, 0.7)
+        self.assertEqual(args.lora_clip_strength, 1.0)
+
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["a fox", "--lora-model-strength", "0.7"])
+        with self.assertRaises(SystemExit):
+            cli.parse_args(["a fox", "--lora", "fox.safetensors", "--lora-clip-strength", "11"])
+
+    def test_lora_injection_routes_z_image_model_and_clip(self):
+        workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
+        node_id = cli.inject_lora(
+            workflow,
+            name="style.safetensors",
+            model_strength=0.75,
+            clip_strength=0.5,
+        )
+        self.assertEqual(workflow[node_id]["class_type"], "LoraLoader")
+        self.assertEqual(workflow[node_id]["inputs"]["model"], ["1", 0])
+        self.assertEqual(workflow[node_id]["inputs"]["clip"], ["2", 0])
+        self.assertEqual(workflow["7"]["inputs"]["model"], [node_id, 0])
+        self.assertEqual(workflow["4"]["inputs"]["clip"], [node_id, 1])
+
+    def test_lora_injection_routes_realvis_model_and_clip(self):
+        workflow = cli.load_workflow(cli.REALVISXL_WORKFLOW)
+        node_id = cli.inject_lora(
+            workflow,
+            name="style-xl.safetensors",
+            model_strength=0.8,
+            clip_strength=0.6,
+        )
+        self.assertEqual(workflow[node_id]["inputs"]["model"], ["1", 0])
+        self.assertEqual(workflow[node_id]["inputs"]["clip"], ["1", 1])
+        self.assertEqual(workflow["8"]["inputs"]["model"], [node_id, 0])
+        self.assertEqual(workflow["4"]["inputs"]["clip"], [node_id, 1])
+        self.assertEqual(workflow["5"]["inputs"]["clip"], [node_id, 1])
 
     def test_inject_parameters(self):
         workflow = cli.load_workflow(cli.DEFAULT_WORKFLOW)
@@ -141,6 +182,12 @@ class RenderLabCliTests(unittest.TestCase):
                         "an adult studio portrait",
                         "--profile",
                         "realvisxl",
+                        "--lora",
+                        "portrait-xl.safetensors",
+                        "--lora-model-strength",
+                        "0.8",
+                        "--lora-clip-strength",
+                        "0.6",
                         "--output-dir",
                         str(output_dir),
                     ]
@@ -148,7 +195,7 @@ class RenderLabCliTests(unittest.TestCase):
 
             self.assertEqual(result, 0)
             metadata = json.loads(Path(str(image_path) + ".json").read_text())
-            self.assertEqual(metadata["renderlab_version"], "0.3.0")
+            self.assertEqual(metadata["renderlab_version"], "0.5.0")
             self.assertEqual(metadata["profile"], "realvisxl_v5_fp16")
             self.assertEqual(
                 metadata["models"],
@@ -158,6 +205,20 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["cfg"], 7)
             self.assertEqual(metadata["sampler"], "dpmpp_2m")
             self.assertEqual(metadata["scheduler"], "karras")
+            self.assertEqual(
+                metadata["lora"],
+                {
+                    "name": "portrait-xl.safetensors",
+                    "model_strength": 0.8,
+                    "clip_strength": 0.6,
+                },
+            )
+            lora_nodes = [
+                node
+                for node in metadata["submitted_workflow"].values()
+                if node["class_type"] == "LoraLoader"
+            ]
+            self.assertEqual(len(lora_nodes), 1)
 
     def test_img2img_defaults_and_parameter_injection(self):
         args = cli.parse_args(["make it rainy", "--input-image", "source.png"])
@@ -471,7 +532,7 @@ class RenderLabCliTests(unittest.TestCase):
             self.assertEqual(metadata["batch_index"], 1)
             self.assertEqual(metadata["batch_count"], 1)
             self.assertEqual(metadata["schema_version"], 2)
-            self.assertEqual(metadata["renderlab_version"], "0.3.0")
+            self.assertEqual(metadata["renderlab_version"], "0.5.0")
             self.assertEqual(metadata["intent"], "a test fox")
             self.assertEqual(metadata["effective_prompt"], "a test fox")
             self.assertEqual(metadata["output_sha256"], cli.hashlib.sha256(b"png").hexdigest())
