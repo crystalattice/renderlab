@@ -143,6 +143,23 @@ python -m renderlab "editorial portrait in a sunlit apartment" \
   --lora-clip-strength 0.8
 ```
 
+RenderLab also includes named settings from its local RealVisXL LoRA survey:
+
+```bash
+python -m renderlab lora-presets
+python -m renderlab "close portrait" --profile realvisxl --lora-preset realistic-eyes
+```
+
+An explicit strength option overrides that part of a preset. To compare a new LoRA
+without seed drift, render a no-LoRA baseline followed by a fixed-seed strength sweep:
+
+```bash
+python -m renderlab lora-sweep "close portrait" \
+  --lora "Realistic_eyes.safetensors" --strengths 0.25,0.5,0.75,1.0
+```
+
+Each sweep image uses the ordinary render path and receives its own provenance sidecar.
+
 Both strengths default to `1.0` and accept values from `-10.0` through `10.0`. RenderLab
 routes the active model and text encoder through ComfyUI's `LoraLoader`; the LoRA filename
 and resolved strengths are recorded in the output provenance sidecar. A LoRA built for
@@ -206,6 +223,7 @@ python -m renderlab status PROMPT_ID
 python -m renderlab cancel PROMPT_ID
 python -m renderlab models
 python -m renderlab loras
+python -m renderlab lora-presets
 ```
 
 Every output receives an adjacent JSON provenance sidecar containing the resolved seed,
