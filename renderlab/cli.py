@@ -21,6 +21,7 @@ from PIL import Image, UnidentifiedImageError
 from . import __version__
 from .corpus import (
     CorpusError,
+    build_training_dataset,
     compare_experiment_results,
     generate_subset,
     import_images,
@@ -323,6 +324,9 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     prepare_parser = experiment_commands.add_parser("prepare", help="resolve and validate an experiment config")
     prepare_parser.add_argument("config", type=Path)
     prepare_parser.add_argument("--output-dir", type=Path, required=True)
+    dataset_parser = experiment_commands.add_parser("dataset", help="compile identity-safe training and holdout records")
+    dataset_parser.add_argument("config", type=Path)
+    dataset_parser.add_argument("--output-dir", type=Path, required=True)
     record_parser = experiment_commands.add_parser("record", help="record one evaluation case")
     record_parser.add_argument("run_dir", type=Path)
     record_parser.add_argument("case_id")
@@ -1761,6 +1765,8 @@ def run_control_command(args: argparse.Namespace) -> int:
         if args.command == "experiment":
             if args.experiment_command == "prepare":
                 summary = prepare_experiment(args.config, args.output_dir)
+            elif args.experiment_command == "dataset":
+                summary = build_training_dataset(args.config, args.output_dir)
             elif args.experiment_command == "record":
                 summary = record_experiment_result(
                     args.run_dir, args.case_id, args.status, args.output, args.metrics

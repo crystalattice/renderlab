@@ -43,6 +43,20 @@ python -m renderlab experiment prepare \
   --output-dir output/experiments/klein-v0
 ```
 
+Compile training and holdout records before training:
+
+```bash
+python -m renderlab experiment dataset \
+  renderlab/experiments/klein_base_4b_paired_lora.json \
+  --output-dir output/datasets/klein-v0
+```
+
+The split is deterministic and performed by `identity_id` before direction and
+caption expansion. With the default configuration, each accepted physical pair
+produces eight forward and eight reverse records. No identity can occur in both
+`train.jsonl` and `holdout.jsonl`. The generated `dataset.json` records input and
+output hashes, the split seed, and the exact identity assignment.
+
 Preparation validates the pair contract and writes `run.json` plus a machine-readable four-case `results.jsonl` matrix: Base and Distilled, each with and without the same LoRA. Empty or invalid pair manifests stop preparation; there is no fallback to the unaligned reference corpus.
 
 Record each evaluation output and its numeric metrics. Completed cases require an
@@ -67,5 +81,5 @@ missing measurements remain `null` rather than being treated as zero.
 Each paired record has this shape:
 
 ```json
-{"pair_id":"pair_0001_forward","identity_id":"subject_001","source":{"path":"assets/clothed.png","sha256":"..."},"target":{"path":"assets/unclothed.png","sha256":"..."},"source_state":"clothed","target_state":"unclothed","alignment_checks":{"identity":true,"pose":true,"camera":true,"lighting":true,"background":true,"anatomy":true},"review_status":"accepted"}
+{"pair_id":"pair_0001","identity_id":"subject_001","source":{"path":"assets/clothed.png","sha256":"..."},"target":{"path":"assets/unclothed.png","sha256":"..."},"source_state":"clothed","target_state":"unclothed","garment_description":"a fitted black dress","alignment_checks":{"identity":true,"pose":true,"camera":true,"lighting":true,"background":true,"anatomy":true},"review_status":"accepted"}
 ```

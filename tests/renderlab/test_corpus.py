@@ -8,6 +8,7 @@ from PIL import Image
 
 from renderlab.corpus import (
     CorpusError,
+    build_training_dataset,
     compare_experiment_results,
     generate_subset,
     import_images,
@@ -85,6 +86,7 @@ class CorpusTests(unittest.TestCase):
                 "target": {"path": "off.png", "sha256": "b" * 64},
                 "source_state": "clothed", "target_state": "unclothed",
                 "alignment_checks": {"identity": True, "pose": False},
+                "garment_description": "a black dress",
                 "review_status": "accepted",
             }])
             with self.assertRaisesRegex(CorpusError, "missing or failed alignment checks: pose"):
@@ -107,6 +109,7 @@ class CorpusTests(unittest.TestCase):
                 "target": {"path": "off.png", "sha256": "b" * 64},
                 "source_state": "clothed", "target_state": "unclothed",
                 "alignment_checks": {name: True for name in ("identity", "pose", "camera", "lighting", "background", "anatomy")},
+                "garment_description": "a black dress",
                 "review_status": "accepted",
             }])
             config = root / "experiment.json"
@@ -118,6 +121,40 @@ class CorpusTests(unittest.TestCase):
             result = prepare_experiment(config, root / "run")
             self.assertEqual(len(result["evaluation_cases"]), 4)
             self.assertEqual(len(read_jsonl(root / "run" / "results.jsonl")), 4)
+
+    def test_training_dataset_splits_by_identity_before_bidirectional_expansion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pairs = root / "pairs.jsonl"
+            rows = []
+            for number, identity in enumerate(("person_a", "person_b"), 1):
+                rows.append({
+                    "pair_id": f"pair_{number}", "identity_id": identity,
+                    "source": {"path": f"{identity}_on.png", "sha256": "a" * 64},
+                    "target": {"path": f"{identity}_off.png", "sha256": "b" * 64},
+                    "source_state": "clothed", "target_state": "unclothed",
+                    "garment_description": "a fitted black dress",
+                    "alignment_checks": {name: True for name in ("identity", "pose", "camera", "lighting", "background", "anatomy")},
+                    "review_status": "accepted",
+                })
+            self.write_jsonl(pairs, rows)
+            config = root / "experiment.json"
+            config.write_text(json.dumps({
+                "schema": "renderlab.experiment.v1", "name": "test",
+                "training": {
+                    "pair_manifest": "pairs.jsonl", "direction_policy": "bidirectional",
+                    "caption_variants_per_pair": 2, "holdout_fraction": 0.2, "split_seed": 42,
+                },
+            }), encoding="utf-8")
+            result = build_training_dataset(config, root / "dataset")
+            train = read_jsonl(root / "dataset" / "train.jsonl")
+            holdout = read_jsonl(root / "dataset" / "holdout.jsonl")
+            self.assertEqual((result["train_records"], result["holdout_records"]), (4, 4))
+            self.assertTrue({row["identity_id"] for row in train}.isdisjoint({row["identity_id"] for row in holdout}))
+            self.assertEqual({row["direction"] for row in train + holdout}, {"forward", "reverse"})
+            reverse = next(row for row in train + holdout if row["direction"] == "reverse")
+            self.assertEqual(reverse["target_state"], "clothed")
+            self.assertIn("fitted black dress", reverse["instruction"])
 
     def test_record_and_compare_experiment_results(self):
         with tempfile.TemporaryDirectory() as directory:

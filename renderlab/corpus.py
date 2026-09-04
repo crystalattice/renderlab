@@ -19,6 +19,28 @@ REQUIRED_REFERENCE_FIELDS = {
     "review_status",
 }
 PAIR_STATES = {"clothed", "unclothed"}
+INSTRUCTION_TEMPLATES = {
+    "unclothed": (
+        "Remove the clothing while preserving the person and scene.",
+        "Change the subject from clothed to unclothed without changing identity or pose.",
+        "Remove the subject's clothing; keep anatomy, camera, lighting, and background fixed.",
+        "Make the subject unclothed while preserving all non-clothing details.",
+        "Replace the clothed state with an unclothed state and keep the composition unchanged.",
+        "Edit only the clothing state to unclothed.",
+        "Render the same person in the same scene without clothing.",
+        "Preserve identity and body morphology while removing the clothing.",
+    ),
+    "clothed": (
+        "Dress the subject in {garment} while preserving the person and scene.",
+        "Change the subject from unclothed to wearing {garment} without changing identity or pose.",
+        "Add {garment}; keep anatomy, camera, lighting, and background fixed.",
+        "Make the subject clothed in {garment} while preserving all other details.",
+        "Replace the unclothed state with {garment} and keep the composition unchanged.",
+        "Edit only the clothing state by adding {garment}.",
+        "Render the same person in the same scene wearing {garment}.",
+        "Preserve identity and body morphology while dressing the subject in {garment}.",
+    ),
+}
 
 
 class CorpusError(RuntimeError):
@@ -96,7 +118,7 @@ def validate_pair_manifest(path: Path) -> dict[str, Any]:
     errors = []
     pair_ids = Counter(row.get("pair_id") for row in rows)
     for index, row in enumerate(rows, 1):
-        missing = {"pair_id", "identity_id", "source", "target", "source_state", "target_state"} - row.keys()
+        missing = {"pair_id", "identity_id", "source", "target", "source_state", "target_state", "garment_description"} - row.keys()
         if missing:
             errors.append(f"record {index}: missing {', '.join(sorted(missing))}")
             continue
@@ -116,6 +138,8 @@ def validate_pair_manifest(path: Path) -> dict[str, Any]:
             errors.append(f"record {index}: missing or failed alignment checks: {', '.join(failed)}")
         if row.get("review_status") != "accepted":
             errors.append(f"record {index}: review_status must be accepted")
+        if not isinstance(row.get("garment_description"), str) or not row.get("garment_description", "").strip():
+            errors.append(f"record {index}: garment_description must be non-empty")
     duplicates = sorted(value for value, count in pair_ids.items() if count > 1)
     if duplicates:
         errors.append(f"duplicate pair_ids: {', '.join(duplicates[:10])}")
@@ -248,6 +272,78 @@ def prepare_experiment(config: Path, output_dir: Path) -> dict[str, Any]:
     (output_dir / "run.json").write_text(json.dumps(resolved, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     write_jsonl(output_dir / "results.jsonl", matrix)
     return resolved
+
+
+def _identity_split(identity_id: str, seed: int, holdout_fraction: float) -> str:
+    digest = hashlib.sha256(f"{seed}:{identity_id}".encode()).digest()
+    value = int.from_bytes(digest[:8], "big") / (1 << 64)
+    return "holdout" if value < holdout_fraction else "train"
+
+
+def build_training_dataset(config: Path, output_dir: Path) -> dict[str, Any]:
+    settings = json.loads(config.read_text(encoding="utf-8"))
+    if settings.get("schema") != "renderlab.experiment.v1":
+        raise CorpusError("experiment config schema must be renderlab.experiment.v1")
+    training = settings["training"]
+    pair_manifest = (config.parent / training["pair_manifest"]).resolve()
+    summary = validate_pair_manifest(pair_manifest)
+    rows = read_jsonl(pair_manifest)
+    minimum = training.get("minimum_pair_count", 1)
+    maximum = training.get("maximum_pair_count")
+    if len(rows) < minimum:
+        raise CorpusError(f"pair manifest has {len(rows)} records; minimum is {minimum}")
+    if maximum is not None and len(rows) > maximum:
+        raise CorpusError(f"pair manifest has {len(rows)} records; maximum is {maximum}")
+    holdout_fraction = training.get("holdout_fraction", 0.2)
+    split_seed = training.get("split_seed", 0)
+    if not 0.0 <= holdout_fraction < 1.0:
+        raise CorpusError("holdout_fraction must be at least 0.0 and less than 1.0")
+    identities = sorted({row["identity_id"] for row in rows})
+    identity_splits = {
+        identity: _identity_split(identity, split_seed, holdout_fraction)
+        for identity in identities
+    }
+    if len(identities) > 1 and holdout_fraction > 0 and "holdout" not in identity_splits.values():
+        identity_splits[identities[-1]] = "holdout"
+    if len(identities) > 1 and "train" not in identity_splits.values():
+        identity_splits[identities[0]] = "train"
+    compiled = {"train": [], "holdout": []}
+    caption_count = training.get("caption_variants_per_pair", 8)
+    if not 1 <= caption_count <= len(INSTRUCTION_TEMPLATES["clothed"]):
+        raise CorpusError(f"caption_variants_per_pair must be between 1 and {len(INSTRUCTION_TEMPLATES['clothed'])}")
+    direction_policy = training.get("direction_policy", "forward")
+    if direction_policy not in {"forward", "bidirectional"}:
+        raise CorpusError("direction_policy must be forward or bidirectional")
+    for pair in sorted(rows, key=lambda row: row["pair_id"]):
+        split = identity_splits[pair["identity_id"]]
+        directions = [(pair["source"], pair["target"], pair["source_state"], pair["target_state"], "forward")]
+        if direction_policy == "bidirectional":
+            directions.append((pair["target"], pair["source"], pair["target_state"], pair["source_state"], "reverse"))
+        for source, target, source_state, target_state, direction in directions:
+            for caption_index, template in enumerate(INSTRUCTION_TEMPLATES[target_state][:caption_count], 1):
+                compiled[split].append({
+                    "sample_id": f"{pair['pair_id']}__{direction}__caption_{caption_index:02d}",
+                    "pair_id": pair["pair_id"], "identity_id": pair["identity_id"],
+                    "direction": direction, "source": source, "target": target,
+                    "source_state": source_state,
+                    "target_state": target_state,
+                    "instruction": template.format(garment=pair["garment_description"].strip()),
+                })
+    output_dir.mkdir(parents=True, exist_ok=True)
+    train_path = output_dir / "train.jsonl"
+    holdout_path = output_dir / "holdout.jsonl"
+    write_jsonl(train_path, compiled["train"])
+    write_jsonl(holdout_path, compiled["holdout"])
+    result = {
+        "schema": "renderlab.training-dataset.v1", "experiment": settings["name"],
+        "pair_manifest": str(pair_manifest), "pair_manifest_sha256": file_sha256(pair_manifest),
+        "pair_records": summary["records"], "identity_splits": identity_splits,
+        "split_seed": split_seed, "holdout_fraction": holdout_fraction,
+        "train_records": len(compiled["train"]), "holdout_records": len(compiled["holdout"]),
+        "train_sha256": file_sha256(train_path), "holdout_sha256": file_sha256(holdout_path),
+    }
+    (output_dir / "dataset.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return result
 
 
 def record_experiment_result(

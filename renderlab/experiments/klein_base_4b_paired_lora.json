@@ -6,6 +6,8 @@
     "pair_manifest": "../../corpus/pairs/klein_v0.jsonl",
     "direction_policy": "bidirectional",
     "holdout_unit": "identity_id",
+    "holdout_fraction": 0.2,
+    "split_seed": 1729,
     "target_pair_count": 64,
     "minimum_pair_count": 50,
     "maximum_pair_count": 200,
