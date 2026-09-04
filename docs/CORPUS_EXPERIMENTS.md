@@ -33,6 +33,17 @@ python -m renderlab corpus subset MANIFEST \
 
 The included subset specs keep morphology canon, body/fabric interaction, and face-swap identity references separate from aligned-pair training.
 
+Verify the original archives before generating subsets:
+
+```bash
+renderlab corpus verify-assets corpus/manifest.jsonl /path/to/archives \
+  --report output/corpus-verification.json
+```
+
+Byte-identical redundant archive members are reported but accepted. Missing archives, missing members, changed hashes, and unmanifested image content fail verification.
+
+The first morphology-only Base-vs-Distilled comparison is defined in `renderlab/experiments/klein_morphology_reference_v0.json`. Its references are deliberately excluded from the aligned-pair LoRA training manifest.
+
 ## Klein paired LoRA
 
 Populate `corpus/pairs/klein_v0.jsonl` with reviewed aligned pairs, then prepare the run:

@@ -1,0 +1,23 @@
+{
+  "schema": "renderlab.reference-experiment.v1",
+  "name": "klein-morphology-reference-v0",
+  "purpose": "Measure morphology preservation from a single reference image; do not use these records as aligned training pairs.",
+  "models": [
+    {"id": "klein-base-4b", "model": "black-forest-labs/FLUX.2-klein-base-4b"},
+    {"id": "klein-distilled-4b", "model": "black-forest-labs/FLUX.2-klein-4b"}
+  ],
+  "reference_ids": ["img_00414", "img_00317", "img_00562"],
+  "prompts": [
+    {"id": "garment_edit", "text": "Dress the subject in a fitted black one-piece swimsuit. Preserve the subject's identity, body proportions, pose, camera, lighting, and background."},
+    {"id": "studio_transfer", "text": "Place the same subject standing naturally in a neutral gray photography studio. Preserve identity and exact body morphology, including height-to-width proportions, limb thickness, torso shape, and muscularity or softness."}
+  ],
+  "seeds": [3407, 9181],
+  "metrics": ["morphology_preservation", "identity_preservation", "instruction_adherence", "artifact_severity"],
+  "rating_scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "artifact_severity_direction": "lower_is_better",
+    "all_other_metrics_direction": "higher_is_better"
+  },
+  "expected_cases": 24
+}

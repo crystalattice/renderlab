@@ -186,6 +186,65 @@ def file_sha256(path: Path) -> str:
         return sha256_stream(source)
 
 
+def verify_archive_assets(manifest: Path, archive_dir: Path) -> dict[str, Any]:
+    """Verify manifest members against source ZIPs without extracting them."""
+    validate_reference_manifest(manifest)
+    rows = read_jsonl(manifest)
+    expected = {(row["archive"], row["path"]): row for row in rows}
+    expected_hashes = {row["sha256"] for row in rows}
+    seen: set[tuple[str, str]] = set()
+    missing_archives = []
+    mismatches = []
+    unexpected = []
+
+    for archive_name in sorted({row["archive"] for row in rows}):
+        archive_path = archive_dir / archive_name
+        if not archive_path.is_file():
+            missing_archives.append(archive_name)
+            continue
+        with zipfile.ZipFile(archive_path) as archive:
+            for member in archive.infolist():
+                if member.is_dir() or Path(member.filename).suffix.lower() not in IMAGE_SUFFIXES:
+                    continue
+                key = (archive_name, member.filename)
+                with archive.open(member) as stream:
+                    digest = sha256_stream(stream)
+                seen.add(key)
+                row = expected.get(key)
+                if row is not None and digest != row["sha256"]:
+                    mismatches.append({
+                        "archive": archive_name, "path": member.filename,
+                        "expected_sha256": row["sha256"], "actual_sha256": digest,
+                    })
+                elif row is None:
+                    unexpected.append({
+                        "archive": archive_name, "path": member.filename, "sha256": digest,
+                        "classification": "duplicate" if digest in expected_hashes else "unmanifested",
+                    })
+
+    missing = [
+        {"archive": archive, "path": path, "sha256": row["sha256"]}
+        for (archive, path), row in expected.items()
+        if (archive, path) not in seen and archive not in missing_archives
+    ]
+    harmful_extras = [item for item in unexpected if item["classification"] == "unmanifested"]
+    failures = bool(missing_archives or missing or mismatches or harmful_extras)
+    return {
+        "schema": "renderlab.asset-verification.v1",
+        "status": "fail" if failures else "pass_with_duplicates" if unexpected else "pass",
+        "manifest_records": len(rows),
+        "matched_records": len(rows) - len(missing) - sum(
+            1 for item in mismatches if (item["archive"], item["path"]) in expected
+        ),
+        "missing_archives": missing_archives,
+        "missing_members": missing,
+        "hash_mismatches": mismatches,
+        "unexpected_members": unexpected,
+        "duplicate_members": sum(item["classification"] == "duplicate" for item in unexpected),
+        "unmanifested_members": len(harmful_extras),
+    }
+
+
 def _image_info(stream) -> tuple[int, int, str]:
     try:
         with Image.open(stream) as image:

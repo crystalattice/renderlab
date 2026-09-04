@@ -17,6 +17,7 @@ from renderlab.corpus import (
     read_jsonl,
     validate_pair_manifest,
     validate_reference_manifest,
+    verify_archive_assets,
 )
 
 
@@ -76,6 +77,25 @@ class CorpusTests(unittest.TestCase):
             row = read_jsonl(manifest)[0]
             self.assertEqual((row["width"], row["height"]), (8, 12))
             self.assertEqual(len(list((root / "assets").rglob("*.png"))), 1)
+
+    def test_verify_assets_accepts_duplicate_archive_members(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "sample.png"
+            Image.new("RGB", (8, 12), "red").save(image)
+            import hashlib
+            digest = hashlib.sha256(image.read_bytes()).hexdigest()
+            archive = root / "set.zip"
+            with zipfile.ZipFile(archive, "w") as output:
+                output.write(image, "set/img_1.png")
+                output.write(image, "copy.png")
+            manifest = root / "manifest.jsonl"
+            self.write_jsonl(manifest, [reference_row("img_1", digest)])
+            result = verify_archive_assets(manifest, root)
+            self.assertEqual(result["status"], "pass_with_duplicates")
+            self.assertEqual(result["matched_records"], 1)
+            self.assertEqual(result["duplicate_members"], 1)
+            self.assertEqual(result["unmanifested_members"], 0)
 
     def test_pair_validation_rejects_alignment_drift(self):
         with tempfile.TemporaryDirectory() as directory:
