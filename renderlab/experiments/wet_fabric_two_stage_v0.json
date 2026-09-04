@@ -21,14 +21,30 @@
     {
       "id": "material_state",
       "model": "firered-image-edit-1.1",
-      "status": "pending",
+      "status": "completed",
       "input_protocol": "previous_stage_only",
       "prompt": "Edit only the existing white cotton T-shirt. Make the same shirt fully saturated with water: visibly wet, heavier, darker in saturated areas, clinging to the torso at contact regions, with realistic adhesion, tension, wrinkles, gravity-driven folds, and localized translucency where wet fabric presses against skin. Preserve the shirt's existing cut and coverage. Preserve the subject's identity, anatomy, physique, pose, expression, hair, jewelry, skin, underwear, camera, lighting, gym equipment, and background exactly. Do not crop, re-pose, replace, remove, shorten, or redesign the shirt. Do not add water effects to exposed skin unless physically adjacent to the shirt.",
       "settings": {
         "enable_turbo_mode": true,
         "number_of_runs": 1,
-        "seed": "record_generated_seed"
-      }
+        "seed": 437692652792486
+      },
+      "output": {
+        "height": 880,
+        "path": "upload/img_00562__firered-image-edit-1.1__single-pass__437692652792486_00001_.png",
+        "sha256": "e84fa66c89627a89f8b7ff74f553ac477f74b27e4605751c4db899752721479e",
+        "width": 1184
+      },
+      "metrics": {
+        "artifact_severity": 1,
+        "fabric_anatomy_interaction": 4,
+        "garment_cut_preservation": 3,
+        "identity_preservation": 4,
+        "instruction_adherence": 4,
+        "scene_preservation": 5,
+        "wet_material_plausibility": 4
+      },
+      "notes": "Two-stage editing produced substantially stronger wet-material behavior than either single-pass baseline: darker saturated cloth, localized sheen, torso adhesion, and gravity-driven vertical wrinkles. FireRed also altered the collar, hem, hair, and some facial detail, so the result demonstrates useful material specialization but does not satisfy the garment-cut and identity preservation gate."
     }
   ],
   "metrics": [
@@ -46,5 +62,7 @@
     "artifact_severity_direction": "lower_is_better",
     "all_other_metrics_direction": "higher_is_better"
   },
-  "decision_rule": "Advance two-stage material rendering when wet_material_plausibility or fabric_anatomy_interaction improves over FireRed prompt-only without reducing identity, scene, or garment-cut preservation below 4."
+  "decision_rule": "Advance two-stage material rendering when wet_material_plausibility or fabric_anatomy_interaction improves over FireRed prompt-only without reducing identity, scene, or garment-cut preservation below 4.",
+  "status": "completed",
+  "conclusion": "Two-stage material editing works, but unconstrained full-frame FireRed reconstruction changes garment geometry and identity details. Advance the architecture while adding crop-and-composite or mask-based spatial containment before treating it as a production path."
 }
