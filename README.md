@@ -246,6 +246,21 @@ path directly with `--mask-image`. If SAM3 finds nothing, use simpler nouns or l
 `--threshold` from its default of `0.5`. `--allow-border` overrides the border guard for
 subjects that legitimately extend beyond the frame.
 
+Compile a click-and-go appearance preset into a backend-neutral render plan:
+
+```bash
+python -m renderlab appearance presets
+python -m renderlab appearance plan \
+  renderlab/experiments/examples/bikini_appearance_request.json \
+  --output ./bikini-plan.json
+```
+
+Presets describe intent rather than a canned prompt. The compiled plan records the source
+semantics, target appearance, preservation constraints, selected backend, acceptance gates,
+and a conditional identity-repair stage. `source_semantics: semantic_evidence` reserves the
+same contract for future manga semantic-restaging workflows where the source is evidence,
+not an editable canvas.
+
 Operational commands:
 
 ```bash

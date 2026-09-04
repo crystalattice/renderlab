@@ -1,0 +1,40 @@
+{
+  "schema": "renderlab.appearance-presets.v1",
+  "presets": {
+    "auto_unclothe": {
+      "label": "Auto",
+      "operation": "unclothe",
+      "target": {"clothing_state": "unclothed", "coverage": "none"}
+    },
+    "bdsm": {
+      "label": "BDSM",
+      "operation": "outfit_change",
+      "target": {"clothing_state": "bdsm_outfit", "coverage": "preset_default", "fit": "fitted"}
+    },
+    "bikini": {
+      "label": "Bikini",
+      "operation": "outfit_change",
+      "target": {"clothing_state": "bikini", "coverage": "standard", "fit": "fitted"}
+    },
+    "face_swap": {
+      "label": "Face Swap",
+      "operation": "face_swap",
+      "target": {"identity_source": "reference:required"}
+    },
+    "lingerie": {
+      "label": "Lingerie",
+      "operation": "outfit_change",
+      "target": {"clothing_state": "lingerie", "coverage": "preset_default", "fit": "fitted"}
+    },
+    "reclothe": {
+      "label": "Reclothe",
+      "operation": "reclothe",
+      "target": {"clothing_state": "custom", "coverage": "custom", "fit": "custom"}
+    },
+    "shibari": {
+      "label": "Shibari",
+      "operation": "outfit_change",
+      "target": {"clothing_state": "shibari", "coverage": "preset_default", "fit": "body_conforming"}
+    }
+  }
+}

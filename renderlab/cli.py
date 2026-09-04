@@ -19,6 +19,7 @@ from urllib.request import Request, urlopen
 from PIL import Image, UnidentifiedImageError
 
 from . import __version__
+from .appearance import AppearanceError, list_presets, plan_appearance
 from .corpus import (
     CorpusError,
     build_training_dataset,
@@ -108,6 +109,7 @@ class RenderError(RuntimeError):
 CONTROL_COMMANDS = {
     "jobs", "status", "cancel", "models", "loras", "lora-presets", "lora-sweep",
     "doctor", "mask", "replay", "video", "corpus", "experiment", "render-run", "landmarks",
+    "appearance",
 }
 
 MODEL_NODE_INPUTS = (
@@ -358,6 +360,23 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     landmarks_render = landmarks_commands.add_parser("render", help="render heatmaps from normalized annotations")
     landmarks_render.add_argument("spec", type=Path)
     landmarks_render.add_argument("output_dir", type=Path)
+
+    appearance_parser = subparsers.add_parser(
+        "appearance", help="list click-and-go presets or compile an appearance request"
+    )
+    appearance_commands = appearance_parser.add_subparsers(
+        dest="appearance_command", required=True
+    )
+    appearance_presets = appearance_commands.add_parser(
+        "presets", help="list available appearance presets"
+    )
+    appearance_presets.add_argument("--preset-file", type=Path)
+    appearance_plan = appearance_commands.add_parser(
+        "plan", help="compile a preset request into a backend-neutral render plan"
+    )
+    appearance_plan.add_argument("request", type=Path)
+    appearance_plan.add_argument("--preset-file", type=Path)
+    appearance_plan.add_argument("--output", type=Path)
 
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
@@ -1815,6 +1834,22 @@ def run_control_command(args: argparse.Namespace) -> int:
             summary = render_landmark_maps(args.spec, args.output_dir)
             print(json.dumps(summary, indent=2, sort_keys=True))
             return 0
+        if args.command == "appearance":
+            if args.appearance_command == "presets":
+                presets = list_presets(args.preset_file) if args.preset_file else list_presets()
+                for preset in presets:
+                    print(f"{preset['id']}\t{preset['label']}\t{preset['operation']}")
+                return 0
+            summary = (
+                plan_appearance(args.request, args.preset_file)
+                if args.preset_file else plan_appearance(args.request)
+            )
+            payload = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(payload, encoding="utf-8")
+            print(payload, end="")
+            return 0
         if args.command == "video":
             return run_video(args)
 
@@ -1876,7 +1911,7 @@ def run_control_command(args: argparse.Namespace) -> int:
         else:
             print(f"not cancelled: {args.prompt_id}")
         return 0
-    except (RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
+    except (AppearanceError, RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 
