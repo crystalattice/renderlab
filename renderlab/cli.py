@@ -1241,7 +1241,363 @@ def validate_binary_mask_png(path: Path, *, allow_border: bool = False) -> dict[
         raise RenderError("generated mask PNG has invalid scanline data")
     previous = bytearray(stride)
     white = black = 0
-  …3926 tokens truncated… model: {filename}")
+    selected = bytearray(width * height)
+    for row_index in range(height):
+        start = row_index * (stride + 1)
+        filter_type = raw[start]
+        encoded = raw[start + 1:start + 1 + stride]
+        row = bytearray(stride)
+        for index, value in enumerate(encoded):
+            left = row[index - channels] if index >= channels else 0
+            up = previous[index]
+            upper_left = previous[index - channels] if index >= channels else 0
+            if filter_type == 0:
+                decoded = value
+            elif filter_type == 1:
+                decoded = value + left
+            elif filter_type == 2:
+                decoded = value + up
+            elif filter_type == 3:
+                decoded = value + ((left + up) // 2)
+            elif filter_type == 4:
+                predictor = left + up - upper_left
+                distances = (
+                    abs(predictor - left), abs(predictor - up), abs(predictor - upper_left)
+                )
+                decoded = value + (left if distances[0] <= min(distances[1:]) else
+                                   up if distances[1] <= distances[2] else upper_left)
+            else:
+                raise RenderError(f"generated mask PNG uses invalid filter {filter_type}")
+            row[index] = decoded & 0xFF
+        previous = row
+        for pixel_start in range(0, stride, channels):
+            if color_type in {0, 4}:
+                rgb = row[pixel_start:pixel_start + 1]
+            else:
+                rgb = row[pixel_start:pixel_start + 3]
+            value = rgb[0]
+            if any(channel != value for channel in rgb) or value not in {0, 255}:
+                raise RenderError("generated SAM3 mask is not strictly black and white")
+            if value == 255:
+                white += 1
+                selected[row_index * width + pixel_start // channels] = 1
+            else:
+                black += 1
+    if white == 0:
+        raise RenderError(
+            "SAM3 found no matching region; try a simpler description or lower --threshold"
+        )
+    if black == 0:
+        raise RenderError("SAM3 selected the entire image; use a more specific description")
+    border_selected = any(selected[x] or selected[(height - 1) * width + x] for x in range(width))
+    border_selected = border_selected or any(
+        selected[y * width] or selected[y * width + width - 1] for y in range(height)
+    )
+    if border_selected and not allow_border:
+        raise RenderError(
+            "SAM3 mask touches the image boundary; likely background contamination. "
+            "Use --allow-border only when the intended subject really reaches the frame edge"
+        )
+
+    visited = bytearray(width * height)
+    component_sizes = []
+    for start_index, is_selected in enumerate(selected):
+        if not is_selected or visited[start_index]:
+            continue
+        visited[start_index] = 1
+        stack = [start_index]
+        size = 0
+        while stack:
+            index = stack.pop()
+            size += 1
+            x = index % width
+            y = index // width
+            neighbors = []
+            if x:
+                neighbors.append(index - 1)
+            if x + 1 < width:
+                neighbors.append(index + 1)
+            if y:
+                neighbors.append(index - width)
+            if y + 1 < height:
+                neighbors.append(index + width)
+            for neighbor in neighbors:
+                if selected[neighbor] and not visited[neighbor]:
+                    visited[neighbor] = 1
+                    stack.append(neighbor)
+        component_sizes.append(size)
+
+    significant_floor = max(16, white // 500)
+    significant_components = sum(size >= significant_floor for size in component_sizes)
+    if significant_components > 8:
+        raise RenderError(
+            f"SAM3 mask contains {significant_components} scattered regions; "
+            "use fewer, more concrete targets"
+        )
+    return {
+        "width": width, "height": height, "white_pixels": white, "black_pixels": black,
+        "components": len(component_sizes), "significant_components": significant_components,
+        "touches_border": int(border_selected),
+    }
+
+
+def run_mask(args: argparse.Namespace) -> int:
+    source = args.input_image.expanduser().resolve()
+    source_sha256 = sha256_file(source)
+    uploaded = upload_image(args.server, source)
+    workflow = load_workflow(SAM3_MASK_WORKFLOW)
+    inject_mask_parameters(
+        workflow,
+        image=uploaded,
+        description=args.description.strip(),
+        threshold=args.threshold,
+        refine_iterations=args.refine_iterations,
+        within=args.within,
+    )
+    prompt_id = submit(args.server, workflow)
+    print(f"prompt_id: {prompt_id}", file=sys.stderr)
+    history = wait_for_history(args.server, prompt_id, args.timeout, args.poll_interval)
+    output_path = local_output_path(args.output_dir, find_saved_image(history))
+    stats = validate_binary_mask_png(output_path, allow_border=args.allow_border)
+    metadata_path = write_metadata(
+        output_path,
+        {
+            "schema_version": 2,
+            "renderlab_version": __version__,
+            "prompt_id": prompt_id,
+            "mode": "mask",
+            "description": args.description.strip(),
+            "targets": [target.strip() for target in args.description.split(",") if target.strip()],
+            "within": args.within.strip() if args.within else None,
+            "allow_border": args.allow_border,
+            "threshold": args.threshold,
+            "refine_iterations": args.refine_iterations,
+            "model": "sam3.1_multiplex_fp16.safetensors",
+            "source_image": {
+                "path": str(source), "sha256": source_sha256, "comfy_input": uploaded
+            },
+            "mask": {**stats, "white_is_editable": True},
+            "output": str(output_path),
+            "output_sha256": sha256_file(output_path),
+            "submitted_workflow": workflow,
+            "submitted_workflow_sha256": sha256_json(workflow),
+        },
+    )
+    print(output_path)
+    print(f"metadata: {metadata_path}", file=sys.stderr)
+    print(
+        f"editable pixels: {stats['white_pixels']} / "
+        f"{stats['white_pixels'] + stats['black_pixels']}",
+        file=sys.stderr,
+    )
+    return 0
+
+
+def write_metadata(path: Path, metadata: dict[str, Any]) -> Path:
+    if not path.is_file():
+        raise RenderError(
+            f"ComfyUI completed, but output is not visible at {path}; "
+            "set --output-dir to the server's output directory"
+        )
+    metadata_path = path.with_name(path.name + ".json")
+    temporary_path = metadata_path.with_name(metadata_path.name + ".tmp")
+    temporary_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    temporary_path.replace(metadata_path)
+    return metadata_path
+
+
+def load_render_metadata(path: Path) -> dict[str, Any]:
+    source = path.expanduser().resolve()
+    try:
+        metadata = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RenderError(f"cannot load render metadata {source}: {exc}") from exc
+    if not isinstance(metadata, dict) or metadata.get("mode") not in {
+        "txt2img", "img2img", "inpaint", "outpaint"
+    }:
+        raise RenderError(f"{source} is not RenderLab render provenance")
+    return metadata
+
+
+def replay_asset(record: dict[str, Any], label: str) -> str:
+    try:
+        path = Path(record["path"]).expanduser().resolve()
+        expected_hash = record["sha256"]
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"{label} provenance is missing {exc}") from exc
+    actual_hash = sha256_file(path)
+    if actual_hash != expected_hash:
+        raise RenderError(
+            f"{label} hash changed: expected {expected_hash}, found {actual_hash} at {path}"
+        )
+    return str(path)
+
+
+def replay_arguments(args: argparse.Namespace) -> list[str]:
+    """Translate one render sidecar back into normal render CLI arguments."""
+    metadata = load_render_metadata(args.metadata)
+    profile_names = {
+        values["profile_name"]: name for name, values in PROFILES.items()
+    }
+    try:
+        profile = profile_names[metadata["profile"]]
+        prompt = metadata["effective_prompt"]
+        parent_seed = metadata["seed"]
+        steps = metadata["steps"]
+        cfg = metadata["cfg"]
+    except (KeyError, TypeError) as exc:
+        raise RenderError(f"render provenance is missing replay field {exc}") from exc
+    if not isinstance(prompt, str) or not prompt:
+        raise RenderError("render provenance has an invalid effective prompt")
+
+    replay = [
+        prompt,
+        "--profile", profile,
+        "--seed", str(
+            args.seed if args.seed is not None
+            else secrets.randbits(64) if args.new_seed
+            else parent_seed
+        ),
+        "--steps", str(steps),
+        "--cfg", str(cfg),
+        "--server", args.server,
+        "--timeout", str(args.timeout),
+        "--poll-interval", str(args.poll_interval),
+        "--output-dir", str(args.output_dir),
+        "--filename-prefix", (
+            f"RenderLabVariant_{uuid.uuid4().hex[:12]}"
+            if args.new_seed or args.seed is not None
+            else f"RenderLabReplay_{uuid.uuid4().hex[:12]}"
+        ),
+        "--replay-source", str(args.metadata.expanduser().resolve()),
+        "--replay-kind", "new-seed" if args.new_seed or args.seed is not None else "exact",
+        "--parent-seed", str(parent_seed),
+    ]
+    recorded_output = Path(str(metadata.get("output", ""))).expanduser()
+    adjacent_output = args.metadata.expanduser().resolve().with_suffix("")
+    if not recorded_output.is_file() and adjacent_output.is_file():
+        recorded_output = adjacent_output
+    if not recorded_output.is_file():
+        raise RenderError(
+            "replay source output is missing; expected the recorded output path or a PNG "
+            "adjacent to the sidecar"
+        )
+    if not args.new_seed and args.seed is None:
+        replay.extend(["--expected-pixel-sha256", pixel_sha256_file(recorded_output.resolve())])
+    if metadata.get("negative_prompt") is not None:
+        replay.extend(["--negative-prompt", str(metadata["negative_prompt"])])
+
+    mode = metadata["mode"]
+    if mode == "txt2img":
+        try:
+            replay.extend([
+                "--width", str(metadata["width"]),
+                "--height", str(metadata["height"]),
+            ])
+        except KeyError as exc:
+            raise RenderError(f"render provenance is missing replay field {exc}") from exc
+    else:
+        source = metadata.get("source_image")
+        if not isinstance(source, dict):
+            raise RenderError("image-edit provenance is missing source_image")
+        replay.extend(["--input-image", replay_asset(source, "source image")])
+        replay.extend(["--denoise", str(metadata["denoise"])])
+
+    if mode == "inpaint":
+        mask = metadata.get("mask_image")
+        if not isinstance(mask, dict):
+            raise RenderError("inpaint provenance is missing mask_image")
+        replay.extend(["--mask-image", replay_asset(mask, "mask image")])
+        replay.extend(["--mask-grow", str(mask["grow_pixels"])])
+        replay.extend(["--mask-feather", str(mask["feather_pixels"])])
+
+    if mode == "outpaint":
+        outpaint = metadata.get("outpaint")
+        if not isinstance(outpaint, dict):
+            raise RenderError("outpaint provenance is missing expansion settings")
+        for side in ("left", "top", "right", "bottom"):
+            replay.extend([f"--outpaint-{side}", str(outpaint[side])])
+        replay.extend(["--outpaint-feather", str(outpaint["feather"])])
+
+    loras = metadata.get("loras")
+    if loras is not None:
+        if not isinstance(loras, list) or any(not isinstance(lora, dict) for lora in loras):
+            raise RenderError("render provenance has invalid LoRA stack")
+        presets = [lora.get("preset") for lora in loras]
+        uses_preset_defaults = all(
+            isinstance(preset, str)
+            and lora.get("model_strength") == LORA_PRESETS[preset][1]
+            and lora.get("clip_strength") == LORA_PRESETS[preset][2]
+            for preset, lora in zip(presets, loras, strict=True)
+        )
+        if uses_preset_defaults:
+            for preset in presets:
+                replay.extend(["--lora-preset", preset])
+        elif len(loras) == 1:
+            lora = loras[0]
+            replay.extend(["--lora", str(lora["name"])])
+            replay.extend(["--lora-model-strength", str(lora["model_strength"])])
+            replay.extend(["--lora-clip-strength", str(lora["clip_strength"])])
+        else:
+            raise RenderError("raw multi-LoRA stacks cannot yet be replayed")
+    else:
+        lora = metadata.get("lora")
+        if lora is not None:
+            if not isinstance(lora, dict):
+                raise RenderError("render provenance has invalid LoRA settings")
+            replay.extend(["--lora", str(lora["name"])])
+            replay.extend(["--lora-model-strength", str(lora["model_strength"])])
+            replay.extend(["--lora-clip-strength", str(lora["clip_strength"])])
+    return replay
+
+
+def discover_node_choices(server: str, node_name: str, input_name: str) -> list[str]:
+    result = request_json("GET", f"{server}/object_info/{quote(node_name, safe='')}")
+    try:
+        definition = result[node_name]["input"]["required"][input_name]
+        choices = definition[0]
+    except (KeyError, IndexError, TypeError) as exc:
+        raise RenderError(
+            f"ComfyUI node {node_name} does not expose required input {input_name}"
+        ) from exc
+    if not isinstance(choices, list):
+        raise RenderError(f"ComfyUI node {node_name} returned an invalid {input_name} list")
+    return [str(choice) for choice in choices]
+
+
+def print_discovered_group(label: str, choices: list[str]) -> None:
+    print(f"{label}:")
+    if choices:
+        for choice in choices:
+            print(f"  {choice}")
+    else:
+        print("  (none)")
+
+
+def run_doctor(server: str, profile: str = "z-image") -> int:
+    failures = 0
+    request_json("GET", f"{server}/system_stats")
+    print(f"[ok] ComfyUI: {server}")
+
+    if profile == "realvisxl":
+        required_nodes = REALVISXL_REQUIRED_NODES
+        required_models = REALVISXL_REQUIRED_MODEL_CHOICES
+    else:
+        required_nodes = REQUIRED_WORKFLOW_NODES
+        required_models = REQUIRED_MODEL_CHOICES
+
+    for node_name in required_nodes:
+        result = request_json("GET", f"{server}/object_info/{quote(node_name, safe='')}")
+        if node_name in result:
+            print(f"[ok] node: {node_name}")
+        else:
+            print(f"[missing] node: {node_name}")
+            failures += 1
+
+    for node_name, input_name, filename in required_models:
+        choices = discover_node_choices(server, node_name, input_name)
+        if filename in choices:
+            print(f"[ok] model: {filename}")
         else:
             print(f"[missing] model: {filename}")
             failures += 1
