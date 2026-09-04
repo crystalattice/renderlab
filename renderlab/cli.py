@@ -32,6 +32,7 @@ from .corpus import (
     verify_archive_assets,
 )
 from .render_run import RenderRunError, initialize_render_run, record_stage_result
+from .landmarks import LandmarkError, render_landmark_maps
 from .video import (
     H3_AUDIO_VAE,
     H3_CLIP,
@@ -106,7 +107,7 @@ class RenderError(RuntimeError):
 
 CONTROL_COMMANDS = {
     "jobs", "status", "cancel", "models", "loras", "lora-presets", "lora-sweep",
-    "doctor", "mask", "replay", "video", "corpus", "experiment", "render-run",
+    "doctor", "mask", "replay", "video", "corpus", "experiment", "render-run", "landmarks",
 }
 
 MODEL_NODE_INPUTS = (
@@ -351,6 +352,12 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     render_run_record.add_argument("run_dir", type=Path)
     render_run_record.add_argument("stage_id")
     render_run_record.add_argument("result", type=Path)
+
+    landmarks_parser = subparsers.add_parser("landmarks", help="render structural landmark heatmaps")
+    landmarks_commands = landmarks_parser.add_subparsers(dest="landmarks_command", required=True)
+    landmarks_render = landmarks_commands.add_parser("render", help="render heatmaps from normalized annotations")
+    landmarks_render.add_argument("spec", type=Path)
+    landmarks_render.add_argument("output_dir", type=Path)
 
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
@@ -1804,6 +1811,10 @@ def run_control_command(args: argparse.Namespace) -> int:
             )
             print(json.dumps(summary, indent=2, sort_keys=True))
             return 0
+        if args.command == "landmarks":
+            summary = render_landmark_maps(args.spec, args.output_dir)
+            print(json.dumps(summary, indent=2, sort_keys=True))
+            return 0
         if args.command == "video":
             return run_video(args)
 
@@ -1865,7 +1876,7 @@ def run_control_command(args: argparse.Namespace) -> int:
         else:
             print(f"not cancelled: {args.prompt_id}")
         return 0
-    except (RenderError, CorpusError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
+    except (RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 
