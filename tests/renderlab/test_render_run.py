@@ -20,6 +20,17 @@ def spec() -> dict:
 
 
 class RenderRunTests(unittest.TestCase):
+    def test_body_fabric_landmark_experiment_contract(self):
+        path = Path(__file__).parents[2] / "renderlab" / "experiments" / "body_fabric_landmarks_v0.json"
+        experiment = json.loads(path.read_text(encoding="utf-8"))
+        landmark_map = experiment["landmark_map"]
+        self.assertEqual(landmark_map["schema"], "renderlab.landmark-map.v1")
+        self.assertEqual(landmark_map["representation"], "gaussian_probability_heatmap")
+        self.assertEqual(landmark_map["channels"], ["left_nipple", "right_nipple", "navel"])
+        self.assertEqual(experiment["expected_cases"], len(experiment["models"]) * len(experiment["conditions"]))
+        self.assertIn("material_plausibility", experiment["metrics"])
+        self.assertIn("unexpected_anatomical_loss", experiment["metrics"])
+
     def test_rejects_forward_dependency(self):
         value = spec()
         value["stages"][0]["depends_on"] = ["identity"]

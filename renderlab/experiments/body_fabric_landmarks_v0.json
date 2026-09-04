@@ -1,0 +1,50 @@
+{
+  "schema": "renderlab.reference-experiment.v1",
+  "name": "body-fabric-landmarks-v0",
+  "purpose": "Measure whether explicit covered-landmark conditioning improves material response without changing identity, pose, or macro morphology.",
+  "training_use": "evaluation_only",
+  "reference_ids": ["img_00562"],
+  "models": [
+    {"id": "qwen-image-edit", "role": "identity_and_geometry_baseline"},
+    {"id": "firered-image-edit-1.1", "role": "material_state_candidate"}
+  ],
+  "landmark_map": {
+    "schema": "renderlab.landmark-map.v1",
+    "coordinate_space": "source_image_normalized",
+    "representation": "gaussian_probability_heatmap",
+    "channels": ["left_nipple", "right_nipple", "navel"],
+    "channel_fields": ["center_x", "center_y", "sigma_x", "sigma_y", "confidence", "provenance"],
+    "allowed_provenance": ["observed", "canon_inferred", "morphology_estimated"],
+    "visibility_states": ["exposed", "covered", "partially_visible", "unknown"],
+    "semantics": "The map constrains probable landmark location only. Garment material, opacity, lighting, and contact determine rendered visibility."
+  },
+  "conditions": [
+    {"id": "prompt_only", "landmark_map_enabled": false},
+    {"id": "landmark_conditioned", "landmark_map_enabled": true}
+  ],
+  "garment": {
+    "type": "lightweight_white_cotton_tshirt",
+    "state": "soaked",
+    "properties": ["noncompressive", "cling", "uneven_translucency", "gravity_folds", "contact_patches"]
+  },
+  "metrics": [
+    "macro_morphology_preservation",
+    "exposed_anatomy_preservation",
+    "landmark_placement",
+    "material_plausibility",
+    "expected_occlusion_compression",
+    "unexpected_anatomical_loss",
+    "identity_preservation",
+    "instruction_adherence",
+    "artifact_severity"
+  ],
+  "rating_scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "artifact_severity_direction": "lower_is_better",
+    "unexpected_anatomical_loss_direction": "lower_is_better",
+    "all_other_metrics_direction": "higher_is_better"
+  },
+  "decision_rule": "Advance landmark conditioning when placement improves by at least one point without reducing identity or macro morphology. Treat material-state failure separately from landmark-placement failure.",
+  "expected_cases": 4
+}

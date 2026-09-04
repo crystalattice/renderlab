@@ -11,7 +11,7 @@
     "reference_roles": {
       "identity": ["face_front"],
       "morphology": ["body_front"],
-      "surface": ["torso_front", "anatomy_landmarks_v1"]
+      "surface": ["torso_front", "covered_landmarks_v1"]
     }
   },
   "stages": [
@@ -35,7 +35,7 @@
       "id": "surface_anatomy",
       "type": "surface",
       "backend": {"id": "unselected-structural-conditioning"},
-      "owns": ["surface_anatomy", "fabric_contact_response"],
+      "owns": ["surface_anatomy", "covered_landmark_placement", "fabric_contact_response"],
       "preserves": ["face_identity", "environment", "composition", "pose", "macro_morphology", "garment"],
       "depends_on": ["canonical_identity"]
     },
