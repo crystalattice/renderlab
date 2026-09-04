@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from renderlab.appearance import AppearanceError, list_presets, plan_appearance
+from renderlab.appearance import BACKEND_BLUEPRINTS, AppearanceError, list_presets, plan_appearance
 from renderlab.cli import main
 
 
@@ -25,6 +25,11 @@ class AppearanceTests(unittest.TestCase):
         self.assertEqual(presets["auto_unclothe"]["operation"], "unclothe")
         self.assertEqual(presets["face_swap"]["operation"], "face_swap")
 
+    def test_available_backends_reference_bundled_blueprints(self):
+        repository = Path(__file__).resolve().parents[2]
+        for blueprint in BACKEND_BLUEPRINTS.values():
+            self.assertTrue((repository / blueprint).is_file(), blueprint)
+
     def test_plan_merges_preset_and_request_target(self):
         with tempfile.TemporaryDirectory() as directory:
             request = self.write_request(
@@ -35,6 +40,12 @@ class AppearanceTests(unittest.TestCase):
             self.assertEqual(plan["intent"]["target"]["clothing_state"], "bikini")
             self.assertEqual(plan["intent"]["target"]["color"], "black")
             self.assertEqual(plan["stages"][0]["backend"]["id"], "qwen-image-edit")
+            self.assertEqual(
+                plan["stages"][0]["backend"]["workflow_blueprint"],
+                "blueprints/Image Edit (Qwen 2509).json",
+            )
+            self.assertTrue(plan["stages"][0]["backend"]["available"])
+            self.assertFalse(plan["stages"][1]["backend"]["available"])
             self.assertEqual(plan["stages"][1]["runs_when"], "identity_preservation < acceptance.identity_preservation")
             self.assertEqual(len(plan["request_sha256"]), 64)
 

@@ -19,6 +19,11 @@ BACKENDS = {
     "reclothe": "qwen-image-edit",
     "face_swap": "unselected-face-swap",
 }
+BACKEND_BLUEPRINTS = {
+    "qwen-image-edit": "blueprints/Image Edit (Qwen 2509).json",
+    "qwen-image-inpaint": "blueprints/Image Inpainting (Qwen-image).json",
+    "qwen-image-outpaint": "blueprints/Image Outpainting (Qwen-Image).json",
+}
 
 
 class AppearanceError(RuntimeError):
@@ -83,10 +88,15 @@ def plan_appearance(request_path: Path, preset_path: Path = DEFAULT_PRESETS) -> 
         **acceptance_override,
     }
     target = _merge_target(preset, request)
+    backend_id = request.get("backend", BACKENDS[operation])
     transform = {
         "id": "appearance_transform",
         "type": operation,
-        "backend": {"id": request.get("backend", BACKENDS[operation])},
+        "backend": {
+            "id": backend_id,
+            "available": backend_id in BACKEND_BLUEPRINTS,
+            "workflow_blueprint": BACKEND_BLUEPRINTS.get(backend_id),
+        },
         "input": {"source": source, "references": request.get("references", [])},
         "subject": subject,
         "target": target,
@@ -97,10 +107,15 @@ def plan_appearance(request_path: Path, preset_path: Path = DEFAULT_PRESETS) -> 
     }
     stages = [transform]
     if operation != "face_swap" and "identity" in preserve:
+        identity_backend = request.get("identity_backend", "unselected-face-swap")
         stages.append({
             "id": "identity_repair",
             "type": "face_swap",
-            "backend": {"id": request.get("identity_backend", "unselected-face-swap")},
+            "backend": {
+                "id": identity_backend,
+                "available": identity_backend in BACKEND_BLUEPRINTS,
+                "workflow_blueprint": BACKEND_BLUEPRINTS.get(identity_backend),
+            },
             "subject": subject,
             "runs_when": "identity_preservation < acceptance.identity_preservation",
             "owns": ["face_identity", "hairline", "apparent_age"],
