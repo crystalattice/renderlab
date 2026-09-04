@@ -46,5 +46,8 @@
     "all_other_metrics_direction": "higher_is_better"
   },
   "decision_rule": "Advance landmark conditioning when placement improves by at least one point without reducing identity or macro morphology. Treat material-state failure separately from landmark-placement failure.",
-  "expected_cases": 4
+  "expected_cases": 4,
+  "results": "results/body_fabric_landmarks_v0.jsonl",
+  "status": "completed",
+  "conclusion": "Ordinary aligned RGB landmark images did not improve covered-landmark placement for Qwen Image Edit or FireRed Image Edit 1.1. Do not treat generic multi-image input as structural conditioning; use a trained adapter, model-native control path, or regional editing workflow."
 }
