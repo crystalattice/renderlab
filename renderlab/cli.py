@@ -31,6 +31,7 @@ from .corpus import (
     validate_reference_manifest,
     verify_archive_assets,
 )
+from .render_run import RenderRunError, initialize_render_run, record_stage_result
 from .video import (
     H3_AUDIO_VAE,
     H3_CLIP,
@@ -105,7 +106,7 @@ class RenderError(RuntimeError):
 
 CONTROL_COMMANDS = {
     "jobs", "status", "cancel", "models", "loras", "lora-presets", "lora-sweep",
-    "doctor", "mask", "replay", "video", "corpus", "experiment",
+    "doctor", "mask", "replay", "video", "corpus", "experiment", "render-run",
 }
 
 MODEL_NODE_INPUTS = (
@@ -340,6 +341,16 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     record_parser.add_argument("--metrics", type=Path)
     compare_parser = experiment_commands.add_parser("compare", help="compare LoRA results to baselines")
     compare_parser.add_argument("run_dir", type=Path)
+
+    render_run_parser = subparsers.add_parser("render-run", help="manage a deterministic multistage render")
+    render_run_commands = render_run_parser.add_subparsers(dest="render_run_command", required=True)
+    render_run_init = render_run_commands.add_parser("init", help="initialize a run from a render specification")
+    render_run_init.add_argument("spec", type=Path)
+    render_run_init.add_argument("run_dir", type=Path)
+    render_run_record = render_run_commands.add_parser("record", help="record one stage attempt")
+    render_run_record.add_argument("run_dir", type=Path)
+    render_run_record.add_argument("stage_id")
+    render_run_record.add_argument("result", type=Path)
 
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
@@ -1785,6 +1796,14 @@ def run_control_command(args: argparse.Namespace) -> int:
                 summary = compare_experiment_results(args.run_dir)
             print(json.dumps(summary, indent=2, sort_keys=True))
             return 0
+        if args.command == "render-run":
+            summary = (
+                initialize_render_run(args.spec, args.run_dir)
+                if args.render_run_command == "init"
+                else record_stage_result(args.run_dir, args.stage_id, args.result)
+            )
+            print(json.dumps(summary, indent=2, sort_keys=True))
+            return 0
         if args.command == "video":
             return run_video(args)
 
@@ -1846,7 +1865,7 @@ def run_control_command(args: argparse.Namespace) -> int:
         else:
             print(f"not cancelled: {args.prompt_id}")
         return 0
-    except (RenderError, CorpusError, OSError, KeyError, json.JSONDecodeError) as exc:
+    except (RenderError, CorpusError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 

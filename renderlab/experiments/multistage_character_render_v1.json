@@ -1,0 +1,51 @@
+{
+  "schema": "renderlab.render-spec.v1",
+  "run_id": "char_00562__neutral_studio__v1",
+  "scene": {
+    "prompt": "The subject stands naturally in a neutral gray photography studio.",
+    "composition": "full body, head through feet, margin above and below",
+    "lighting": "natural studio lighting"
+  },
+  "canon": {
+    "character_id": "char_00562",
+    "reference_roles": {
+      "identity": ["face_front"],
+      "morphology": ["body_front"],
+      "surface": ["torso_front", "anatomy_landmarks_v1"]
+    }
+  },
+  "stages": [
+    {
+      "id": "scene_body_garment",
+      "type": "body",
+      "backend": {"id": "klein-base-4b"},
+      "owns": ["environment", "composition", "pose", "macro_morphology", "garment"],
+      "preserves": [],
+      "depends_on": []
+    },
+    {
+      "id": "canonical_identity",
+      "type": "identity",
+      "backend": {"id": "unselected-face-swap"},
+      "owns": ["face_identity", "hairline", "apparent_age"],
+      "preserves": ["environment", "composition", "pose", "macro_morphology", "garment"],
+      "depends_on": ["scene_body_garment"]
+    },
+    {
+      "id": "surface_anatomy",
+      "type": "surface",
+      "backend": {"id": "unselected-structural-conditioning"},
+      "owns": ["surface_anatomy", "fabric_contact_response"],
+      "preserves": ["face_identity", "environment", "composition", "pose", "macro_morphology", "garment"],
+      "depends_on": ["canonical_identity"]
+    },
+    {
+      "id": "integration",
+      "type": "integration",
+      "backend": {"id": "unselected-local-refiner"},
+      "owns": ["edge_blending", "local_lighting", "color", "grain"],
+      "preserves": ["face_identity", "environment", "composition", "pose", "macro_morphology", "garment", "surface_anatomy"],
+      "depends_on": ["surface_anatomy"]
+    }
+  ]
+}
