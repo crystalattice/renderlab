@@ -1,0 +1,7 @@
+{
+  "name": "face-swap-identity-reference-v0",
+  "filters": {
+    "content_role": ["identity_reference", "identity_or_morphology_reference"]
+  },
+  "sort": ["subject_group", "subject_label", "archive", "path"]
+}

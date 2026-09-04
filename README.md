@@ -82,6 +82,8 @@ See what ComfyUI can do with the [newer template workflows](https://comfy.org/wo
 ## RenderLab local text-to-image CLI
 
 This fork includes a focused local CLI using the bundled Z-Image Turbo INT8 API workflow.
+[Corpus import, deduplication, experiment subsets, paired-edit validation, and
+Base-vs-Distilled preparation](docs/CORPUS_EXPERIMENTS.md) use the same CLI.
 Start ComfyUI, then validate the required nodes and models:
 
 ```bash

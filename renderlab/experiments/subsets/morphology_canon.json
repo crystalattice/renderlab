@@ -1,0 +1,7 @@
+{
+  "name": "morphology-canon-v0",
+  "filters": {
+    "reference_use": ["morphology_canon", "morphology_canon_and_garment_state"]
+  },
+  "sort": ["subject_group", "subject_label", "archive", "path"]
+}

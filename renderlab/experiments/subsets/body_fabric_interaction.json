@@ -1,0 +1,7 @@
+{
+  "name": "body-fabric-interaction-v0",
+  "filters": {
+    "reference_use": ["body_fabric_interaction", "wet_body_fabric_interaction"]
+  },
+  "sort": ["reference_use", "subject_group", "archive", "path"]
+}

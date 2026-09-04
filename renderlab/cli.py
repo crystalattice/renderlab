@@ -19,6 +19,14 @@ from urllib.request import Request, urlopen
 from PIL import Image, UnidentifiedImageError
 
 from . import __version__
+from .corpus import (
+    CorpusError,
+    generate_subset,
+    import_images,
+    prepare_experiment,
+    validate_pair_manifest,
+    validate_reference_manifest,
+)
 from .video import (
     H3_AUDIO_VAE,
     H3_CLIP,
@@ -93,7 +101,7 @@ class RenderError(RuntimeError):
 
 CONTROL_COMMANDS = {
     "jobs", "status", "cancel", "models", "loras", "lora-presets", "lora-sweep",
-    "doctor", "mask", "replay", "video",
+    "doctor", "mask", "replay", "video", "corpus", "experiment",
 }
 
 MODEL_NODE_INPUTS = (
@@ -294,6 +302,26 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     )
     add_server_argument(video_parser)
 
+    corpus_parser = subparsers.add_parser("corpus", help="import, validate, and subset corpus manifests")
+    corpus_commands = corpus_parser.add_subparsers(dest="corpus_command", required=True)
+    validate_parser = corpus_commands.add_parser("validate", help="validate a reference or paired manifest")
+    validate_parser.add_argument("manifest", type=Path)
+    validate_parser.add_argument("--kind", choices=("reference", "paired"), default="reference")
+    import_parser = corpus_commands.add_parser("import", help="hash, deduplicate, and import images")
+    import_parser.add_argument("sources", nargs="+", type=Path)
+    import_parser.add_argument("--manifest", type=Path, required=True)
+    import_parser.add_argument("--asset-dir", type=Path, required=True)
+    subset_parser = corpus_commands.add_parser("subset", help="generate a deterministic manifest subset")
+    subset_parser.add_argument("manifest", type=Path)
+    subset_parser.add_argument("spec", type=Path)
+    subset_parser.add_argument("output", type=Path)
+
+    experiment_parser = subparsers.add_parser("experiment", help="prepare reproducible training/evaluation runs")
+    experiment_commands = experiment_parser.add_subparsers(dest="experiment_command", required=True)
+    prepare_parser = experiment_commands.add_parser("prepare", help="resolve and validate an experiment config")
+    prepare_parser.add_argument("config", type=Path)
+    prepare_parser.add_argument("--output-dir", type=Path, required=True)
+
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
         parser.error("--limit must be greater than zero")
@@ -360,7 +388,8 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
             parser.error(
                 "--filename-prefix may contain only letters, digits, underscore, and hyphen"
             )
-    args.server = validate_server(parser, args.server)
+    if hasattr(args, "server"):
+        args.server = validate_server(parser, args.server)
     return args
 
 
@@ -1706,6 +1735,23 @@ def lora_sweep_arguments(args: argparse.Namespace) -> list[list[str]]:
 
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "corpus":
+            if args.corpus_command == "validate":
+                summary = (
+                    validate_reference_manifest(args.manifest)
+                    if args.kind == "reference"
+                    else validate_pair_manifest(args.manifest)
+                )
+            elif args.corpus_command == "import":
+                summary = import_images(args.sources, args.manifest, args.asset_dir)
+            else:
+                summary = generate_subset(args.manifest, args.spec, args.output)
+            print(json.dumps(summary, indent=2, sort_keys=True))
+            return 0
+        if args.command == "experiment":
+            summary = prepare_experiment(args.config, args.output_dir)
+            print(json.dumps(summary, indent=2, sort_keys=True))
+            return 0
         if args.command == "video":
             return run_video(args)
 
@@ -1767,7 +1813,7 @@ def run_control_command(args: argparse.Namespace) -> int:
         else:
             print(f"not cancelled: {args.prompt_id}")
         return 0
-    except RenderError as exc:
+    except (RenderError, CorpusError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 

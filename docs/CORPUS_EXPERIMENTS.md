@@ -1,0 +1,52 @@
+# Corpus and experiments
+
+RenderLab keeps two different data contracts:
+
+- Reference manifests describe unaligned identity, morphology, body/fabric, environment, and quality references.
+- Paired-edit manifests describe tightly aligned source/target examples suitable for edit LoRA training.
+
+Reference images are never promoted to training pairs merely because two images show the same person. A training pair must preserve identity, pose, camera, lighting, background, and anatomy while changing clothing state. One accepted pair may be represented in both directions with distinct `pair_id` values.
+
+## Corpus v0
+
+Validate the authoritative tagged manifest:
+
+```bash
+python -m renderlab corpus validate /path/to/renderlab_corpus_v0_tagged_manifest_v2.jsonl
+```
+
+Import original images from directories, individual images, or ZIP archives into a content-addressed asset directory. Existing SHA-256 values are skipped:
+
+```bash
+python -m renderlab corpus import /path/to/round2.zip \
+  --manifest ./corpus/local/imported.jsonl \
+  --asset-dir ./corpus/local/assets
+```
+
+Generate deterministic experiment subsets:
+
+```bash
+python -m renderlab corpus subset MANIFEST \
+  renderlab/experiments/subsets/morphology_canon.json \
+  output/subsets/morphology_canon.jsonl
+```
+
+The included subset specs keep morphology canon, body/fabric interaction, and face-swap identity references separate from aligned-pair training.
+
+## Klein paired LoRA
+
+Populate `corpus/pairs/klein_v0.jsonl` with reviewed aligned pairs, then prepare the run:
+
+```bash
+python -m renderlab experiment prepare \
+  renderlab/experiments/klein_base_4b_paired_lora.json \
+  --output-dir output/experiments/klein-v0
+```
+
+Preparation validates the pair contract and writes `run.json` plus a machine-readable four-case `results.jsonl` matrix: Base and Distilled, each with and without the same LoRA. Empty or invalid pair manifests stop preparation; there is no fallback to the unaligned reference corpus.
+
+Each paired record has this shape:
+
+```json
+{"pair_id":"pair_0001_forward","identity_id":"subject_001","source":{"path":"assets/clothed.png","sha256":"..."},"target":{"path":"assets/unclothed.png","sha256":"..."},"source_state":"clothed","target_state":"unclothed","alignment_checks":{"identity":true,"pose":true,"camera":true,"lighting":true,"background":true,"anatomy":true},"review_status":"accepted"}
+```

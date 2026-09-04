@@ -1,0 +1,28 @@
+{
+  "schema": "renderlab.experiment.v1",
+  "name": "klein-base-4b-paired-edit-lora-v0",
+  "training": {
+    "base_model": "black-forest-labs/FLUX.2-klein-base-4b",
+    "pair_manifest": "../../corpus/pairs/klein_v0.jsonl",
+    "direction_policy": "bidirectional",
+    "holdout_unit": "identity_id",
+    "target_pair_count": 64,
+    "minimum_pair_count": 50,
+    "maximum_pair_count": 200,
+    "required_alignment_checks": ["identity", "pose", "camera", "lighting", "background", "anatomy"],
+    "caption_variants_per_pair": 8,
+    "lora": {
+      "rank": 16,
+      "alpha": 16,
+      "target_modules": ["to_q", "to_k", "to_v", "to_out.0"]
+    }
+  },
+  "evaluation": {
+    "models": [
+      {"id": "klein-base-4b", "model": "black-forest-labs/FLUX.2-klein-base-4b"},
+      {"id": "klein-distilled-4b", "model": "black-forest-labs/FLUX.2-klein-4b"}
+    ],
+    "matrix": ["baseline", "lora"],
+    "metrics": ["identity", "pose", "camera", "lighting", "background", "anatomy", "clothing_state", "review_status"]
+  }
+}
