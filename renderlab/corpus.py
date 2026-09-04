@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import shutil
 import zipfile
 from collections import Counter
@@ -247,3 +248,73 @@ def prepare_experiment(config: Path, output_dir: Path) -> dict[str, Any]:
     (output_dir / "run.json").write_text(json.dumps(resolved, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     write_jsonl(output_dir / "results.jsonl", matrix)
     return resolved
+
+
+def record_experiment_result(
+    run_dir: Path,
+    case_id: str,
+    status: str,
+    output: Path | None,
+    metrics_path: Path | None,
+) -> dict[str, Any]:
+    run_path = run_dir / "run.json"
+    results_path = run_dir / "results.jsonl"
+    run = json.loads(run_path.read_text(encoding="utf-8"))
+    rows = read_jsonl(results_path)
+    matches = [row for row in rows if row.get("case_id") == case_id]
+    if len(matches) != 1:
+        raise CorpusError(f"experiment case not found: {case_id}")
+    row = matches[0]
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8")) if metrics_path else {}
+    if not isinstance(metrics, dict):
+        raise CorpusError("metrics file must contain a JSON object")
+    expected_metrics = set(row.get("metrics", {}))
+    unknown = sorted(set(metrics) - expected_metrics)
+    if unknown:
+        raise CorpusError(f"unknown metrics: {', '.join(unknown)}")
+    for name, value in metrics.items():
+        if not isinstance(value, (int, float)) or isinstance(value, bool) or not math.isfinite(value):
+            raise CorpusError(f"metric {name} must be a finite number")
+    if status == "completed" and (output is None or not output.is_file()):
+        raise CorpusError("completed results require an existing --output file")
+    row["status"] = status
+    row["metrics"].update(metrics)
+    row["output"] = (
+        {"path": str(output.resolve()), "sha256": file_sha256(output)}
+        if output is not None and output.is_file() else None
+    )
+    row["experiment"] = run["experiment"]
+    write_jsonl(results_path, rows)
+    return row
+
+
+def compare_experiment_results(run_dir: Path) -> dict[str, Any]:
+    rows = read_jsonl(run_dir / "results.jsonl")
+    models: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        model_id = row["model"]["id"]
+        variant = "lora" if row["lora_enabled"] else "baseline"
+        models.setdefault(model_id, {})[variant] = row
+    comparisons = []
+    for model_id, variants in sorted(models.items()):
+        baseline = variants.get("baseline")
+        lora = variants.get("lora")
+        deltas = {}
+        if baseline and lora:
+            for name in sorted(set(baseline.get("metrics", {})) | set(lora.get("metrics", {}))):
+                before = baseline.get("metrics", {}).get(name)
+                after = lora.get("metrics", {}).get(name)
+                deltas[name] = round(after - before, 8) if isinstance(before, (int, float)) and isinstance(after, (int, float)) else None
+        comparisons.append({
+            "model": model_id,
+            "baseline_status": baseline.get("status") if baseline else "missing",
+            "lora_status": lora.get("status") if lora else "missing",
+            "metric_delta_lora_minus_baseline": deltas,
+        })
+    return {
+        "schema": "renderlab.experiment-comparison.v1",
+        "run_dir": str(run_dir.resolve()),
+        "cases": len(rows),
+        "completed": sum(row.get("status") == "completed" for row in rows),
+        "comparisons": comparisons,
+    }

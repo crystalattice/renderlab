@@ -8,9 +8,11 @@ from PIL import Image
 
 from renderlab.corpus import (
     CorpusError,
+    compare_experiment_results,
     generate_subset,
     import_images,
     prepare_experiment,
+    record_experiment_result,
     read_jsonl,
     validate_pair_manifest,
     validate_reference_manifest,
@@ -116,6 +118,44 @@ class CorpusTests(unittest.TestCase):
             result = prepare_experiment(config, root / "run")
             self.assertEqual(len(result["evaluation_cases"]), 4)
             self.assertEqual(len(read_jsonl(root / "run" / "results.jsonl")), 4)
+
+    def test_record_and_compare_experiment_results(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            run_dir = root / "run"
+            run_dir.mkdir()
+            (run_dir / "run.json").write_text(json.dumps({"experiment": "test"}), encoding="utf-8")
+            rows = [
+                {"case_id": "base__baseline", "model": {"id": "base"}, "lora_enabled": False, "status": "pending", "output": None, "metrics": {"identity": None}},
+                {"case_id": "base__lora", "model": {"id": "base"}, "lora_enabled": True, "status": "pending", "output": None, "metrics": {"identity": None}},
+            ]
+            self.write_jsonl(run_dir / "results.jsonl", rows)
+            output = root / "result.png"
+            output.write_bytes(b"result")
+            baseline_metrics = root / "baseline.json"
+            baseline_metrics.write_text(json.dumps({"identity": 0.7}), encoding="utf-8")
+            lora_metrics = root / "lora.json"
+            lora_metrics.write_text(json.dumps({"identity": 0.85}), encoding="utf-8")
+            recorded = record_experiment_result(run_dir, "base__baseline", "completed", output, baseline_metrics)
+            record_experiment_result(run_dir, "base__lora", "completed", output, lora_metrics)
+            self.assertEqual(recorded["output"]["sha256"], "f6a214f7a5fcda0c2cee9660b7fc29f5649e3c68aad48e20e950137c98913a68")
+            comparison = compare_experiment_results(run_dir)
+            self.assertEqual(comparison["completed"], 2)
+            self.assertEqual(comparison["comparisons"][0]["metric_delta_lora_minus_baseline"]["identity"], 0.15)
+
+    def test_record_rejects_unknown_metric(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "run.json").write_text(json.dumps({"experiment": "test"}), encoding="utf-8")
+            self.write_jsonl(root / "results.jsonl", [{
+                "case_id": "base__baseline", "model": {"id": "base"},
+                "lora_enabled": False, "status": "pending", "output": None,
+                "metrics": {"identity": None},
+            }])
+            metrics = root / "metrics.json"
+            metrics.write_text(json.dumps({"made_up": 1}), encoding="utf-8")
+            with self.assertRaisesRegex(CorpusError, "unknown metrics: made_up"):
+                record_experiment_result(root, "base__baseline", "failed", None, metrics)
 
 
 if __name__ == "__main__":

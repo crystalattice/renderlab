@@ -23,6 +23,6 @@
       {"id": "klein-distilled-4b", "model": "black-forest-labs/FLUX.2-klein-4b"}
     ],
     "matrix": ["baseline", "lora"],
-    "metrics": ["identity", "pose", "camera", "lighting", "background", "anatomy", "clothing_state", "review_status"]
+    "metrics": ["identity", "pose", "camera", "lighting", "background", "anatomy", "clothing_state"]
   }
 }

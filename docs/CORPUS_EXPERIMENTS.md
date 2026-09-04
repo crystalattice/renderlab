@@ -45,6 +45,25 @@ python -m renderlab experiment prepare \
 
 Preparation validates the pair contract and writes `run.json` plus a machine-readable four-case `results.jsonl` matrix: Base and Distilled, each with and without the same LoRA. Empty or invalid pair manifests stop preparation; there is no fallback to the unaligned reference corpus.
 
+Record each evaluation output and its numeric metrics. Completed cases require an
+existing output file, whose SHA-256 is stored with the result:
+
+```bash
+python -m renderlab experiment record output/experiments/klein-v0 \
+  klein-base-4b__baseline --status completed \
+  --output output/eval/base-baseline.png \
+  --metrics output/eval/base-baseline.metrics.json
+```
+
+Compare the Base and Distilled LoRA cases against their respective baselines:
+
+```bash
+python -m renderlab experiment compare output/experiments/klein-v0
+```
+
+The comparison is JSON. For every numeric metric it reports `LoRA - baseline`;
+missing measurements remain `null` rather than being treated as zero.
+
 Each paired record has this shape:
 
 ```json

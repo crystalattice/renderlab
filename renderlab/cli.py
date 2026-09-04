@@ -21,9 +21,11 @@ from PIL import Image, UnidentifiedImageError
 from . import __version__
 from .corpus import (
     CorpusError,
+    compare_experiment_results,
     generate_subset,
     import_images,
     prepare_experiment,
+    record_experiment_result,
     validate_pair_manifest,
     validate_reference_manifest,
 )
@@ -321,6 +323,14 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     prepare_parser = experiment_commands.add_parser("prepare", help="resolve and validate an experiment config")
     prepare_parser.add_argument("config", type=Path)
     prepare_parser.add_argument("--output-dir", type=Path, required=True)
+    record_parser = experiment_commands.add_parser("record", help="record one evaluation case")
+    record_parser.add_argument("run_dir", type=Path)
+    record_parser.add_argument("case_id")
+    record_parser.add_argument("--status", choices=("pending", "running", "completed", "failed"), required=True)
+    record_parser.add_argument("--output", type=Path)
+    record_parser.add_argument("--metrics", type=Path)
+    compare_parser = experiment_commands.add_parser("compare", help="compare LoRA results to baselines")
+    compare_parser.add_argument("run_dir", type=Path)
 
     args = parser.parse_args(argv)
     if args.command == "jobs" and args.limit <= 0:
@@ -1749,7 +1759,14 @@ def run_control_command(args: argparse.Namespace) -> int:
             print(json.dumps(summary, indent=2, sort_keys=True))
             return 0
         if args.command == "experiment":
-            summary = prepare_experiment(args.config, args.output_dir)
+            if args.experiment_command == "prepare":
+                summary = prepare_experiment(args.config, args.output_dir)
+            elif args.experiment_command == "record":
+                summary = record_experiment_result(
+                    args.run_dir, args.case_id, args.status, args.output, args.metrics
+                )
+            else:
+                summary = compare_experiment_results(args.run_dir)
             print(json.dumps(summary, indent=2, sort_keys=True))
             return 0
         if args.command == "video":
