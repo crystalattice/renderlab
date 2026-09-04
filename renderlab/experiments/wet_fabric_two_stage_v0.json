@@ -1,0 +1,50 @@
+{
+  "schema": "renderlab.reference-experiment.v1",
+  "name": "wet-fabric-two-stage-v0",
+  "purpose": "Test whether separating garment construction from wet-material rendering improves fabric state without degrading identity, pose, or scene continuity.",
+  "training_use": "evaluation_only",
+  "reference_ids": ["img_00562"],
+  "stages": [
+    {
+      "id": "garment_base",
+      "model": "qwen-image-edit",
+      "status": "completed",
+      "input_protocol": "single_reference",
+      "output": {
+        "height": 880,
+        "path": "upload/img_00562__qwen-image-edit__single-pass__934991231621675_00001_.png",
+        "sha256": "886708f044741c693e096b720146c1daafadb3f9eba359f29885295c075ff751",
+        "width": 1184
+      },
+      "notes": "Selected as a stable dry-shirt intermediate because it strongly preserves identity, pose, camera, and environment. The aligned RGB landmark reference had no observable effect and is not forwarded to Stage 2."
+    },
+    {
+      "id": "material_state",
+      "model": "firered-image-edit-1.1",
+      "status": "pending",
+      "input_protocol": "previous_stage_only",
+      "prompt": "Edit only the existing white cotton T-shirt. Make the same shirt fully saturated with water: visibly wet, heavier, darker in saturated areas, clinging to the torso at contact regions, with realistic adhesion, tension, wrinkles, gravity-driven folds, and localized translucency where wet fabric presses against skin. Preserve the shirt's existing cut and coverage. Preserve the subject's identity, anatomy, physique, pose, expression, hair, jewelry, skin, underwear, camera, lighting, gym equipment, and background exactly. Do not crop, re-pose, replace, remove, shorten, or redesign the shirt. Do not add water effects to exposed skin unless physically adjacent to the shirt.",
+      "settings": {
+        "enable_turbo_mode": true,
+        "number_of_runs": 1,
+        "seed": "record_generated_seed"
+      }
+    }
+  ],
+  "metrics": [
+    "identity_preservation",
+    "scene_preservation",
+    "garment_cut_preservation",
+    "wet_material_plausibility",
+    "fabric_anatomy_interaction",
+    "instruction_adherence",
+    "artifact_severity"
+  ],
+  "rating_scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "artifact_severity_direction": "lower_is_better",
+    "all_other_metrics_direction": "higher_is_better"
+  },
+  "decision_rule": "Advance two-stage material rendering when wet_material_plausibility or fabric_anatomy_interaction improves over FireRed prompt-only without reducing identity, scene, or garment-cut preservation below 4."
+}
