@@ -57,7 +57,7 @@ class AppearanceTests(unittest.TestCase):
             stage = plan_appearance(request)["stages"][0]
             self.assertEqual(stage["backend"]["id"], "qwen-image-outpaint")
             self.assertEqual(stage["controls"], {
-                "left": 0, "top": 0, "right": 0, "bottom": 512, "feathering": 64,
+                "left": 0, "top": 0, "right": 0, "bottom": 512,
             })
 
     def test_controls_must_be_an_object(self):

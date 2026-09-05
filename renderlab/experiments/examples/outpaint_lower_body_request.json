@@ -12,8 +12,7 @@
     "left": 0,
     "top": 0,
     "right": 0,
-    "bottom": 512,
-    "feathering": 64
+    "bottom": 512
   },
   "target": {
     "continuation": "Continue the existing photograph downward, completing the seated subject's lower legs and feet with anatomically consistent proportions and continuing the gym equipment and floor. Do not alter existing pixels outside the feathered boundary."

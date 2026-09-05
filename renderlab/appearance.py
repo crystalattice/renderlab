@@ -25,7 +25,7 @@ BACKEND_BLUEPRINTS = {
     "qwen-image-outpaint": "blueprints/Image Outpainting (Qwen-Image).json",
 }
 DEFAULT_CONTROLS = {
-    "outpaint": {"left": 0, "top": 0, "right": 0, "bottom": 512, "feathering": 64},
+    "outpaint": {"left": 0, "top": 0, "right": 0, "bottom": 512},
 }
 
 

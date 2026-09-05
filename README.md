@@ -263,7 +263,7 @@ not an editable canvas.
 
 The bundled Qwen workflows also back the `Repair Region` and `Extend Canvas` presets.
 The first outpainting capability check extends the existing gym reference downward by 512
-pixels with a 64-pixel feathered seam:
+pixels:
 
 ```bash
 python -m renderlab appearance plan \
@@ -272,9 +272,11 @@ python -m renderlab appearance plan \
 ```
 
 In ComfyUI, import `blueprints/Image Outpainting (Qwen-Image).json`, load the source,
-and set left/top/right/bottom/feathering to `0/0/0/512/64`. Enter the request's
-`target.continuation` text in the positive-prompt node inside the subgraph. The blueprint's
-root defaults are all zero, so the bottom value must be changed for the test to outpaint.
+and set left/top/right/bottom to `0/0/0/512`. Enter the request's `target.continuation`
+text in the root text widget. The blueprint definition contains an internal feathering
+input, but the imported Cloud root node does not expose it; RenderLab therefore does not
+claim it as a user control. The visible expansion defaults are all zero, so the bottom
+value must be changed for the test to outpaint.
 
 Operational commands:
 
