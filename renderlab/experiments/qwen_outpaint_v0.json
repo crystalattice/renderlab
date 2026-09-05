@@ -1,0 +1,58 @@
+{
+  "schema": "renderlab.reference-experiment.v1",
+  "name": "qwen-outpaint-v0",
+  "purpose": "Establish whether the bundled Qwen outpainting blueprint can extend a cropped character photograph while preserving the original canvas.",
+  "training_use": "evaluation_only",
+  "reference_ids": ["img_00562"],
+  "stages": [
+    {
+      "id": "bottom_extension_stock",
+      "model": "qwen-image-outpaint",
+      "status": "completed",
+      "workflow": "blueprints/Image Outpainting (Qwen-Image).json",
+      "input_protocol": "single_reference",
+      "prompt": "Continue the existing photograph downward, completing the seated subject's lower legs and feet with anatomically consistent proportions and continuing the gym equipment and floor. Do not alter existing pixels outside the feathered boundary.",
+      "settings": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 512,
+        "feathering_internal": 0,
+        "feathering_user_exposed": false
+      },
+      "output": {
+        "height": 1328,
+        "path": "upload/img_00562__qwen-image-edit__single-pass__934991231621675_00001_ (1).png",
+        "sha256": "a2a4844e89ba89738e8c40a1248e0d5f737694871cb85035a3c47cd9d74748ac",
+        "width": 800
+      },
+      "metrics": {
+        "artifact_severity": 1,
+        "continuation_plausibility": 5,
+        "identity_preservation": 4,
+        "original_canvas_preservation": 3,
+        "scene_continuity": 5,
+        "seam_visibility": 1
+      },
+      "notes": "The stock workflow completed both legs and feet, added plausible shoes and floor, continued the gym machine, and showed no obvious horizontal seam despite internal feathering remaining at zero. It resized and subtly regenerated the original canvas, including shirt, body, and facial detail, so it passes semantic scene extension but fails strict pixel-preserving outpainting."
+    }
+  ],
+  "metrics": [
+    "identity_preservation",
+    "original_canvas_preservation",
+    "continuation_plausibility",
+    "scene_continuity",
+    "seam_visibility",
+    "artifact_severity"
+  ],
+  "rating_scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "artifact_severity_direction": "lower_is_better",
+    "seam_visibility_direction": "lower_is_better",
+    "all_other_metrics_direction": "higher_is_better"
+  },
+  "decision_rule": "Accept semantic outpainting when continuation_plausibility and scene_continuity are at least 4. Accept production outpainting only when original_canvas_preservation is also at least 4.",
+  "status": "completed",
+  "conclusion": "Qwen is a viable semantic outpainting backend. The bundled blueprint contained a bypassed ImageCompositeMasked preservation path whose output was disconnected. RenderLab enables that node and routes its output to the subgraph result for the next strict-preservation test."
+}

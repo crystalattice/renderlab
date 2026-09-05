@@ -278,6 +278,12 @@ input, but the imported Cloud root node does not expose it; RenderLab therefore 
 claim it as a user control. The visible expansion defaults are all zero, so the bottom
 value must be changed for the test to outpaint.
 
+RenderLab's copy enables the blueprint's existing `ImageCompositeMasked` node and routes
+that composite to the subgraph output. The upstream template bypassed this preservation
+node and returned the raw decoded image, allowing Qwen to alter pixels throughout the
+original canvas. Re-import the blueprint after updating the repository to test the repaired
+pixel-preservation path.
+
 Operational commands:
 
 ```bash

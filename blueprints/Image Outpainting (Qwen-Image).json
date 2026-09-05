@@ -1220,7 +1220,6 @@
                 "type": "IMAGE",
                 "slot_index": 0,
                 "links": [
-                  314,
                   323
                 ]
               }
@@ -1376,7 +1375,7 @@
             ],
             "flags": {},
             "order": 12,
-            "mode": 4,
+            "mode": 0,
             "inputs": [
               {
                 "localized_name": "destination",
@@ -1430,7 +1429,9 @@
                 "localized_name": "IMAGE",
                 "name": "IMAGE",
                 "type": "IMAGE",
-                "links": []
+                "links": [
+                  314
+                ]
               }
             ],
             "properties": {
@@ -1829,7 +1830,7 @@
           },
           {
             "id": 314,
-            "origin_id": 191,
+            "origin_id": 200,
             "origin_slot": 0,
             "target_id": -20,
             "target_slot": 0,
