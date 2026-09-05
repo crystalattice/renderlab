@@ -34,7 +34,7 @@
     "repair_region": {
       "label": "Repair Region",
       "operation": "inpaint",
-      "target": {"region_source": "mask:required", "seamless": true}
+      "target": {"region_source": "mask:required", "seamless": true, "validation_status": "unproven_for_controlled_replacement"}
     },
     "reclothe": {
       "label": "Reclothe",

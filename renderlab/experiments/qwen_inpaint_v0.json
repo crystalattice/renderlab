@@ -16,6 +16,23 @@
     "mask_expand": 0,
     "mask_blur_radius": 1
   },
+  "result": {
+    "status": "failed",
+    "output": {
+      "height": 880,
+      "path": "upload/img_00562__qwen-image-edit__single-pass__190905273745196_00001_.png",
+      "sha256": "da776c1c792b6970845dcdad36ff3d5d51bfde182aff1e3b8c5a185be0373756",
+      "width": 1184
+    },
+    "metrics": {
+      "artifact_severity": 4,
+      "boundary_quality": 2,
+      "identity_preservation": 4,
+      "masked_instruction_adherence": 1,
+      "protected_region_preservation": 3
+    },
+    "notes": "The model changed the white T-shirt into a blue sports bra/crop top instead of preserving its cut. It created a pale ghosted band across the torso and damaged transitions near the shoulders and waist. The output demonstrates localized generative influence but fails controlled garment replacement."
+  },
   "metrics": [
     "masked_instruction_adherence",
     "protected_region_preservation",
@@ -24,5 +41,6 @@
     "artifact_severity"
   ],
   "decision_rule": "Pass when masked_instruction_adherence, protected_region_preservation, boundary_quality, and identity_preservation are at least 4 and artifact_severity is at most 2.",
-  "status": "ready"
+  "status": "completed",
+  "conclusion": "The bundled four-step Qwen inpainting workflow is not accepted for controlled garment replacement. It may remain useful for unconstrained object removal or region regeneration, but those require separate evaluation."
 }

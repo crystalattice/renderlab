@@ -298,6 +298,11 @@ request's `target.instruction` into the root text widget and retain the default 
 The outer node exposes no sampler or mask-blending controls; the bundled workflow runs
 four Euler/simple steps at CFG 1 with zero mask growth and one-pixel blur.
 
+The initial shirt-color test failed: Qwen replaced the shirt with a crop top and produced
+ghosted torso and boundary artifacts. `Repair Region` therefore remains experimental and
+must not be routed as a validated controlled-replacement operation. Localized removal and
+free regeneration are separate behaviors and have not yet been evaluated.
+
 Operational commands:
 
 ```bash
