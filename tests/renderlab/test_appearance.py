@@ -24,6 +24,8 @@ class AppearanceTests(unittest.TestCase):
         self.assertEqual(presets["bikini"]["operation"], "outfit_change")
         self.assertEqual(presets["auto_unclothe"]["operation"], "unclothe")
         self.assertEqual(presets["face_swap"]["operation"], "face_swap")
+        self.assertEqual(presets["extend_canvas"]["operation"], "outpaint")
+        self.assertEqual(presets["repair_region"]["operation"], "inpaint")
 
     def test_available_backends_reference_bundled_blueprints(self):
         repository = Path(__file__).resolve().parents[2]
@@ -48,6 +50,21 @@ class AppearanceTests(unittest.TestCase):
             self.assertFalse(plan["stages"][1]["backend"]["available"])
             self.assertEqual(plan["stages"][1]["runs_when"], "identity_preservation < acceptance.identity_preservation")
             self.assertEqual(len(plan["request_sha256"]), 64)
+
+    def test_outpaint_defaults_are_executable_not_noop(self):
+        with tempfile.TemporaryDirectory() as directory:
+            request = self.write_request(Path(directory), preset="extend_canvas")
+            stage = plan_appearance(request)["stages"][0]
+            self.assertEqual(stage["backend"]["id"], "qwen-image-outpaint")
+            self.assertEqual(stage["controls"], {
+                "left": 0, "top": 0, "right": 0, "bottom": 512, "feathering": 64,
+            })
+
+    def test_controls_must_be_an_object(self):
+        with tempfile.TemporaryDirectory() as directory:
+            request = self.write_request(Path(directory), controls=[])
+            with self.assertRaisesRegex(AppearanceError, "controls must be an object"):
+                plan_appearance(request)
 
     def test_semantic_evidence_is_preserved_for_future_manga_planning(self):
         with tempfile.TemporaryDirectory() as directory:

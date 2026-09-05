@@ -16,6 +16,11 @@
       "operation": "outfit_change",
       "target": {"clothing_state": "bikini", "coverage": "standard", "fit": "fitted"}
     },
+    "extend_canvas": {
+      "label": "Extend Canvas",
+      "operation": "outpaint",
+      "target": {"continuation": "scene_and_subject", "seamless": true}
+    },
     "face_swap": {
       "label": "Face Swap",
       "operation": "face_swap",
@@ -25,6 +30,11 @@
       "label": "Lingerie",
       "operation": "outfit_change",
       "target": {"clothing_state": "lingerie", "coverage": "preset_default", "fit": "fitted"}
+    },
+    "repair_region": {
+      "label": "Repair Region",
+      "operation": "inpaint",
+      "target": {"region_source": "mask:required", "seamless": true}
     },
     "reclothe": {
       "label": "Reclothe",

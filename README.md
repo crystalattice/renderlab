@@ -261,6 +261,21 @@ and a conditional identity-repair stage. `source_semantics: semantic_evidence` r
 same contract for future manga semantic-restaging workflows where the source is evidence,
 not an editable canvas.
 
+The bundled Qwen workflows also back the `Repair Region` and `Extend Canvas` presets.
+The first outpainting capability check extends the existing gym reference downward by 512
+pixels with a 64-pixel feathered seam:
+
+```bash
+python -m renderlab appearance plan \
+  renderlab/experiments/examples/outpaint_lower_body_request.json \
+  --output /tmp/outpaint-plan.json
+```
+
+In ComfyUI, import `blueprints/Image Outpainting (Qwen-Image).json`, load the source,
+and set left/top/right/bottom/feathering to `0/0/0/512/64`. Enter the request's
+`target.continuation` text in the positive-prompt node inside the subgraph. The blueprint's
+root defaults are all zero, so the bottom value must be changed for the test to outpaint.
+
 Operational commands:
 
 ```bash

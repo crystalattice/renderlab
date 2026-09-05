@@ -24,6 +24,9 @@ BACKEND_BLUEPRINTS = {
     "qwen-image-inpaint": "blueprints/Image Inpainting (Qwen-image).json",
     "qwen-image-outpaint": "blueprints/Image Outpainting (Qwen-Image).json",
 }
+DEFAULT_CONTROLS = {
+    "outpaint": {"left": 0, "top": 0, "right": 0, "bottom": 512, "feathering": 64},
+}
 
 
 class AppearanceError(RuntimeError):
@@ -88,6 +91,11 @@ def plan_appearance(request_path: Path, preset_path: Path = DEFAULT_PRESETS) -> 
         **acceptance_override,
     }
     target = _merge_target(preset, request)
+    controls = {**DEFAULT_CONTROLS.get(operation, {})}
+    control_override = request.get("controls", {})
+    if not isinstance(control_override, dict):
+        raise AppearanceError("controls must be an object")
+    controls.update(control_override)
     backend_id = request.get("backend", BACKENDS[operation])
     transform = {
         "id": "appearance_transform",
@@ -100,6 +108,7 @@ def plan_appearance(request_path: Path, preset_path: Path = DEFAULT_PRESETS) -> 
         "input": {"source": source, "references": request.get("references", [])},
         "subject": subject,
         "target": target,
+        "controls": controls,
         "preserves": preserve,
         "owns": ["appearance"],
         "depends_on": [],
