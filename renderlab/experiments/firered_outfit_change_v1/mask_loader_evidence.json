@@ -1,0 +1,18 @@
+{
+  "local_implementation": "nodes.LoadImageMask.load_image_mask; CPU; red channel",
+  "grayscale_png": {
+    "maximum_loaded_white": 0.9961089491844177,
+    "generation_white_pixels_below_one": 150687,
+    "composite_white_pixels_below_one": 141287,
+    "disposition": "Do not use grayscale reference PNGs as Cloud input assets."
+  },
+  "rgb_png_derivatives": {
+    "channel_to_reference_byte_errors": 0,
+    "native_loader_normalized_weight_errors": 0,
+    "white_loaded_value": 1.0,
+    "black_loaded_value": 0.0,
+    "geometry_modified": false
+  },
+  "runtime_cloud_loading_verified": false,
+  "reason": "Lossless equal-channel RGB avoids local native grayscale decoder normalization mismatch. No resize, feather or weight change in conversion."
+}

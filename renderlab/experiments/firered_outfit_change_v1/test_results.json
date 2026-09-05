@@ -1,0 +1,18 @@
+{
+  "renderlab_suite": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests/renderlab -v",
+    "tests": 90,
+    "result": "PASS"
+  },
+  "experiment_suite": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s renderlab/experiments/firered_outfit_change_v1 -p 'test_*.py' -v",
+    "tests": 7,
+    "result": "PASS",
+    "log": "preparation_tests.txt"
+  },
+  "native_cpu_preparation": "PASS",
+  "ruff": "PASS",
+  "cloud_dry_runs": 2,
+  "uploads": 0,
+  "inference_jobs": 0
+}

@@ -1,0 +1,1 @@
+Geometry approved by user. Core and generation PNGs are frozen. build_mask_candidates.py records the original candidate construction and must not be rerun over these approved assets. Current composite additionally forces every core pixel to 255; see mask_candidates_report.json.

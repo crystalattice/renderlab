@@ -1,0 +1,75 @@
+{
+  "preparation_status": "PASS_LOCAL_AND_GRAPH_PREFLIGHT",
+  "execution_ready": false,
+  "reason": "Two approved RGB mask assets require separately authorized uploads and authoritative filename binding.",
+  "base_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
+  "mask_invariants": {
+    "core_outside_generation": 0,
+    "core_underweight_pixels": 0,
+    "feather_outside_margin": 0,
+    "nonzero_outside_generation": 0
+  },
+  "native_cpu_containment": {
+    "outside_generation_pixels": 888673,
+    "outside_changed_pixels": 0,
+    "outside_max_channel_error": 0,
+    "core_pixels_different_from_raw": 0,
+    "dimensions": [
+      1160,
+      896
+    ],
+    "mode": "RGB",
+    "alpha_added": false
+  },
+  "native_loader_verified": true,
+  "cloud_dry_run": {
+    "status": "validated",
+    "submitted": false,
+    "unresolved_mask_filename_warnings": 2,
+    "execution_ready": false
+  },
+  "models_found": 3,
+  "node_types_found": 14,
+  "required_uploads": [
+    {
+      "node": "2",
+      "input": "image",
+      "path": "cloud_assets/shirt_generation_mask.rgb.png",
+      "absolute_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_generation_mask.rgb.png",
+      "sha256": "0206faa8b3ed69675c50e893e1e23ab90779eebd8eb5e1c0fc42d3ef569cce9b",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "channel": "red",
+      "cloud_filename": null,
+      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "derived_from": "mask_candidates_v1/shirt_generation_mask.png",
+      "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
+    },
+    {
+      "node": "19",
+      "input": "image",
+      "path": "cloud_assets/shirt_composite_mask.rgb.png",
+      "absolute_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_composite_mask.rgb.png",
+      "sha256": "1146ea530aee23976b934c3d6db4cc0d3be4fc00a8ca10ff7e85ec656df9a2b0",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "channel": "red",
+      "cloud_filename": null,
+      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
+      "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
+    }
+  ],
+  "source_upload_required": false,
+  "uploads_performed": 0,
+  "inference_jobs_submitted": 0,
+  "visual_acceptance": "NOT_EVALUATED_NO_OUTFIT_OUTPUT",
+  "gated_submission": "cloud_submit.gated.json",
+  "total_cost": null
+}

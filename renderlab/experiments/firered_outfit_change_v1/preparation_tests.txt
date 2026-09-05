@@ -1,0 +1,12 @@
+test_approved_package (test_preparation.PreparationTests.test_approved_package) ... ok
+test_core_cannot_be_feathered (test_preparation.PreparationTests.test_core_cannot_be_feathered) ... ok
+test_feather_cannot_escape_generation (test_preparation.PreparationTests.test_feather_cannot_escape_generation) ... ok
+test_generation_must_be_binary (test_preparation.PreparationTests.test_generation_must_be_binary) ... ok
+test_generation_must_contain_core (test_preparation.PreparationTests.test_generation_must_contain_core) ... ok
+test_one_core_pixel_different_from_raw_fails (test_preparation.PreparationTests.test_one_core_pixel_different_from_raw_fails) ... ok
+test_single_channel_outside_error_fails (test_preparation.PreparationTests.test_single_channel_outside_error_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.311s
+
+OK

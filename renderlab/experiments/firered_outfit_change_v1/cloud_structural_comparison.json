@@ -1,0 +1,33 @@
+{
+  "base_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
+  "unchanged_nodes": [
+    "1",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13"
+  ],
+  "changed_nodes": [
+    "2",
+    "8",
+    "14",
+    "17",
+    "18"
+  ],
+  "removed_nodes": [
+    "15",
+    "16"
+  ],
+  "added_nodes": [
+    "19"
+  ],
+  "permitted_changes": "mask source and composite mask edge, outfit prompt, output prefixes only",
+  "editor_roundtrip": true,
+  "acyclic_all_nodes_reach_save": true
+}

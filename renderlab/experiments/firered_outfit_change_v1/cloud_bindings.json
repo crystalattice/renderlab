@@ -1,0 +1,46 @@
+{
+  "source": {
+    "node": "1",
+    "cloud_filename": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+    "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "evidence": "source_upload_evidence.json",
+    "status": "REUSE_PRIOR_SUCCESSFUL_UPLOAD_AND_COMPLETED_JOB"
+  },
+  "required_uploads": [
+    {
+      "node": "2",
+      "input": "image",
+      "path": "cloud_assets/shirt_generation_mask.rgb.png",
+      "absolute_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_generation_mask.rgb.png",
+      "sha256": "0206faa8b3ed69675c50e893e1e23ab90779eebd8eb5e1c0fc42d3ef569cce9b",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "channel": "red",
+      "cloud_filename": null,
+      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "derived_from": "mask_candidates_v1/shirt_generation_mask.png",
+      "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
+    },
+    {
+      "node": "19",
+      "input": "image",
+      "path": "cloud_assets/shirt_composite_mask.rgb.png",
+      "absolute_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_composite_mask.rgb.png",
+      "sha256": "1146ea530aee23976b934c3d6db4cc0d3be4fc00a8ca10ff7e85ec656df9a2b0",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "channel": "red",
+      "cloud_filename": null,
+      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
+      "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
+    }
+  ],
+  "binding_rule": "After separately authorized uploads, bind only node 2 and node 19 image to exact successful upload response filenames, verify hashes/dimensions and repeat dry run. No filename inferred from local basename."
+}

@@ -1,0 +1,11 @@
+{
+  "name": "firered_outfit_change_v1",
+  "goal": "Replace only the white T-shirt with a fitted matte-black sleeveless athletic tank top, with realistic neckline, armholes, seams, fabric tension, folds, and lighting; preserve everything else exactly. Remove both original sleeves cleanly and reconstruct plausible newly exposed shoulders and upper arms. Preserve identity, face, hair, body proportions, anatomy, pose, hands, forearms, lower clothing, thighs, gym equipment, camera, lighting, and background. No old white-shirt remnants, logos, text, or added accessories.",
+  "architecture_base_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
+  "seed": 3407,
+  "latent_mask_node": "2",
+  "composite_mask_node": "19",
+  "raw_output_node": "14",
+  "production_output_node": "18",
+  "status": "PREPARED_PENDING_MASK_UPLOADS"
+}

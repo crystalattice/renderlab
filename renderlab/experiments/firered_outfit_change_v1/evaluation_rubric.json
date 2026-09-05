@@ -1,0 +1,63 @@
+{
+  "status": "NOT_EXECUTED_NOT_SCORED",
+  "visual_scale": {
+    "0": "fail",
+    "1": "major defects",
+    "2": "minor visible defects",
+    "3": "clean pass"
+  },
+  "acceptance": "All visual gates score 3 and all numeric gates pass. No automatic suitability claim.",
+  "gates": [
+    {
+      "id": "garment",
+      "requirement": "Fitted matte-black sleeveless athletic tank top with realistic neckline, armholes, seams, fabric tension, folds and lighting.",
+      "score": null,
+      "evidence": null
+    },
+    {
+      "id": "sleeves",
+      "requirement": "Both old sleeves removed cleanly; no short-sleeve silhouette.",
+      "score": null,
+      "evidence": null
+    },
+    {
+      "id": "exposed_anatomy",
+      "requirement": "Plausible shoulders and proximal upper arms; no anatomy distortion.",
+      "score": null,
+      "evidence": null
+    },
+    {
+      "id": "preservation",
+      "requirement": "Identity, hair, body proportions, pose, hands, forearms, lower clothing, thighs, environment, equipment, camera and lighting preserved.",
+      "score": null,
+      "evidence": null
+    },
+    {
+      "id": "remnants",
+      "requirement": "No old white-shirt remnants anywhere, including hem, collar and cuffs.",
+      "score": null,
+      "evidence": null
+    },
+    {
+      "id": "boundary",
+      "requirement": "No seams, halos, white rims, skin smears, clipping or blend discontinuities at 100% and enlarged inspection.",
+      "score": null,
+      "evidence": null
+    },
+    {
+      "id": "containment",
+      "requirement": "Production has zero changed pixels and maximum channel error 0 outside binary generation; every core production pixel equals raw; 1160x896 RGB, no alpha.",
+      "score": null,
+      "evidence": null
+    }
+  ],
+  "raw_policy": "Preserve raw unchanged; report raw semantic preservation separately from strict pixel drift. Only production can pass exact containment.",
+  "required_evidence": [
+    "raw PNG and SHA-256",
+    "production PNG and SHA-256",
+    "numeric output validation",
+    "source/raw/production contact sheet",
+    "enlarged collar, cuffs, shoulders and hem",
+    "job and output evidence after authorized execution"
+  ]
+}

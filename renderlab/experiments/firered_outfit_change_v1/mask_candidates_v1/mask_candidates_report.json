@@ -1,0 +1,1102 @@
+{
+  "status": "GEOMETRY_USER_APPROVED_COMPOSITE_INVARIANTS_ENFORCED",
+  "automatic_suitability_claim": false,
+  "source": {
+    "path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+    "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "dimensions": [
+      1160,
+      896
+    ],
+    "mode": "RGB"
+  },
+  "construction": {
+    "libraries": [
+      "Pillow",
+      "NumPy",
+      "SciPy distance_transform_edt"
+    ],
+    "inference_used": false,
+    "geometry": {
+      "core_polygon": [
+        [
+          614,
+          283
+        ],
+        [
+          618,
+          307
+        ],
+        [
+          627,
+          314
+        ],
+        [
+          641,
+          316
+        ],
+        [
+          657,
+          312
+        ],
+        [
+          679,
+          305
+        ],
+        [
+          701,
+          297
+        ],
+        [
+          719,
+          288
+        ],
+        [
+          725,
+          284
+        ],
+        [
+          739,
+          291
+        ],
+        [
+          755,
+          298
+        ],
+        [
+          771,
+          294
+        ],
+        [
+          785,
+          292
+        ],
+        [
+          798,
+          298
+        ],
+        [
+          810,
+          307
+        ],
+        [
+          830,
+          314
+        ],
+        [
+          849,
+          325
+        ],
+        [
+          866,
+          335
+        ],
+        [
+          871,
+          340
+        ],
+        [
+          862,
+          348
+        ],
+        [
+          854,
+          361
+        ],
+        [
+          847,
+          380
+        ],
+        [
+          840,
+          400
+        ],
+        [
+          836,
+          411
+        ],
+        [
+          846,
+          415
+        ],
+        [
+          860,
+          420
+        ],
+        [
+          851,
+          430
+        ],
+        [
+          839,
+          443
+        ],
+        [
+          827,
+          450
+        ],
+        [
+          816,
+          450
+        ],
+        [
+          802,
+          442
+        ],
+        [
+          790,
+          436
+        ],
+        [
+          782,
+          440
+        ],
+        [
+          774,
+          461
+        ],
+        [
+          764,
+          486
+        ],
+        [
+          752,
+          520
+        ],
+        [
+          740,
+          557
+        ],
+        [
+          728,
+          590
+        ],
+        [
+          716,
+          626
+        ],
+        [
+          707,
+          655
+        ],
+        [
+          700,
+          684
+        ],
+        [
+          695,
+          708
+        ],
+        [
+          691,
+          731
+        ],
+        [
+          692,
+          748
+        ],
+        [
+          692,
+          765
+        ],
+        [
+          685,
+          790
+        ],
+        [
+          678,
+          813
+        ],
+        [
+          674,
+          833
+        ],
+        [
+          670,
+          811
+        ],
+        [
+          663,
+          797
+        ],
+        [
+          649,
+          783
+        ],
+        [
+          634,
+          770
+        ],
+        [
+          617,
+          760
+        ],
+        [
+          598,
+          753
+        ],
+        [
+          578,
+          748
+        ],
+        [
+          560,
+          747
+        ],
+        [
+          541,
+          751
+        ],
+        [
+          525,
+          758
+        ],
+        [
+          511,
+          766
+        ],
+        [
+          501,
+          769
+        ],
+        [
+          489,
+          764
+        ],
+        [
+          477,
+          757
+        ],
+        [
+          464,
+          746
+        ],
+        [
+          450,
+          729
+        ],
+        [
+          436,
+          711
+        ],
+        [
+          424,
+          694
+        ],
+        [
+          411,
+          679
+        ],
+        [
+          427,
+          673
+        ],
+        [
+          438,
+          665
+        ],
+        [
+          448,
+          651
+        ],
+        [
+          458,
+          643
+        ],
+        [
+          466,
+          625
+        ],
+        [
+          473,
+          603
+        ],
+        [
+          478,
+          580
+        ],
+        [
+          481,
+          550
+        ],
+        [
+          484,
+          520
+        ],
+        [
+          487,
+          488
+        ],
+        [
+          489,
+          459
+        ],
+        [
+          489,
+          436
+        ],
+        [
+          492,
+          420
+        ],
+        [
+          501,
+          403
+        ],
+        [
+          514,
+          386
+        ],
+        [
+          526,
+          375
+        ],
+        [
+          533,
+          357
+        ],
+        [
+          538,
+          333
+        ],
+        [
+          545,
+          315
+        ],
+        [
+          555,
+          305
+        ],
+        [
+          571,
+          296
+        ],
+        [
+          590,
+          288
+        ],
+        [
+          603,
+          283
+        ]
+      ],
+      "left_shoulder_expansion": [
+        [
+          515,
+          292
+        ],
+        [
+          535,
+          283
+        ],
+        [
+          566,
+          284
+        ],
+        [
+          598,
+          273
+        ],
+        [
+          614,
+          274
+        ],
+        [
+          623,
+          294
+        ],
+        [
+          624,
+          323
+        ],
+        [
+          563,
+          366
+        ],
+        [
+          541,
+          378
+        ],
+        [
+          520,
+          356
+        ],
+        [
+          511,
+          327
+        ]
+      ],
+      "right_shoulder_expansion": [
+        [
+          722,
+          272
+        ],
+        [
+          747,
+          277
+        ],
+        [
+          770,
+          277
+        ],
+        [
+          801,
+          283
+        ],
+        [
+          823,
+          296
+        ],
+        [
+          844,
+          305
+        ],
+        [
+          873,
+          320
+        ],
+        [
+          891,
+          335
+        ],
+        [
+          903,
+          357
+        ],
+        [
+          903,
+          410
+        ],
+        [
+          882,
+          432
+        ],
+        [
+          852,
+          454
+        ],
+        [
+          826,
+          469
+        ],
+        [
+          800,
+          457
+        ],
+        [
+          774,
+          449
+        ],
+        [
+          774,
+          411
+        ],
+        [
+          797,
+          367
+        ],
+        [
+          764,
+          327
+        ]
+      ],
+      "neckline_expansion": [
+        [
+          602,
+          274
+        ],
+        [
+          616,
+          272
+        ],
+        [
+          627,
+          295
+        ],
+        [
+          645,
+          304
+        ],
+        [
+          670,
+          298
+        ],
+        [
+          697,
+          288
+        ],
+        [
+          718,
+          272
+        ],
+        [
+          730,
+          280
+        ],
+        [
+          720,
+          304
+        ],
+        [
+          667,
+          326
+        ],
+        [
+          620,
+          329
+        ]
+      ],
+      "protected_polygons": {
+        "face_and_hair": [
+          [
+            522,
+            66
+          ],
+          [
+            718,
+            66
+          ],
+          [
+            744,
+            133
+          ],
+          [
+            743,
+            219
+          ],
+          [
+            724,
+            259
+          ],
+          [
+            711,
+            274
+          ],
+          [
+            686,
+            264
+          ],
+          [
+            651,
+            279
+          ],
+          [
+            610,
+            280
+          ],
+          [
+            586,
+            266
+          ],
+          [
+            551,
+            240
+          ],
+          [
+            524,
+            192
+          ]
+        ],
+        "left_hand_and_forearm": [
+          [
+            366,
+            134
+          ],
+          [
+            446,
+            129
+          ],
+          [
+            465,
+            207
+          ],
+          [
+            523,
+            277
+          ],
+          [
+            515,
+            299
+          ],
+          [
+            477,
+            291
+          ],
+          [
+            428,
+            256
+          ],
+          [
+            389,
+            221
+          ],
+          [
+            372,
+            183
+          ]
+        ],
+        "right_hand_and_forearm": [
+          [
+            875,
+            129
+          ],
+          [
+            979,
+            129
+          ],
+          [
+            988,
+            244
+          ],
+          [
+            970,
+            334
+          ],
+          [
+            947,
+            372
+          ],
+          [
+            907,
+            369
+          ],
+          [
+            905,
+            337
+          ],
+          [
+            927,
+            298
+          ],
+          [
+            917,
+            253
+          ],
+          [
+            884,
+            223
+          ]
+        ],
+        "lower_clothing_and_thighs": [
+          [
+            0,
+            674
+          ],
+          [
+            404,
+            674
+          ],
+          [
+            419,
+            689
+          ],
+          [
+            434,
+            709
+          ],
+          [
+            449,
+            729
+          ],
+          [
+            463,
+            746
+          ],
+          [
+            477,
+            758
+          ],
+          [
+            489,
+            767
+          ],
+          [
+            501,
+            772
+          ],
+          [
+            517,
+            765
+          ],
+          [
+            536,
+            755
+          ],
+          [
+            560,
+            750
+          ],
+          [
+            578,
+            751
+          ],
+          [
+            598,
+            756
+          ],
+          [
+            617,
+            763
+          ],
+          [
+            633,
+            774
+          ],
+          [
+            648,
+            787
+          ],
+          [
+            660,
+            800
+          ],
+          [
+            668,
+            813
+          ],
+          [
+            672,
+            834
+          ],
+          [
+            669,
+            850
+          ],
+          [
+            726,
+            896
+          ],
+          [
+            0,
+            896
+          ]
+        ],
+        "left_gym_pad_and_frame": [
+          [
+            0,
+            266
+          ],
+          [
+            432,
+            266
+          ],
+          [
+            466,
+            286
+          ],
+          [
+            488,
+            342
+          ],
+          [
+            491,
+            376
+          ],
+          [
+            475,
+            438
+          ],
+          [
+            461,
+            487
+          ],
+          [
+            0,
+            487
+          ]
+        ],
+        "right_gym_pad_and_frame": [
+          [
+            912,
+            314
+          ],
+          [
+            1160,
+            303
+          ],
+          [
+            1160,
+            896
+          ],
+          [
+            920,
+            896
+          ],
+          [
+            907,
+            486
+          ],
+          [
+            898,
+            441
+          ],
+          [
+            904,
+            405
+          ]
+        ]
+      }
+    },
+    "method": "Hand-traced pixel-space garment polygon; upper-only 18px square dilation plus reconstruction polygons; subtract explicit protection masks. No resizing of mask canvas.",
+    "composite_method": "Original inward 10px distance ramp retained only in generation minus core; all core weights forced to 255; outside generation forced to 0.",
+    "feather_width_pixels": 10,
+    "red_seat_policy": "Core excludes all selected seat pixels. Generation/composite protect red-color-selected pixels inside explicit seat ROI except <=12px from upper garment within sleeve/shoulder exception polygon.",
+    "core_pixels_removed_by_protection": 176,
+    "generation_pixels_removed_by_protection": 2808
+  },
+  "protected_regions": {
+    "face_and_hair": {
+      "pixels": 42160,
+      "bbox_xyxy_exclusive": [
+        522,
+        66,
+        745,
+        281
+      ]
+    },
+    "left_hand_and_forearm": {
+      "pixels": 13023,
+      "bbox_xyxy_exclusive": [
+        366,
+        129,
+        524,
+        300
+      ]
+    },
+    "right_hand_and_forearm": {
+      "pixels": 19253,
+      "bbox_xyxy_exclusive": [
+        875,
+        129,
+        989,
+        373
+      ]
+    },
+    "lower_clothing_and_thighs": {
+      "pixels": 129234,
+      "bbox_xyxy_exclusive": [
+        0,
+        674,
+        726,
+        896
+      ]
+    },
+    "left_gym_pad_and_frame": {
+      "pixels": 105879,
+      "bbox_xyxy_exclusive": [
+        0,
+        266,
+        492,
+        488
+      ]
+    },
+    "right_gym_pad_and_frame": {
+      "pixels": 146149,
+      "bbox_xyxy_exclusive": [
+        898,
+        304,
+        1160,
+        896
+      ]
+    },
+    "red_seat_outside_sleeve_exception": {
+      "pixels": 50097,
+      "bbox_xyxy_exclusive": [
+        555,
+        3,
+        870,
+        896
+      ]
+    }
+  },
+  "masks": {
+    "shirt_core_mask": {
+      "filename": "shirt_core_mask.png",
+      "overlay": "shirt_core_mask_overlay.png",
+      "sha256": "3cc5ee4fd2fd5a7851ebc183332cd8222bf07af862a17274503a9f2975e1728c",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "L",
+      "bbox_xyxy_exclusive": [
+        411,
+        283,
+        872,
+        832
+      ],
+      "nonzero_pixels": 131877,
+      "white_255_pixels": 131877,
+      "black_0_pixels": 907483,
+      "blend_1_to_254_pixels": 0,
+      "coverage_fraction": 0.12688288947044335,
+      "unique_values": [
+        0,
+        255
+      ],
+      "protected_region_intersections": {
+        "face_and_hair": 0,
+        "left_hand_and_forearm": 0,
+        "right_hand_and_forearm": 0,
+        "lower_clothing_and_thighs": 0,
+        "left_gym_pad_and_frame": 0,
+        "right_gym_pad_and_frame": 0,
+        "red_seat_outside_sleeve_exception": 0
+      },
+      "editable_red_seat_exception_pixels": 0
+    },
+    "shirt_generation_mask": {
+      "filename": "shirt_generation_mask.png",
+      "overlay": "shirt_generation_mask_overlay.png",
+      "sha256": "2337a79634cb749633b838f32741735122fe6ea6728ca5d385d5208818eda355",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "L",
+      "bbox_xyxy_exclusive": [
+        411,
+        266,
+        904,
+        832
+      ],
+      "nonzero_pixels": 150687,
+      "white_255_pixels": 150687,
+      "black_0_pixels": 888673,
+      "blend_1_to_254_pixels": 0,
+      "coverage_fraction": 0.1449805649630542,
+      "unique_values": [
+        0,
+        255
+      ],
+      "protected_region_intersections": {
+        "face_and_hair": 0,
+        "left_hand_and_forearm": 0,
+        "right_hand_and_forearm": 0,
+        "lower_clothing_and_thighs": 0,
+        "left_gym_pad_and_frame": 0,
+        "right_gym_pad_and_frame": 0,
+        "red_seat_outside_sleeve_exception": 0
+      },
+      "editable_red_seat_exception_pixels": 1601
+    },
+    "shirt_composite_mask": {
+      "filename": "shirt_composite_mask.png",
+      "overlay": "shirt_composite_mask_overlay.png",
+      "sha256": "7970448344bbcc802b0bf2df1f7a5289e38ac1add3e5e33d02082ae45e097c59",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "L",
+      "bbox_xyxy_exclusive": [
+        411,
+        267,
+        903,
+        832
+      ],
+      "nonzero_pixels": 149773,
+      "white_255_pixels": 141287,
+      "black_0_pixels": 889587,
+      "blend_1_to_254_pixels": 8486,
+      "coverage_fraction": 0.14410117764778324,
+      "unique_values": [
+        0,
+        11,
+        26,
+        32,
+        47,
+        51,
+        55,
+        66,
+        76,
+        80,
+        83,
+        89,
+        102,
+        105,
+        112,
+        119,
+        123,
+        128,
+        130,
+        136,
+        138,
+        146,
+        153,
+        155,
+        158,
+        160,
+        169,
+        174,
+        178,
+        180,
+        185,
+        191,
+        192,
+        194,
+        203,
+        204,
+        205,
+        210,
+        215,
+        216,
+        226,
+        227,
+        230,
+        231,
+        235,
+        237,
+        241,
+        246,
+        249,
+        250,
+        255
+      ],
+      "protected_region_intersections": {
+        "face_and_hair": 0,
+        "left_hand_and_forearm": 0,
+        "right_hand_and_forearm": 0,
+        "lower_clothing_and_thighs": 0,
+        "left_gym_pad_and_frame": 0,
+        "right_gym_pad_and_frame": 0,
+        "red_seat_outside_sleeve_exception": 0
+      },
+      "editable_red_seat_exception_pixels": 1469
+    }
+  },
+  "review_cautions": [
+    "User approved geometry; semantic output quality remains unevaluated until execution.",
+    "Protected-region counts refer to declared geometry, not independent semantic segmentation."
+  ],
+  "checks": {
+    "core_binary": true,
+    "generation_binary": true,
+    "core_subset_generation": true,
+    "composite_nonzero_outside_generation": 0,
+    "all_declared_protected_intersections_zero": true,
+    "source_unchanged": true,
+    "geometry_approved_by": "user",
+    "core_and_generation_png_hashes_unchanged": {
+      "core": "3cc5ee4fd2fd5a7851ebc183332cd8222bf07af862a17274503a9f2975e1728c",
+      "generation": "2337a79634cb749633b838f32741735122fe6ea6728ca5d385d5208818eda355"
+    },
+    "previous_core_underweight_pixels": 9821,
+    "composite_changed_pixels": 9821,
+    "core_underweight_pixels": 0,
+    "feather_outside_generation_minus_core": 0,
+    "nonzero_outside_generation": 0
+  },
+  "approval": {
+    "geometry_approved_by": "user",
+    "core_and_generation_png_hashes_unchanged": {
+      "core": "3cc5ee4fd2fd5a7851ebc183332cd8222bf07af862a17274503a9f2975e1728c",
+      "generation": "2337a79634cb749633b838f32741735122fe6ea6728ca5d385d5208818eda355"
+    },
+    "previous_core_underweight_pixels": 9821,
+    "composite_changed_pixels": 9821,
+    "core_underweight_pixels": 0,
+    "feather_outside_generation_minus_core": 0,
+    "nonzero_outside_generation": 0
+  }
+}

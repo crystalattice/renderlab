@@ -1,0 +1,65 @@
+{
+  "provenance_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
+  "upload_evidence": {
+    "checked_utc": "2026-09-05T18:16:49.718Z",
+    "uploads": [
+      {
+        "node": "1",
+        "role": "source",
+        "path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+        "sha256_before_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+        "dimensions_before_upload": [
+          1160,
+          896
+        ],
+        "sha256_after_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+        "dimensions_after_upload": [
+          1160,
+          896
+        ],
+        "put_attempts": 1,
+        "retry_attempts": 0,
+        "put_exit_code": 0,
+        "put_response_raw": "{\"name\":\"faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png\",\"subfolder\":\"\",\"type\":\"input\"}\n",
+        "cloud_response": {
+          "name": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+          "subfolder": "",
+          "type": "input"
+        },
+        "authority": "Successful PUT response from this preparation; no server content checksum was returned."
+      }
+    ],
+    "historical_upload_commit": "f1c18b335ce6df469b526ff905373908636b40b2",
+    "uploads_this_revision": 0,
+    "active_cloud_bindings": {
+      "1.image": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png"
+    },
+    "mask_upload_no_longer_referenced": true
+  },
+  "completed_job_evidence": {
+    "prompt_id": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+    "runtime_status": "completed",
+    "resolved_payload_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
+    "completion_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Job completed successfully. Use get_output to retrieve results."
+        },
+        {
+          "type": "text",
+          "text": "{\"status\":\"completed\",\"completed\":true,\"raw_status\":\"completed\"}"
+        }
+      ],
+      "structuredContent": {
+        "result": {
+          "status": "succeeded",
+          "warnings": [],
+          "job_status": "completed",
+          "raw_status": "completed"
+        }
+      }
+    }
+  },
+  "scope": "Source reuse evidence only, inherited from controlled experiment; no outfit job executed."
+}

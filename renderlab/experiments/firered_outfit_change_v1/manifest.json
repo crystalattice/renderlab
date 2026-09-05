@@ -1,0 +1,100 @@
+{
+  "schema": "renderlab.outfit-change.v1",
+  "base_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
+  "source": {
+    "path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+    "role": "target_image",
+    "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "width": 1160,
+    "height": 896,
+    "mode": "RGB"
+  },
+  "dimensions": [
+    1160,
+    896
+  ],
+  "mask_geometry_approval": "user",
+  "approved_mask_hashes": {
+    "core": "3cc5ee4fd2fd5a7851ebc183332cd8222bf07af862a17274503a9f2975e1728c",
+    "generation": "2337a79634cb749633b838f32741735122fe6ea6728ca5d385d5208818eda355"
+  },
+  "mask_assets": [
+    {
+      "node": "2",
+      "input": "image",
+      "path": "cloud_assets/shirt_generation_mask.rgb.png",
+      "absolute_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_generation_mask.rgb.png",
+      "sha256": "0206faa8b3ed69675c50e893e1e23ab90779eebd8eb5e1c0fc42d3ef569cce9b",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "channel": "red",
+      "cloud_filename": null,
+      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "derived_from": "mask_candidates_v1/shirt_generation_mask.png",
+      "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
+    },
+    {
+      "node": "19",
+      "input": "image",
+      "path": "cloud_assets/shirt_composite_mask.rgb.png",
+      "absolute_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_composite_mask.rgb.png",
+      "sha256": "1146ea530aee23976b934c3d6db4cc0d3be4fc00a8ca10ff7e85ec656df9a2b0",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "channel": "red",
+      "cloud_filename": null,
+      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
+      "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
+    }
+  ],
+  "core_mask": {
+    "path": "mask_candidates_v1/shirt_core_mask.png",
+    "sha256": "3cc5ee4fd2fd5a7851ebc183332cd8222bf07af862a17274503a9f2975e1728c",
+    "upload_required": false
+  },
+  "settings": {
+    "model": [
+      "7",
+      0
+    ],
+    "positive": [
+      "8",
+      0
+    ],
+    "negative": [
+      "9",
+      0
+    ],
+    "latent_image": [
+      "11",
+      0
+    ],
+    "seed": 3407,
+    "steps": 40,
+    "cfg": 4,
+    "sampler_name": "euler",
+    "scheduler": "simple",
+    "denoise": 1
+  },
+  "model_sampling_shift": 3.1,
+  "cfg_norm_strength": 1,
+  "prompt": "Replace only the white T-shirt with a fitted matte-black sleeveless athletic tank top, with realistic neckline, armholes, seams, fabric tension, folds, and lighting; preserve everything else exactly. Remove both original sleeves cleanly and reconstruct plausible newly exposed shoulders and upper arms. Preserve identity, face, hair, body proportions, anatomy, pose, hands, forearms, lower clothing, thighs, gym equipment, camera, lighting, and background. No old white-shirt remnants, logos, text, or added accessories.",
+  "prepared_payload": "api.prepared.json",
+  "pending_cloud_payload": "api.cloud.pending.json",
+  "editor_workflow": "workflow.json",
+  "evaluation_rubric": "evaluation_rubric.json",
+  "numeric_validator": "validate_preparation.py",
+  "raw_output_node": "14",
+  "production_output_node": "18",
+  "runtime_executed": false,
+  "uploads_performed": 0,
+  "inference_authorized": false,
+  "composite_reference_sha256": "7970448344bbcc802b0bf2df1f7a5289e38ac1add3e5e33d02082ae45e097c59"
+}
