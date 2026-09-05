@@ -1,0 +1,69 @@
+{
+  "schema": "renderlab.operation-backend-evidence.v1",
+  "scope": "Routing recommendations only; candidate preference is not backend approval or automatic runtime dispatch.",
+  "informal_firered": {
+    "source": "User-reported manual observations",
+    "evidence_type": "informal_anecdotal",
+    "observation": "Approximately one failure in four manual attempts. Outfit changes, body morphing and similar existing-image modifications are mostly successful. Failures primarily involve incomplete instruction-following. Outpainting is unreliable and can cause severe body-proportion errors, including abnormally shortened limbs.",
+    "formal_benchmark": false,
+    "validated_pass_rate": null,
+    "limitations": "No controlled sample, complete attempt log, fixed case mix, or predeclared scoring. Do not convert the approximate three-in-four impression into a formal benchmark or validated pass rate."
+  },
+  "operations": [
+    {
+      "operation": "outfit_change",
+      "preferred_candidate": "firered-image-edit-1.1",
+      "approval": "candidate_only",
+      "evidence": "informal_firered"
+    },
+    {
+      "operation": "reclothe",
+      "preferred_candidate": "firered-image-edit-1.1",
+      "approval": "candidate_only",
+      "evidence": "informal_firered"
+    },
+    {
+      "operation": "body_morphing",
+      "preferred_candidate": "firered-image-edit-1.1",
+      "approval": "candidate_only",
+      "evidence": "informal_firered"
+    },
+    {
+      "operation": "general_image_editing",
+      "preferred_candidate": "firered-image-edit-1.1",
+      "approval": "candidate_only",
+      "evidence": "informal_firered"
+    },
+    {
+      "operation": "outpaint",
+      "preferred_candidate": "qwen-image-outpaint",
+      "approval": "semantic_extension_candidate",
+      "evidence": "renderlab/experiments/qwen_outpaint_v0.json",
+      "caveat": "Qwen original-canvas preservation was 3/5; it is not approved for strict unchanged pixels. FireRed manual outpainting is unreliable."
+    },
+    {
+      "operation": "strict_face_swap",
+      "preferred_candidate": null,
+      "approval": "no_approved_backend",
+      "evidence": "qwen_face_swap"
+    },
+    {
+      "operation": "controlled_inpaint",
+      "preferred_candidate": null,
+      "approval": "unvalidated",
+      "evidence": [
+        "renderlab/experiments/qwen_inpaint_v0.json",
+        "renderlab/experiments/firered_controlled_inpaint_v1/experiment.json"
+      ],
+      "caveat": "Existing Qwen controlled-color edit failed. FireRed test is prepared, not executed."
+    }
+  ],
+  "qwen_face_swap": {
+    "evaluation": "renderlab/experiments/qwen_face_swap_clothed_v1/evaluation.json",
+    "sha256": "c6e1552d3bdbb3e51c198850f6f17b5286a2e62fdabbb6a1ee997d12746e2aa5",
+    "identity_transfer": 2,
+    "instruction_adherence": 2,
+    "disposition": "FAIL",
+    "unchanged": true
+  }
+}
