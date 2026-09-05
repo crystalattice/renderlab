@@ -3,7 +3,7 @@
   "preset": "extend_canvas",
   "subject": "subject:primary",
   "source": {
-    "path": "corpus_work/klein_morphology_reference_v0/inputs/img_00562.jpg",
+    "path": "../corpus_work/klein_morphology_reference_v0/inputs/img_00562.jpg",
     "sha256": "replace-with-source-sha256"
   },
   "source_semantics": "editable_canvas",
