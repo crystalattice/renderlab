@@ -1,0 +1,103 @@
+{
+  "status": "blocked_authentication",
+  "checked_utc": "2026-09-05T03:06:01.853Z",
+  "node_instance_count": 14,
+  "distinct_class_count": 13,
+  "note": "TextEncodeQwenImageEditPlus is used twice. Current Cloud availability could not be verified.",
+  "server_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "tool call error: tool call failed for `comfy-cloud/get_server_info`\n\nCaused by:\n    0: failed to refresh OAuth tokens for server comfy-cloud: OAuth refresh token was rejected: Server returned error response: invalid_grant: refresh token reuse detected\n    1: OAuth authorization required"
+      }
+    ],
+    "isError": true
+  },
+  "nodes_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "tool call error: tool call failed for `comfy-cloud/get_node`\n\nCaused by:\n    0: failed to refresh OAuth tokens for server comfy-cloud: OAuth refresh token was rejected: Server returned error response: invalid_grant: refresh token reuse detected\n    1: OAuth authorization required"
+      }
+    ],
+    "isError": true
+  },
+  "models": [
+    {
+      "name": "FireRed-Image-Edit-1.1-transformer.safetensors",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "tool call error: tool call failed for `comfy-cloud/search_models`\n\nCaused by:\n    0: failed to refresh OAuth tokens for server comfy-cloud: OAuth refresh token was rejected: Server returned error response: invalid_grant: refresh token reuse detected\n    1: OAuth authorization required"
+          }
+        ],
+        "isError": true
+      }
+    },
+    {
+      "name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "tool call error: tool call failed for `comfy-cloud/search_models`\n\nCaused by:\n    0: failed to refresh OAuth tokens for server comfy-cloud: OAuth refresh token was rejected: Server returned error response: invalid_grant: refresh token reuse detected\n    1: OAuth authorization required"
+          }
+        ],
+        "isError": true
+      }
+    },
+    {
+      "name": "qwen_image_vae.safetensors",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "tool call error: tool call failed for `comfy-cloud/search_models`\n\nCaused by:\n    0: failed to refresh OAuth tokens for server comfy-cloud: OAuth refresh token was rejected: Server returned error response: invalid_grant: refresh token reuse detected\n    1: OAuth authorization required"
+          }
+        ],
+        "isError": true
+      }
+    }
+  ],
+  "uploads_attempted": 0,
+  "dry_run_attempted": false,
+  "cost_estimate": {
+    "status": "unavailable",
+    "reason": "Cloud authentication failed before estimation; no estimate requested."
+  },
+  "resolved_payload": null,
+  "remaining_non_dry_run_call": null,
+  "reason_no_call": "Verified Cloud mask filename and successful preflight are required; do not invent a runnable call.",
+  "local_verification": {
+    "status": "PASS",
+    "source_sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "source_cloud_filename_from_prior_upload": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+    "source_evidence": {
+      "node": "470",
+      "role": "target_image",
+      "local_path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+      "expected_sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+      "local_sha256_before_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+      "local_sha256_after_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+      "cloud_response": {
+        "name": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+        "subfolder": "",
+        "type": "input"
+      },
+      "verification": "Successful individual curl PUT of the exact source path; local SHA-256 matched manifest before and after upload. Server did not return a content checksum."
+    },
+    "mask_sha256": "1a6430abf64aa59c03d06acee164075f6481c7520aaa6a47e4bab9c15a3c86c7",
+    "dimensions": [
+      1160,
+      896
+    ],
+    "frozen_prompt_and_sampler_preserved": true,
+    "mask_upload_search": "No current Cloud inventory could be inspected because authentication failed; upload withheld."
+  },
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
+    "count": 89,
+    "result": "PASS"
+  }
+}
