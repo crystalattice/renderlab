@@ -1,0 +1,3 @@
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v
+Ran 89 tests
+OK

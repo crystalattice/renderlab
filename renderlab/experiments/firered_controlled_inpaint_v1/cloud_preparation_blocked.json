@@ -1,40 +1,27 @@
 {
-  "status": "blocked_source_filename_unverified",
-  "checked_utc": "2026-09-05T18:00:00.891Z",
-  "reason": "Recorded source filename absent from the multi-node LoadImage response and no match in browser Imported asset search. Historical hash-to-filename provenance is valid, but current availability is unresolved; this does not prove deletion. Stop before upload or binding.",
-  "node_instance_count": 14,
-  "distinct_class_count": 13,
-  "availability_evidence": "cloud_availability.json",
-  "upload_evidence": "cloud_upload_evidence.json",
-  "cost_estimate": "cloud_cost_estimate.json",
-  "local_verification": {
-    "source": {
-      "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
-      "dimensions": [
-        1160,
-        896
-      ],
-      "mode": "RGB"
-    },
-    "mask": {
-      "sha256": "1a6430abf64aa59c03d06acee164075f6481c7520aaa6a47e4bab9c15a3c86c7",
-      "dimensions": [
-        1160,
-        896
-      ],
-      "mode": "RGB"
+  "status": "blocked_dry_run_warning",
+  "checked_utc": "2026-09-05T18:16:49.718Z",
+  "reason": "Dry run returned an input_validation warning for the authoritative mask PUT filename. User requires stopping on any warning or error.",
+  "warnings": [
+    {
+      "code": "input_validation",
+      "detail": "Node #2 (LoadImageMask): \"image\" value \"be8df20a6eac1388efcd8a76d2c1b960c24cf0af45a27a6540f3e10a1dc1de37.png\" was not found in the bundled node index"
     }
-  },
-  "frozen_graph_sha256": "6946cea719b82b0bacd8df80737340f1e6d8f3a5c4ceca62417831f0341d41f8",
-  "frozen_prompt_and_sampler_preserved": true,
-  "bindings_changed": [],
-  "uploads_attempted": 0,
-  "dry_run_attempted": false,
-  "dry_run_response": null,
-  "dry_run_not_attempted_reason": "Stopped at filename verification gate before a resolved payload existed.",
-  "resolved_payload": null,
+  ],
+  "uploads_attempted": 2,
+  "upload_retries": 0,
+  "dry_run_attempted": true,
+  "submitted": false,
+  "inference_executed": false,
+  "cloud_workflow_created_or_saved": false,
+  "resolved_payload": "api.cloud.resolved.json",
+  "structural_comparison": "cloud_structural_comparison.json",
+  "upload_evidence": "cloud_upload_evidence.json",
+  "dry_run_request": "cloud_dry_run_request.json",
+  "dry_run_response": "cloud_dry_run_response.json",
+  "cost_estimate": "cloud_cost_estimate.json",
   "remaining_non_dry_run_call": null,
-  "reason_no_call": "A verified Cloud mask filename, resolved source discrepancy, and successful dry run are still required; no exact runnable call can be reported.",
+  "reason_no_call": "Execution remains unauthorized and warning must be resolved before proceeding.",
   "tests": {
     "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
     "count": 89,

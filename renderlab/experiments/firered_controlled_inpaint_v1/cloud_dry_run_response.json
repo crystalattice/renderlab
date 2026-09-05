@@ -1,0 +1,20 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Workflow passed local pre-flight validation. NOT submitted (dry_run) \u2014 no GPU run, no credits spent, no job created. Re-call without dry_run to actually submit. Local validation uses a bundled node catalog that can lag the cloud, so this is a strong signal, not a guarantee.\nAdvisory (non-blocking) - the following input value(s) were not found in the bundled node index, which can lag the cloud's live catalog. The cloud is the authoritative validator, so this is informational only and does not block the submit. If submission does fail on one of these fields, use search_nodes for the current valid options:\nNode #2 (LoadImageMask): \"image\" value \"be8df20a6eac1388efcd8a76d2c1b960c24cf0af45a27a6540f3e10a1dc1de37.png\" was not found in the bundled node index"
+    }
+  ],
+  "structuredContent": {
+    "result": {
+      "status": "validated",
+      "warnings": [
+        {
+          "code": "input_validation",
+          "detail": "Node #2 (LoadImageMask): \"image\" value \"be8df20a6eac1388efcd8a76d2c1b960c24cf0af45a27a6540f3e10a1dc1de37.png\" was not found in the bundled node index"
+        }
+      ],
+      "submitted": false
+    }
+  }
+}
