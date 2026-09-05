@@ -1,0 +1,48 @@
+{
+  "local_verification": {
+    "source": {
+      "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB"
+    },
+    "mask": {
+      "sha256": "1a6430abf64aa59c03d06acee164075f6481c7520aaa6a47e4bab9c15a3c86c7",
+      "dimensions": [
+        1160,
+        896
+      ],
+      "mode": "RGB"
+    }
+  },
+  "source_prior_upload": {
+    "node": "470",
+    "role": "target_image",
+    "local_path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+    "expected_sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "local_sha256_before_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "local_sha256_after_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "cloud_response": {
+      "name": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+      "subfolder": "",
+      "type": "input"
+    },
+    "verification": "Successful individual curl PUT of the exact source path; local SHA-256 matched manifest before and after upload. Server did not return a content checksum."
+  },
+  "current_source_lookup": {
+    "cloud_filename": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+    "get_node_image_option_count": 479,
+    "present": false,
+    "single_node_image_option_count": 1,
+    "browser_search": "Imported assets search for full filename stem returned No imported files found",
+    "limitation": "Inconsistent catalog image lists and browser search cannot establish content availability or deletion."
+  },
+  "mask": {
+    "upload_attempted": false,
+    "identical_cloud_upload_status": "unknown; no hash-addressable inventory available",
+    "cloud_filename": null
+  },
+  "uploads_attempted": 0
+}
