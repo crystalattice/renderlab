@@ -1,27 +1,20 @@
 {
-  "status": "blocked_dry_run_warning",
-  "checked_utc": "2026-09-05T18:16:49.718Z",
-  "reason": "Dry run returned an input_validation warning for the authoritative mask PUT filename. User requires stopping on any warning or error.",
-  "warnings": [
-    {
-      "code": "input_validation",
-      "detail": "Node #2 (LoadImageMask): \"image\" value \"be8df20a6eac1388efcd8a76d2c1b960c24cf0af45a27a6540f3e10a1dc1de37.png\" was not found in the bundled node index"
-    }
-  ],
-  "uploads_attempted": 2,
-  "upload_retries": 0,
-  "dry_run_attempted": true,
+  "status": "unblocked_native_mask_dry_run_validated",
+  "checked_utc": "2026-09-05T18:35:00.493Z",
+  "previous_blocker": "Uploaded LoadImageMask filename absent from bundled index at f1c18b33.",
+  "resolution": "Replace the uploaded mask dependency with native SolidMask and MaskComposite; warning no longer occurs.",
+  "warnings": [],
   "submitted": false,
   "inference_executed": false,
-  "cloud_workflow_created_or_saved": false,
+  "inference_authorized": false,
+  "uploads_this_revision": 0,
+  "readiness_report": "execution_readiness.json",
   "resolved_payload": "api.cloud.resolved.json",
-  "structural_comparison": "cloud_structural_comparison.json",
-  "upload_evidence": "cloud_upload_evidence.json",
-  "dry_run_request": "cloud_dry_run_request.json",
-  "dry_run_response": "cloud_dry_run_response.json",
-  "cost_estimate": "cloud_cost_estimate.json",
-  "remaining_non_dry_run_call": null,
-  "reason_no_call": "Execution remains unauthorized and warning must be resolved before proceeding.",
+  "remaining_non_dry_run_call": {
+    "tool": "mcp__comfy_cloud__submit_workflow",
+    "arguments_file": "cloud_submit.gated.json",
+    "requires_explicit_approval": true
+  },
   "tests": {
     "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
     "count": 89,

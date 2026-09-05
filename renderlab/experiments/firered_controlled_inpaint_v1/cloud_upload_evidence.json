@@ -51,5 +51,11 @@
       },
       "authority": "Successful PUT response from this preparation; no server content checksum was returned."
     }
-  ]
+  ],
+  "historical_upload_commit": "f1c18b335ce6df469b526ff905373908636b40b2",
+  "uploads_this_revision": 0,
+  "active_cloud_bindings": {
+    "1.image": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png"
+  },
+  "mask_upload_no_longer_referenced": true
 }

@@ -10,16 +10,17 @@ whole-shirt replacement or an outfit-change test.
 `mask.png` is an RGB binary mask at the source's 1160 × 896 resolution. White is
 editable; black is protected. The exclusive rectangle is `[552, 424, 680, 552]`,
 entirely inside the front shirt fabric, below the face/neck and away from arms,
-hem, skin and background. There is no feathering or resizing. The red-channel
-loader avoids alpha inversion ambiguity.
+hem, skin and background. There is no feathering or resizing. It remains a local reference only. The executed mask is generated natively: a zero
+1160 × 896 SolidMask, a one 128 × 128 SolidMask, and MaskComposite(add) at (552, 424).
+No uploaded mask filename is used.
 
 `api.prepared.json` is a local API-format candidate graph, not a submission call.
 The bundled FireRed Image Edit 1.1 blueprint has no mask input. This experiment
-adds `LoadImageMask` and `SetLatentNoiseMask` before `KSampler`, using the blueprint's
+uses native `SolidMask`/`MaskComposite` and `SetLatentNoiseMask` before `KSampler`, using the blueprint's
 non-turbo settings: seed 3407, 40 steps, CFG 4, Euler/simple, denoise 1, model shift
 3.1 and CFGNorm 1. No Lightning LoRA is used. The blueprint's megapixel resize is
 omitted to preserve mask coordinates. This adaptation is unvalidated at runtime;
-no model availability or native FireRed inpainting support is claimed.
+Cloud catalog and dry-run checks pass; native FireRed inpainting quality remains unproven.
 
 Only the raw decoded result is scored. There is no source recompositing or
 postprocessing to conceal outside-mask drift. A VAE round-trip can alter pixels
@@ -52,3 +53,13 @@ must not be replaced by a favorable seed. Any future run must retain the exact
 prompt/settings, model versions, source/mask hashes, raw output, output hash and
 dimensions, runtime status, and all failed criteria. One case cannot establish a
 backend-wide success rate.
+
+`workflow.json` is the local editor graph; `api.cloud.resolved.json` retains the
+verified Cloud source filename. `validate_native_mask.py` runs the native mask
+operations on CPU and compares normalized mask tensors and decoded RGB bytes
+against `mask.png`; no diffusion inference is performed.
+
+The native-mask dry run is validated with zero warnings and `submitted: false`.
+See `execution_readiness.json`. `cloud_submit.gated.json` contains the exact
+one-job arguments for `mcp__comfy_cloud__submit_workflow`, including `dry_run: false`;
+it is reference data only and requires explicit execution approval. No run was submitted.

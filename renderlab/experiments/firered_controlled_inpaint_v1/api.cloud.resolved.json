@@ -6,10 +6,19 @@
     }
   },
   "2": {
-    "class_type": "LoadImageMask",
+    "class_type": "MaskComposite",
     "inputs": {
-      "image": "be8df20a6eac1388efcd8a76d2c1b960c24cf0af45a27a6540f3e10a1dc1de37.png",
-      "channel": "red"
+      "destination": [
+        "15",
+        0
+      ],
+      "source": [
+        "16",
+        0
+      ],
+      "x": 552,
+      "y": 424,
+      "operation": "add"
     }
   },
   "3": {
@@ -163,6 +172,22 @@
         0
       ],
       "filename_prefix": "renderlab_firered_controlled_inpaint_v1_s3407_raw"
+    }
+  },
+  "15": {
+    "class_type": "SolidMask",
+    "inputs": {
+      "value": 0.0,
+      "width": 1160,
+      "height": 896
+    }
+  },
+  "16": {
+    "class_type": "SolidMask",
+    "inputs": {
+      "value": 1.0,
+      "width": 128,
+      "height": 128
     }
   }
 }

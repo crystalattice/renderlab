@@ -8,11 +8,11 @@
       }
     ]
   },
-  "node_instance_count": 14,
-  "distinct_class_count": 13,
+  "node_instance_count": 16,
+  "distinct_class_count": 14,
   "node_instances": {
     "1": "LoadImage",
-    "2": "LoadImageMask",
+    "2": "MaskComposite",
     "3": "UNETLoader",
     "4": "CLIPLoader",
     "5": "VAELoader",
@@ -24,7 +24,9 @@
     "11": "SetLatentNoiseMask",
     "12": "KSampler",
     "13": "VAEDecode",
-    "14": "SaveImage"
+    "14": "SaveImage",
+    "15": "SolidMask",
+    "16": "SolidMask"
   },
   "node_schemas": {
     "LoadImage": {
@@ -49,45 +51,6 @@
       ],
       "outputs": [
         "IMAGE",
-        "MASK"
-      ],
-      "api_node": false,
-      "output_node": false,
-      "deprecated": false
-    },
-    "LoadImageMask": {
-      "name": "LoadImageMask",
-      "display_name": "Load Image (as Mask)",
-      "description": "",
-      "category": "image",
-      "pack": "core",
-      "inputs": {
-        "required": [
-          "COMBO",
-          "COMBO"
-        ]
-      },
-      "input_details": [
-        {
-          "name": "image",
-          "type": "COMBO",
-          "required": true,
-          "returned_option_count": 1,
-          "note": "Image options omitted here; see filename verification evidence. Node schema lists are not proof of file content."
-        },
-        {
-          "name": "channel",
-          "type": "COMBO",
-          "required": true,
-          "options": [
-            "alpha",
-            "red",
-            "green",
-            "blue"
-          ]
-        }
-      ],
-      "outputs": [
         "MASK"
       ],
       "api_node": false,
@@ -1176,6 +1139,115 @@
       "api_node": false,
       "output_node": true,
       "deprecated": false
+    },
+    "SolidMask": {
+      "name": "SolidMask",
+      "display_name": "Create Solid Mask",
+      "description": "",
+      "category": "image/mask",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "FLOAT",
+          "INT",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "value",
+          "type": "FLOAT",
+          "required": true,
+          "default": 1,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "required": true,
+          "default": 512,
+          "min": 1,
+          "max": 16384
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "required": true,
+          "default": 512,
+          "min": 1,
+          "max": 16384
+        }
+      ],
+      "outputs": [
+        "MASK"
+      ],
+      "api_node": false,
+      "output_node": false,
+      "deprecated": false
+    },
+    "MaskComposite": {
+      "name": "MaskComposite",
+      "display_name": "Combine Masks",
+      "description": "",
+      "category": "image/mask",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "MASK",
+          "MASK",
+          "INT",
+          "INT",
+          "COMBO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "destination",
+          "type": "MASK",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "MASK",
+          "required": true
+        },
+        {
+          "name": "x",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 16384
+        },
+        {
+          "name": "y",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 16384
+        },
+        {
+          "name": "operation",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "multiply",
+            "add",
+            "subtract",
+            "and",
+            "or",
+            "xor"
+          ]
+        }
+      ],
+      "outputs": [
+        "MASK"
+      ],
+      "api_node": false,
+      "output_node": false,
+      "deprecated": false
     }
   },
   "models": [
@@ -1297,5 +1369,19 @@
       }
     }
   ],
-  "scope": "Authenticated hosted MCP catalog/spec checks; no inference or authoritative execution validation performed."
+  "scope": "Authenticated hosted MCP catalog/spec checks; no inference or authoritative execution validation performed.",
+  "native_mask_node_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"data\":[{\"name\":\"SolidMask\",\"display_name\":\"Create Solid Mask\",\"description\":\"\",\"category\":\"image/mask\",\"pack\":\"core\",\"inputs\":{\"required\":[\"FLOAT\",\"INT\",\"INT\"]},\"input_details\":[{\"name\":\"value\",\"type\":\"FLOAT\",\"required\":true,\"default\":1,\"min\":0,\"max\":1},{\"name\":\"width\",\"type\":\"INT\",\"required\":true,\"default\":512,\"min\":1,\"max\":16384},{\"name\":\"height\",\"type\":\"INT\",\"required\":true,\"default\":512,\"min\":1,\"max\":16384}],\"outputs\":[\"MASK\"],\"api_node\":false,\"output_node\":false,\"deprecated\":false},{\"name\":\"MaskComposite\",\"display_name\":\"Combine Masks\",\"description\":\"\",\"category\":\"image/mask\",\"pack\":\"core\",\"inputs\":{\"required\":[\"MASK\",\"MASK\",\"INT\",\"INT\",\"COMBO\"]},\"input_details\":[{\"name\":\"destination\",\"type\":\"MASK\",\"required\":true},{\"name\":\"source\",\"type\":\"MASK\",\"required\":true},{\"name\":\"x\",\"type\":\"INT\",\"required\":true,\"default\":0,\"min\":0,\"max\":16384},{\"name\":\"y\",\"type\":\"INT\",\"required\":true,\"default\":0,\"min\":0,\"max\":16384},{\"name\":\"operation\",\"type\":\"COMBO\",\"required\":true,\"options\":[\"multiply\",\"add\",\"subtract\",\"and\",\"or\",\"xor\"]}],\"outputs\":[\"MASK\"],\"api_node\":false,\"output_node\":false,\"deprecated\":false}]}"
+      }
+    ]
+  },
+  "native_mask_checked_utc": "2026-09-05T18:35:00.493Z",
+  "dry_run_node_and_model_acceptance": {
+    "status": "validated",
+    "warnings": [],
+    "submitted": false
+  }
 }

@@ -1,3 +1,5 @@
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v
-Ran 89 tests
-OK
+All RenderLab tests: 89 passed.
+Native CPU mask equivalence and editor/API roundtrip: PASS.
+Ruff check on changed Python files: PASS.
+Git diff --check: PASS.
+No diffusion inference executed.

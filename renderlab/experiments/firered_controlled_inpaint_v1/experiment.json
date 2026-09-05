@@ -20,7 +20,6 @@
     "mode": "RGB",
     "editable_value": 255,
     "protected_value": 0,
-    "loader_channel": "red",
     "bounds_xyxy_exclusive": [
       552,
       424,
@@ -28,14 +27,26 @@
       552
     ],
     "editable_pixels": 16384,
-    "feathering": 0
+    "feathering": 0,
+    "source": "native_nodes",
+    "reference_only": true,
+    "generator": {
+      "output_node": "2",
+      "canvas_node": "15",
+      "rectangle_node": "16",
+      "operation": "add",
+      "x": 552,
+      "y": 424,
+      "width": 128,
+      "height": 128
+    }
   },
   "workflow": "api.prepared.json",
   "blueprint": {
     "path": "blueprints/Image Edit (FireRed Image Edit 1.1).json",
     "sha256": "47a00d7a9b4c632d8bf4f9964bdd96c4c6cb73e698813ee53ed69ddc1415a85f"
   },
-  "adaptation": "Use the blueprint non-turbo settings. Add LoadImageMask and SetLatentNoiseMask before sampling; omit the megapixel resize to retain source coordinates. This is an unvalidated masked-latent adaptation, not a demonstrated native FireRed inpainting backend.",
+  "adaptation": "Use the blueprint non-turbo settings. Generate a binary rectangular mask with two SolidMask nodes and MaskComposite(add), feeding the existing SetLatentNoiseMask. Omit resizing to retain source coordinates. Runtime inpainting quality remains unvalidated.",
   "prompt": "Change only the masked rectangular patch on the existing white T-shirt to saturated royal blue. Keep the cloth texture, folds, shading, garment cut and fit. Keep the remainder of the shirt white. Preserve all pixels outside the mask, including face, hairstyle and hair length, neck, skin, body proportions, pose, hands, legs, gym equipment, background, camera and lighting. Do not add text, a logo, accessories, or a new garment.",
   "settings": {
     "seed": 3407,
@@ -126,5 +137,6 @@
     "VAE encoding/decoding can change protected pixels even when sampling is masked. This possibility must be measured, not hidden with recompositing.",
     "Local node declarations do not establish runtime compatibility or model availability.",
     "Informal FireRed editing success is not controlled-inpainting validation."
-  ]
+  ],
+  "editor_workflow": "workflow.json"
 }

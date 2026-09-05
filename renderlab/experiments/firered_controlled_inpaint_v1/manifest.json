@@ -1,0 +1,51 @@
+{
+  "schema": "renderlab.native-mask-preparation.v1",
+  "base_commit": "f1c18b335ce6df469b526ff905373908636b40b2",
+  "experiment": "experiment.json",
+  "editor_workflow": "workflow.json",
+  "prepared_payload": "api.prepared.json",
+  "resolved_payload": "api.cloud.resolved.json",
+  "source": {
+    "path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+    "role": "target_image",
+    "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "width": 1160,
+    "height": 896,
+    "mode": "RGB"
+  },
+  "mask": {
+    "path": "mask.png",
+    "sha256": "1a6430abf64aa59c03d06acee164075f6481c7520aaa6a47e4bab9c15a3c86c7",
+    "width": 1160,
+    "height": 896,
+    "mode": "RGB",
+    "editable_value": 255,
+    "protected_value": 0,
+    "bounds_xyxy_exclusive": [
+      552,
+      424,
+      680,
+      552
+    ],
+    "editable_pixels": 16384,
+    "feathering": 0,
+    "source": "native_nodes",
+    "reference_only": true,
+    "generator": {
+      "output_node": "2",
+      "canvas_node": "15",
+      "rectangle_node": "16",
+      "operation": "add",
+      "x": 552,
+      "y": 424,
+      "width": 128,
+      "height": 128
+    }
+  },
+  "source_cloud_filename": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+  "cloud_mask_dependency": false,
+  "inference_authorized": false,
+  "resolved_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
+  "readiness_report": "execution_readiness.json",
+  "mask_equivalence": "mask_equivalence.json"
+}

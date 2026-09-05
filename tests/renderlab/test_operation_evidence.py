@@ -44,9 +44,17 @@ class OperationEvidenceTests(unittest.TestCase):
         masked = graph[latent_id]
         self.assertEqual(masked['class_type'], 'SetLatentNoiseMask')
         mask_id, slot = masked['inputs']['mask']
-        self.assertEqual(graph[mask_id]['class_type'], 'LoadImageMask')
-        self.assertEqual(graph[mask_id]['inputs']['channel'], 'red')
-        self.assertFalse(any('Resize' in n['class_type'] or 'Composite' in n['class_type'] for n in graph.values()))
+        self.assertEqual(graph[mask_id]['class_type'], 'MaskComposite')
+        self.assertEqual(graph[mask_id]['inputs'], {
+            'destination': ['15', 0], 'source': ['16', 0],
+            'x': 552, 'y': 424, 'operation': 'add',
+        })
+        self.assertEqual(graph['15']['inputs'], {'value': 0.0, 'width': 1160, 'height': 896})
+        self.assertEqual(graph['16']['inputs'], {'value': 1.0, 'width': 128, 'height': 128})
+        self.assertFalse(any(
+            'Resize' in n['class_type'] or n['class_type'] in ('LoadImageMask', 'ImageCompositeMasked')
+            for n in graph.values()
+        ))
         save = next(n for n in graph.values() if n['class_type'] == 'SaveImage')
         self.assertEqual(graph[save['inputs']['images'][0]]['class_type'], 'VAEDecode')
         for node in graph.values():
