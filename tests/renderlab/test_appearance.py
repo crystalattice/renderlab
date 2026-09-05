@@ -96,6 +96,23 @@ class AppearanceTests(unittest.TestCase):
             self.assertEqual(stage["backend"]["id"], "qwen-image-inpaint")
             self.assertEqual(stage["input"]["mask"]["path"], "mask.png")
 
+    def test_face_swap_can_route_to_qwen_baseline(self):
+        with tempfile.TemporaryDirectory() as directory:
+            request = self.write_request(
+                Path(directory),
+                preset="face_swap",
+                backend="qwen-image-edit",
+                references=[{"path": "identity.png", "role": "face_identity"}],
+            )
+            plan = plan_appearance(request)
+            self.assertEqual(len(plan["stages"]), 1)
+            self.assertEqual(plan["stages"][0]["backend"]["id"], "qwen-image-edit")
+            self.assertTrue(plan["stages"][0]["backend"]["available"])
+            self.assertEqual(
+                plan["stages"][0]["input"]["references"][0]["role"],
+                "face_identity",
+            )
+
     def test_semantic_evidence_is_preserved_for_future_manga_planning(self):
         with tempfile.TemporaryDirectory() as directory:
             request = self.write_request(Path(directory), source_semantics="semantic_evidence")

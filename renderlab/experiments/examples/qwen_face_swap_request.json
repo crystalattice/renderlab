@@ -1,0 +1,30 @@
+{
+  "schema": "renderlab.appearance-request.v1",
+  "preset": "face_swap",
+  "backend": "qwen-image-edit",
+  "subject": "subject:primary",
+  "source": {
+    "path": "../corpus_work/klein_morphology_reference_v0/inputs/img_00562.jpg",
+    "sha256": "replace-with-target-sha256",
+    "role": "target_image"
+  },
+  "references": [
+    {
+      "path": "../corpus_work/klein_morphology_reference_v0/inputs/img_00317.jpg",
+      "sha256": "replace-with-identity-reference-sha256",
+      "role": "face_identity"
+    }
+  ],
+  "source_semantics": "editable_canvas",
+  "preserve": ["morphology", "pose", "camera", "lighting", "environment", "wardrobe"],
+  "target": {
+    "instruction": "Edit the first image. Replace only the primary subject's facial identity with the facial identity of the woman in the second image. Preserve the first image's body, physique, pose, expression, head angle, hairstyle, hair length, clothing, skin outside the face, camera, lighting, gym equipment, and background. Match the replacement face to the target head angle, expression, lighting, and skin transition. Do not copy the second image's body, pose, clothing, room, camera angle, or background."
+  },
+  "acceptance": {
+    "identity_preservation": 4,
+    "morphology_preservation": 5,
+    "pose_preservation": 5,
+    "instruction_adherence": 4,
+    "artifact_severity_max": 2
+  }
+}

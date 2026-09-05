@@ -303,6 +303,19 @@ ghosted torso and boundary artifacts. `Repair Region` therefore remains experime
 must not be routed as a validated controlled-replacement operation. Localized removal and
 free regeneration are separate behaviors and have not yet been evaluated.
 
+The first face-swap baseline deliberately uses the existing two-image Qwen editor before
+adding a dedicated swap dependency:
+
+```bash
+python -m renderlab appearance plan \
+  renderlab/experiments/examples/qwen_face_swap_request.json \
+  --output /tmp/qwen-face-swap-plan.json
+```
+
+Use `img_00562` as image 1 and `img_00317` as image 2 in the Qwen 2509 edit workflow.
+This is a strict identity-transfer test: the second image supplies only facial identity;
+composition, body, pose, wardrobe, and scene remain owned by the first image.
+
 Operational commands:
 
 ```bash

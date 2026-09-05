@@ -1,0 +1,23 @@
+{
+  "schema": "renderlab.reference-experiment.v1",
+  "name": "qwen-face-swap-v0",
+  "purpose": "Determine whether generic two-image Qwen editing can perform a recognizable face-identity swap while preserving target composition and body morphology.",
+  "training_use": "evaluation_only",
+  "reference_ids": ["img_00562", "img_00317"],
+  "workflow": "blueprints/Image Edit (Qwen 2509).json",
+  "input_protocol": {
+    "image_1": "img_00562 target composition and body",
+    "image_2": "img_00317 source face identity"
+  },
+  "metrics": [
+    "source_identity_transfer",
+    "target_body_preservation",
+    "target_pose_preservation",
+    "target_scene_preservation",
+    "face_boundary_quality",
+    "artifact_severity"
+  ],
+  "decision_rule": "Pass as a generic face-swap backend when source_identity_transfer, target_body_preservation, target_pose_preservation, target_scene_preservation, and face_boundary_quality are at least 4 and artifact_severity is at most 2.",
+  "fallback": "If Qwen fails identity transfer or alters target morphology, evaluate a dedicated swap backend. ReActor is not the default candidate because its current upstream implementation includes an NSFW detector; keep backend selection replaceable.",
+  "status": "ready"
+}
