@@ -8,8 +8,8 @@
       }
     ]
   },
-  "node_instance_count": 16,
-  "distinct_class_count": 14,
+  "node_instance_count": 18,
+  "distinct_class_count": 15,
   "node_instances": {
     "1": "LoadImage",
     "2": "MaskComposite",
@@ -26,7 +26,9 @@
     "13": "VAEDecode",
     "14": "SaveImage",
     "15": "SolidMask",
-    "16": "SolidMask"
+    "16": "SolidMask",
+    "17": "ImageCompositeMasked",
+    "18": "SaveImage"
   },
   "node_schemas": {
     "LoadImage": {
@@ -1248,6 +1250,70 @@
       "api_node": false,
       "output_node": false,
       "deprecated": false
+    },
+    "ImageCompositeMasked": {
+      "name": "ImageCompositeMasked",
+      "display_name": "Image Composite Masked",
+      "description": "",
+      "category": "image/compositing",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "IMAGE",
+          "IMAGE",
+          "INT",
+          "INT",
+          "BOOLEAN"
+        ],
+        "optional": [
+          "MASK"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "destination",
+          "type": "IMAGE",
+          "required": true
+        },
+        {
+          "name": "source",
+          "type": "IMAGE",
+          "required": true
+        },
+        {
+          "name": "x",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 16384
+        },
+        {
+          "name": "y",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 16384
+        },
+        {
+          "name": "resize_source",
+          "type": "BOOLEAN",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "required": false
+        }
+      ],
+      "outputs": [
+        "IMAGE"
+      ],
+      "api_node": false,
+      "output_node": false,
+      "deprecated": false
     }
   },
   "models": [
@@ -1383,5 +1449,6 @@
     "status": "validated",
     "warnings": [],
     "submitted": false
-  }
+  },
+  "composite_checked_utc": "2026-09-05T19:05:18.461Z"
 }

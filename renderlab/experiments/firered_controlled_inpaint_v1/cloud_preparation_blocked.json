@@ -1,23 +1,17 @@
 {
-  "status": "unblocked_native_mask_dry_run_validated",
-  "checked_utc": "2026-09-05T18:35:00.493Z",
-  "previous_blocker": "Uploaded LoadImageMask filename absent from bundled index at f1c18b33.",
-  "resolution": "Replace the uploaded mask dependency with native SolidMask and MaskComposite; warning no longer occurs.",
+  "status": "no_preparation_blocker_dry_run_validated",
+  "checked_utc": "2026-09-05T19:05:18.461Z",
   "warnings": [],
   "submitted": false,
-  "inference_executed": false,
-  "inference_authorized": false,
-  "uploads_this_revision": 0,
+  "new_inference_runs": 0,
+  "new_uploads": 0,
+  "additional_inference_authorized": false,
   "readiness_report": "execution_readiness.json",
-  "resolved_payload": "api.cloud.resolved.json",
-  "remaining_non_dry_run_call": {
-    "tool": "mcp__comfy_cloud__submit_workflow",
-    "arguments_file": "cloud_submit.gated.json",
-    "requires_explicit_approval": true
-  },
+  "prior_raw_evaluation": "evaluation.json",
+  "production_result": "production_composited.png",
   "tests": {
     "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
-    "count": 89,
+    "count": 90,
     "result": "PASS"
   }
 }

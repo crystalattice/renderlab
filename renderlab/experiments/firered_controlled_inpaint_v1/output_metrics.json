@@ -1,0 +1,45 @@
+{
+  "source_sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+  "raw_sha256": "1ce239ac042100aac328dae6463c741a4536b36b01a52352e36476a14368c35c",
+  "production_sha256": "69a04a0a992a4a91d97c80062624b6213f6612b7887e0b8f74be04eb3b82ea4d",
+  "dimensions": [
+    1160,
+    896
+  ],
+  "source_mode": "RGB",
+  "raw_mode": "RGB",
+  "production_mode": "RGB",
+  "alpha_added": false,
+  "color_mode_conversion": false,
+  "editable_pixels": 16384,
+  "raw": {
+    "outside_changed_pixels": 779652,
+    "outside_total_pixels": 1022976,
+    "outside_changed_pixel_fraction": 0.7621410472972973,
+    "outside_mae_rgb": 0.5408162068318318,
+    "outside_max_channel_error": 27,
+    "inside_blue_coverage_fraction": 0.90093994140625,
+    "inside_pixels_identical_to_raw": true,
+    "outer_ring_changed_fraction": 0.9981617647058824,
+    "inner_ring_changed_fraction": 1.0
+  },
+  "production": {
+    "outside_changed_pixels": 0,
+    "outside_total_pixels": 1022976,
+    "outside_changed_pixel_fraction": 0.0,
+    "outside_mae_rgb": 0.0,
+    "outside_max_channel_error": 0,
+    "inside_blue_coverage_fraction": 0.90093994140625,
+    "inside_pixels_identical_to_raw": true,
+    "outer_ring_changed_fraction": 0.0,
+    "inner_ring_changed_fraction": 1.0
+  },
+  "native_node": "ImageCompositeMasked",
+  "native_settings": {
+    "x": 0,
+    "y": 0,
+    "resize_source": false
+  },
+  "native_impl_sha256": "f235d52703229b0bb7840cc48f0fffe6b00bf9398e119aa7d7f2fc9f3bdaba12",
+  "comparison": "Native CPU compositor; saved PNG decoded and verified pixel-exact against direct source/raw selection."
+}

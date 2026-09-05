@@ -45,7 +45,38 @@
   "source_cloud_filename": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
   "cloud_mask_dependency": false,
   "inference_authorized": false,
-  "resolved_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
+  "resolved_sha256": "990be9b2b604e760794bac3f79424ffaf4110d285536ad59ed27d3106465d9a9",
   "readiness_report": "execution_readiness.json",
-  "mask_equivalence": "mask_equivalence.json"
+  "mask_equivalence": "mask_equivalence.json",
+  "executed_payload": "api.executed.1bdff9f9.json",
+  "executed_payload_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
+  "raw_output": {
+    "path": "raw_output_1bdff9f9.png",
+    "sha256": "1ce239ac042100aac328dae6463c741a4536b36b01a52352e36476a14368c35c",
+    "dimensions": [
+      1160,
+      896
+    ],
+    "mode": "RGB"
+  },
+  "production_output": {
+    "disposition": "PASS_CONTAINMENT",
+    "path": "production_composited.png",
+    "sha256": "69a04a0a992a4a91d97c80062624b6213f6612b7887e0b8f74be04eb3b82ea4d",
+    "metrics": {
+      "outside_changed_pixels": 0,
+      "outside_total_pixels": 1022976,
+      "outside_changed_pixel_fraction": 0.0,
+      "outside_mae_rgb": 0.0,
+      "outside_max_channel_error": 0,
+      "inside_blue_coverage_fraction": 0.90093994140625,
+      "inside_pixels_identical_to_raw": true,
+      "outer_ring_changed_fraction": 0.0,
+      "inner_ring_changed_fraction": 1.0
+    },
+    "boundary_quality": "PASS_WITH_MINOR_ARTIFACTS; no feathering; inside pixels identical to raw.",
+    "raw_protocol_reclassified": false
+  },
+  "evaluation": "evaluation.json",
+  "additional_inference_authorized": false
 }

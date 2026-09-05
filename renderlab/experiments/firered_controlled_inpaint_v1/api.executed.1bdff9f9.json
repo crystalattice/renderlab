@@ -2,7 +2,7 @@
   "1": {
     "class_type": "LoadImage",
     "inputs": {
-      "image": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png"
+      "image": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png"
     }
   },
   "2": {
@@ -188,36 +188,6 @@
       "value": 1.0,
       "width": 128,
       "height": 128
-    }
-  },
-  "17": {
-    "class_type": "ImageCompositeMasked",
-    "inputs": {
-      "destination": [
-        "1",
-        0
-      ],
-      "source": [
-        "13",
-        0
-      ],
-      "x": 0,
-      "y": 0,
-      "resize_source": false,
-      "mask": [
-        "2",
-        0
-      ]
-    }
-  },
-  "18": {
-    "class_type": "SaveImage",
-    "inputs": {
-      "images": [
-        "17",
-        0
-      ],
-      "filename_prefix": "renderlab_firered_controlled_inpaint_v1_s3407_production"
     }
   }
 }

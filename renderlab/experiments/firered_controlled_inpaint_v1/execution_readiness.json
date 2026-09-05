@@ -1,63 +1,67 @@
 {
-  "status": "ready_for_explicitly_authorized_single_run",
-  "checked_utc": "2026-09-05T18:35:00.493Z",
-  "base_commit": "f1c18b335ce6df469b526ff905373908636b40b2",
-  "inference_authorized": false,
-  "inference_executed": false,
-  "cloud_workflow_created_or_saved": false,
-  "uploads_this_revision": 0,
-  "source_binding": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
-  "cloud_mask_dependency": false,
-  "mask_generator": {
-    "canvas": "15",
-    "rectangle": "16",
-    "composite": "2",
-    "destination": "11.mask",
-    "operation": "add",
-    "canvas_dimensions": [
-      1160,
-      896
-    ],
-    "rectangle_xywh": [
-      552,
-      424,
-      128,
-      128
-    ]
-  },
-  "mask_equivalence": {
-    "decoded_rgb_bytes_identical": true,
-    "normalized_pixels_identical": true,
-    "editable_pixels": 16384,
-    "evidence": "mask_equivalence.json"
-  },
-  "structural_comparison": {
-    "only_mask_source_subgraph_changed": true,
-    "evidence": "cloud_structural_comparison.json"
-  },
+  "status": "local_production_complete_revised_cloud_graph_dry_run_validated",
+  "checked_utc": "2026-09-05T19:05:18.461Z",
+  "prior_job": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+  "previous_approval_consumed": true,
+  "additional_inference_authorized": false,
+  "new_inference_runs": 0,
+  "new_uploads": 0,
+  "revised_graph_executed_in_cloud": false,
   "dry_run": {
     "status": "validated",
     "warnings": [],
     "submitted": false
   },
+  "raw_output": "raw_output_1bdff9f9.png",
+  "production_output": "production_composited.png",
+  "evaluation": "evaluation.json",
+  "raw_protocol_disposition": "FAIL",
+  "raw_semantic_disposition": "PASS",
+  "production_containment": "PASS",
+  "boundary_quality": "PASS_WITH_MINOR_ARTIFACTS",
+  "structural_comparison": {
+    "status": "PASS",
+    "base_commit": "3289dfb2",
+    "node_count": 18,
+    "changed_existing_nodes": [],
+    "added_nodes": [
+      "17",
+      "18"
+    ],
+    "all_preexisting_nodes_and_inputs_unchanged": true,
+    "source_binding_unchanged": true,
+    "set_latent_noise_mask_connection_unchanged": true,
+    "mask_dimensions": [
+      1160,
+      896
+    ],
+    "editable_pixels": 16384,
+    "normalized_mask_pixel_equivalent": true,
+    "decoded_rgb_bytes_identical": true,
+    "decoded_rgb_sha256": "d3c50ea0f14707de31d681c31242d029f3a2c22163030740e8bae82e82402273",
+    "reference_png_sha256": "1a6430abf64aa59c03d06acee164075f6481c7520aaa6a47e4bab9c15a3c86c7",
+    "comparison_scope": "Decoded pixels and RGB bytes, not PNG compressed container bytes.",
+    "native_implementation": "comfy_extras/nodes_mask.py: SolidMask.execute, MaskComposite.execute; CPU",
+    "native_implementation_sha256": "f235d52703229b0bb7840cc48f0fffe6b00bf9398e119aa7d7f2fc9f3bdaba12",
+    "editor_roundtrip_equal": true,
+    "acyclic_all_nodes_reach_raw_or_production_save": true,
+    "resolved_sha256": "990be9b2b604e760794bac3f79424ffaf4110d285536ad59ed27d3106465d9a9",
+    "generation_executed": false
+  },
   "tests": {
     "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
-    "count": 89,
+    "count": 90,
     "result": "PASS"
   },
   "static_checks": {
     "ruff_changed_python": "PASS",
     "git_diff_check": "PASS",
     "native_mask_cpu_validation": "PASS",
+    "native_composite_cpu_reproduction": "PASS",
     "editor_api_roundtrip": "PASS",
-    "acyclic_all_nodes_reach_save": "PASS"
-  },
-  "remaining_one_job_call": {
-    "tool": "mcp__comfy_cloud__submit_workflow",
-    "arguments_file": "cloud_submit.gated.json",
-    "approval_required": true,
-    "executed": false
+    "acyclic_all_nodes_reach_save": "PASS",
+    "json_integrity": "PASS"
   },
   "cost_information": "cloud_cost_estimate.json",
-  "limits": "Local preflight and native CPU mask operations passed. No diffusion inference or authoritative Cloud runtime execution validation has occurred; strict outside-mask pixel preservation remains untested."
+  "limits": "Only existing raw output was composited locally. The revised two-output Cloud workflow has passed local preflight but has not executed. No backend-wide reliability claim."
 }

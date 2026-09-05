@@ -49,13 +49,12 @@
     },
     {
       "operation": "controlled_inpaint",
-      "preferred_candidate": null,
-      "approval": "unvalidated",
+      "preferred_candidate": "firered-image-edit-1.1-plus-deterministic-composite",
+      "approval": "single_case_composited_containment_validated",
       "evidence": [
-        "renderlab/experiments/qwen_inpaint_v0.json",
-        "renderlab/experiments/firered_controlled_inpaint_v1/experiment.json"
+        "firered_controlled_inpaint_v1"
       ],
-      "caveat": "Existing Qwen controlled-color edit failed. FireRed test is prepared, not executed."
+      "caveat": "Raw FireRed semantic PASS but strict pixels FAIL. Deterministic composition passes exact containment in one case; minor edge rim remains. No backend-wide approval."
     }
   ],
   "qwen_face_swap": {
@@ -65,5 +64,18 @@
     "instruction_adherence": 2,
     "disposition": "FAIL",
     "unchanged": true
+  },
+  "firered_controlled_inpaint_v1": {
+    "job_id": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+    "evaluation": "renderlab/experiments/firered_controlled_inpaint_v1/evaluation.json",
+    "formal_backend_benchmark": false,
+    "case_count": 1,
+    "controlled_masked_generation_semantic": "PASS",
+    "raw_strict_pixel_containment": "FAIL",
+    "raw_failure_cause": "Full-frame VAE drift (consistent with measured differences; not independently isolated)",
+    "deterministic_composited_containment": "PASS",
+    "boundary_quality": "PASS_WITH_MINOR_ARTIFACTS",
+    "boundary_score": 4,
+    "validated_backend_pass_rate": null
   }
 }

@@ -1,26 +1,30 @@
 {
-  "status": "PASS_NATIVE_MASK_AND_DRY_RUN",
+  "status": "PASS_COMPOSITE_CONTAINMENT_AND_DRY_RUN",
   "tests": {
     "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
-    "count": 89,
+    "count": 90,
     "result": "PASS"
   },
   "static_checks": {
     "ruff_changed_python": "PASS",
     "git_diff_check": "PASS",
     "native_mask_cpu_validation": "PASS",
+    "native_composite_cpu_reproduction": "PASS",
     "editor_api_roundtrip": "PASS",
-    "acyclic_all_nodes_reach_save": "PASS"
+    "acyclic_all_nodes_reach_save": "PASS",
+    "json_integrity": "PASS"
   },
-  "api_node_count": 16,
+  "api_node_count": 18,
   "mask_equivalence": "mask_equivalence.json",
+  "composite_metrics": "output_metrics.json",
   "structural_comparison": "cloud_structural_comparison.json",
   "dry_run": {
     "status": "validated",
     "warnings": [],
     "submitted": false
   },
-  "runtime_validated": false,
-  "generation_executed": false,
-  "cloud_accessed": true
+  "revised_cloud_runtime_executed": false,
+  "prior_inference_job": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+  "new_inference_runs": 0,
+  "new_uploads": 0
 }

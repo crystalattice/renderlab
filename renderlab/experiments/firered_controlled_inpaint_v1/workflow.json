@@ -1,6 +1,6 @@
 {
-  "last_node_id": 16,
-  "last_link_id": 21,
+  "last_node_id": 18,
+  "last_link_id": 25,
   "nodes": [
     {
       "id": 1,
@@ -24,7 +24,8 @@
           "links": [
             7,
             10,
-            11
+            11,
+            22
           ]
         },
         {
@@ -72,7 +73,8 @@
           "name": "MASK",
           "type": "MASK",
           "links": [
-            14
+            14,
+            24
           ]
         }
       ],
@@ -542,7 +544,8 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            21
+            21,
+            23
           ]
         }
       ],
@@ -650,6 +653,84 @@
         1.0,
         128,
         128
+      ]
+    },
+    {
+      "id": 17,
+      "type": "ImageCompositeMasked",
+      "pos": [
+        2220,
+        450
+      ],
+      "size": [
+        330,
+        240
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "destination",
+          "type": "IMAGE",
+          "link": 22
+        },
+        {
+          "name": "source",
+          "type": "IMAGE",
+          "link": 23
+        },
+        {
+          "name": "mask",
+          "type": "MASK",
+          "link": 24
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            25
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageCompositeMasked"
+      },
+      "widgets_values": [
+        0,
+        0,
+        false
+      ]
+    },
+    {
+      "id": 18,
+      "type": "SaveImage",
+      "pos": [
+        2630,
+        450
+      ],
+      "size": [
+        330,
+        300
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 25
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "renderlab_firered_controlled_inpaint_v1_s3407_production"
       ]
     }
   ],
@@ -819,6 +900,38 @@
       13,
       0,
       14,
+      0,
+      "IMAGE"
+    ],
+    [
+      22,
+      1,
+      0,
+      17,
+      0,
+      "IMAGE"
+    ],
+    [
+      23,
+      13,
+      0,
+      17,
+      1,
+      "IMAGE"
+    ],
+    [
+      24,
+      2,
+      0,
+      17,
+      2,
+      "MASK"
+    ],
+    [
+      25,
+      17,
+      0,
+      18,
       0,
       "IMAGE"
     ]

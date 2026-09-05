@@ -7,72 +7,133 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[2]
-EXPERIMENTS = ROOT / 'renderlab' / 'experiments'
+EXPERIMENTS = ROOT / "renderlab" / "experiments"
 
 
 class OperationEvidenceTests(unittest.TestCase):
     def test_informal_evidence_does_not_promote_failed_or_unrun_backends(self):
-        matrix = json.loads((EXPERIMENTS / 'operation_backend_evidence.json').read_text())
-        informal = matrix['informal_firered']
-        self.assertFalse(informal['formal_benchmark'])
-        self.assertIsNone(informal['validated_pass_rate'])
-        rows = {r['operation']: r for r in matrix['operations']}
-        self.assertEqual(rows['strict_face_swap']['approval'], 'no_approved_backend')
-        self.assertEqual(rows['controlled_inpaint']['approval'], 'unvalidated')
-        prior = ROOT / matrix['qwen_face_swap']['evaluation']
-        self.assertEqual(hashlib.sha256(prior.read_bytes()).hexdigest(), matrix['qwen_face_swap']['sha256'])
+        matrix = json.loads(
+            (EXPERIMENTS / "operation_backend_evidence.json").read_text()
+        )
+        informal = matrix["informal_firered"]
+        self.assertFalse(informal["formal_benchmark"])
+        self.assertIsNone(informal["validated_pass_rate"])
+        rows = {r["operation"]: r for r in matrix["operations"]}
+        self.assertEqual(rows["strict_face_swap"]["approval"], "no_approved_backend")
+        self.assertEqual(
+            rows["controlled_inpaint"]["approval"],
+            "single_case_composited_containment_validated",
+        )
+        prior = ROOT / matrix["qwen_face_swap"]["evaluation"]
+        self.assertEqual(
+            hashlib.sha256(prior.read_bytes()).hexdigest(),
+            matrix["qwen_face_swap"]["sha256"],
+        )
         evaluation = json.loads(prior.read_text())
-        self.assertEqual(evaluation['criteria']['source_identity_transfer']['score'], 2)
-        self.assertEqual(evaluation['criteria']['instruction_adherence']['score'], 2)
-        self.assertEqual(evaluation['disposition'], 'FAIL')
+        self.assertEqual(evaluation["criteria"]["source_identity_transfer"]["score"], 2)
+        self.assertEqual(evaluation["criteria"]["instruction_adherence"]["score"], 2)
+        self.assertEqual(evaluation["disposition"], "FAIL")
 
     def test_mask_and_graph_preserve_the_predeclared_coordinate_contract(self):
-        p = EXPERIMENTS / 'firered_controlled_inpaint_v1'
-        case = json.loads((p / 'experiment.json').read_text())
-        graph = json.loads((p / 'api.prepared.json').read_text())
-        self.assertEqual(hashlib.sha256((p / 'mask.png').read_bytes()).hexdigest(), case['mask']['sha256'])
-        with Image.open(p / 'mask.png') as image:
-            self.assertEqual(image.size, tuple(case['settings']['output_dimensions']))
-            self.assertEqual(image.mode, 'RGB')
-            colors = dict((color, count) for count, color in image.getcolors(maxcolors=3))
+        p = EXPERIMENTS / "firered_controlled_inpaint_v1"
+        case = json.loads((p / "experiment.json").read_text())
+        graph = json.loads((p / "api.prepared.json").read_text())
+        self.assertEqual(
+            hashlib.sha256((p / "mask.png").read_bytes()).hexdigest(),
+            case["mask"]["sha256"],
+        )
+        with Image.open(p / "mask.png") as image:
+            self.assertEqual(image.size, tuple(case["settings"]["output_dimensions"]))
+            self.assertEqual(image.mode, "RGB")
+            colors = dict(
+                (color, count) for count, color in image.getcolors(maxcolors=3)
+            )
             self.assertEqual(set(colors), {(0, 0, 0), (255, 255, 255)})
-            self.assertEqual(image.getbbox(), tuple(case['mask']['bounds_xyxy_exclusive']))
-            self.assertEqual(colors[(255, 255, 255)], case['mask']['editable_pixels'])
-        sampler = next(n for n in graph.values() if n['class_type'] == 'KSampler')
-        latent_id, slot = sampler['inputs']['latent_image']
+            self.assertEqual(
+                image.getbbox(), tuple(case["mask"]["bounds_xyxy_exclusive"])
+            )
+            self.assertEqual(colors[(255, 255, 255)], case["mask"]["editable_pixels"])
+        sampler = next(n for n in graph.values() if n["class_type"] == "KSampler")
+        latent_id, slot = sampler["inputs"]["latent_image"]
         self.assertEqual(slot, 0)
         masked = graph[latent_id]
-        self.assertEqual(masked['class_type'], 'SetLatentNoiseMask')
-        mask_id, slot = masked['inputs']['mask']
-        self.assertEqual(graph[mask_id]['class_type'], 'MaskComposite')
-        self.assertEqual(graph[mask_id]['inputs'], {
-            'destination': ['15', 0], 'source': ['16', 0],
-            'x': 552, 'y': 424, 'operation': 'add',
-        })
-        self.assertEqual(graph['15']['inputs'], {'value': 0.0, 'width': 1160, 'height': 896})
-        self.assertEqual(graph['16']['inputs'], {'value': 1.0, 'width': 128, 'height': 128})
-        self.assertFalse(any(
-            'Resize' in n['class_type'] or n['class_type'] in ('LoadImageMask', 'ImageCompositeMasked')
-            for n in graph.values()
-        ))
-        save = next(n for n in graph.values() if n['class_type'] == 'SaveImage')
-        self.assertEqual(graph[save['inputs']['images'][0]]['class_type'], 'VAEDecode')
+        self.assertEqual(masked["class_type"], "SetLatentNoiseMask")
+        mask_id, slot = masked["inputs"]["mask"]
+        self.assertEqual(graph[mask_id]["class_type"], "MaskComposite")
+        self.assertEqual(
+            graph[mask_id]["inputs"],
+            {
+                "destination": ["15", 0],
+                "source": ["16", 0],
+                "x": 552,
+                "y": 424,
+                "operation": "add",
+            },
+        )
+        self.assertEqual(
+            graph["15"]["inputs"], {"value": 0.0, "width": 1160, "height": 896}
+        )
+        self.assertEqual(
+            graph["16"]["inputs"], {"value": 1.0, "width": 128, "height": 128}
+        )
+        self.assertFalse(
+            any(
+                "Resize" in n["class_type"] or n["class_type"] == "LoadImageMask"
+                for n in graph.values()
+            )
+        )
+        save = next(n for n in graph.values() if n["class_type"] == "SaveImage")
+        self.assertEqual(graph[save["inputs"]["images"][0]]["class_type"], "VAEDecode")
         for node in graph.values():
-            for value in node['inputs'].values():
+            for value in node["inputs"].values():
                 if isinstance(value, list):
                     self.assertIn(value[0], graph)
 
-    def test_inpainting_remains_unexecuted_with_independent_preservation_gates(self):
-        p = EXPERIMENTS / 'firered_controlled_inpaint_v1'
-        case = json.loads((p / 'experiment.json').read_text())
-        pending = json.loads((p / 'evaluation.pending.json').read_text())
-        self.assertEqual(case['status'], 'prepared_not_executed')
-        self.assertFalse(case['run_design']['execution_authorized'])
-        self.assertIsNone(case['run_design']['job_id'])
-        self.assertIsNone(case['run_design']['results'])
-        self.assertIsNone(pending['disposition'])
-        self.assertTrue(all(v is None for v in pending['scores'].values()))
-        self.assertEqual(set(pending['scores']), set(case['metrics']))
-        for metric in ['outside_mask_pixel_preservation', 'outside_mask_semantic_preservation',
-                       'identity_preservation', 'pose_preservation', 'body_preservation', 'background_preservation']:
-            self.assertEqual(case['thresholds'][metric], 5)
+    def test_inpainting_records_raw_failure_and_composited_containment(self):
+        p = EXPERIMENTS / "firered_controlled_inpaint_v1"
+        case = json.loads((p / "experiment.json").read_text())
+        pending = json.loads((p / "evaluation.json").read_text())
+        self.assertEqual(
+            case["status"], "evaluated_raw_fail_composited_containment_pass"
+        )
+        self.assertTrue(case["run_design"]["execution_authorized"])
+        self.assertEqual(
+            case["run_design"]["job_id"], "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa"
+        )
+        self.assertEqual(case["run_design"]["results"], "evaluation.json")
+        self.assertEqual(pending["disposition"], "FAIL")
+        self.assertTrue(all(v is not None for v in pending["scores"].values()))
+        self.assertEqual(set(pending["scores"]), set(case["metrics"]))
+        for metric in [
+            "outside_mask_pixel_preservation",
+            "outside_mask_semantic_preservation",
+            "identity_preservation",
+            "pose_preservation",
+            "body_preservation",
+            "background_preservation",
+        ]:
+            self.assertEqual(case["thresholds"][metric], 5)
+
+    def test_production_preserves_raw_inside_and_source_outside(self):
+        p = EXPERIMENTS / "firered_controlled_inpaint_v1"
+        case = json.loads((p / "experiment.json").read_text())
+        raw = Image.open(p / "raw_output_1bdff9f9.png")
+        production = Image.open(p / "production_composited.png")
+        source = Image.open(case["source"]["path"])
+        mask = Image.open(p / "mask.png").getchannel("R")
+        self.assertEqual(raw.mode, "RGB")
+        self.assertEqual(production.mode, "RGB")
+        self.assertEqual(source.mode, "RGB")
+        self.assertEqual(production.size, (1160, 896))
+        self.assertEqual(
+            production.tobytes(), Image.composite(raw, source, mask).tobytes()
+        )
+        self.assertEqual(
+            hashlib.sha256((p / "raw_output_1bdff9f9.png").read_bytes()).hexdigest(),
+            "1ce239ac042100aac328dae6463c741a4536b36b01a52352e36476a14368c35c",
+        )
+        metrics = json.loads((p / "output_metrics.json").read_text())
+        self.assertEqual(metrics["production"]["outside_changed_pixels"], 0)
+        self.assertEqual(metrics["production"]["outside_max_channel_error"], 0)
+        self.assertTrue(metrics["production"]["inside_pixels_identical_to_raw"])
+        self.assertGreater(metrics["production"]["inside_blue_coverage_fraction"], 0.8)

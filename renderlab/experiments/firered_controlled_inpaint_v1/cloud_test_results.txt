@@ -1,5 +1,7 @@
-All RenderLab tests: 89 passed.
+All RenderLab tests: 90 passed.
 Native CPU mask equivalence and editor/API roundtrip: PASS.
-Ruff check on changed Python files: PASS.
-Git diff --check: PASS.
-No diffusion inference executed.
+Native CPU compositing and exact saved RGB containment: PASS.
+Ruff check on all changed Python files: PASS.
+Git diff --check and JSON integrity: PASS.
+Cloud dry run: validated; submitted=false; warnings=[].
+No uploads or new diffusion inference.

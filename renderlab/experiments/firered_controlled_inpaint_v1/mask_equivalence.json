@@ -1,17 +1,5 @@
 {
   "status": "PASS",
-  "base_commit": "f1c18b335ce6df469b526ff905373908636b40b2",
-  "node_count": 16,
-  "changed_existing_nodes": [
-    "2"
-  ],
-  "added_nodes": [
-    "15",
-    "16"
-  ],
-  "all_non_mask_nodes_and_inputs_unchanged": true,
-  "source_binding_unchanged": true,
-  "set_latent_noise_mask_connection_unchanged": true,
   "mask_dimensions": [
     1160,
     896
@@ -23,9 +11,5 @@
   "reference_png_sha256": "1a6430abf64aa59c03d06acee164075f6481c7520aaa6a47e4bab9c15a3c86c7",
   "comparison_scope": "Decoded pixels and RGB bytes, not PNG compressed container bytes.",
   "native_implementation": "comfy_extras/nodes_mask.py: SolidMask.execute, MaskComposite.execute; CPU",
-  "native_implementation_sha256": "f235d52703229b0bb7840cc48f0fffe6b00bf9398e119aa7d7f2fc9f3bdaba12",
-  "editor_roundtrip_equal": true,
-  "acyclic_all_nodes_reach_raw_save": true,
-  "resolved_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
-  "generation_executed": false
+  "native_implementation_sha256": "f235d52703229b0bb7840cc48f0fffe6b00bf9398e119aa7d7f2fc9f3bdaba12"
 }

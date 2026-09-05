@@ -1,0 +1,94 @@
+{
+  "prompt_id": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+  "approved_payload_commit": "3289dfb2",
+  "started_utc": "2026-09-05T18:41:55.218Z",
+  "finished_utc": "2026-09-05T18:44:27.658Z",
+  "approval": "User approved the exact gated one-job submission call.",
+  "submission_attempts": 1,
+  "submission_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Workflow submitted. prompt_id: 1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning."
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "prompt_id": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+        "lifted_from_save": false,
+        "lifecycle": "\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning.",
+        "status": "succeeded",
+        "warnings": []
+      }
+    }
+  },
+  "completion_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Job completed successfully. Use get_output to retrieve results."
+      },
+      {
+        "type": "text",
+        "text": "{\"status\":\"completed\",\"completed\":true,\"raw_status\":\"completed\"}"
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "status": "succeeded",
+        "warnings": [],
+        "job_status": "completed",
+        "raw_status": "completed"
+      }
+    }
+  },
+  "output_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Image ready.\nDownload URL (no auth needed, expires in ~5 min; re-run get_output for a fresh link): https://cloud.comfy.org/api/s/QiTQ_M7srdGZJMaLuClmLg?raw=1\nSuggested save path: ~/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png\nSource: node 14, SaveImage, filename_prefix=\"renderlab_firered_controlled_inpaint_v1_s3407_raw\"\nRun this command yourself now (via your own shell/tool) to save the file (keep the URL exactly as given \u2014 do not strip the ?raw=1 query parameter, or the download reverts to a redirect a sandbox may block), then tell the user the saved path \u2014 do NOT just print the command and ask the user to run it. Only hand the command to the user if you cannot execute it yourself (no shell, or a sandbox egress block returning 403 Host not in allowlist):\ncurl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png.part\" -- 'https://cloud.comfy.org/api/s/QiTQ_M7srdGZJMaLuClmLg?raw=1' || { rm -f \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png.part\"; false; } && mv -f \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png.part\" \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png\"\nImage size: 1160x896 px (e6057427fca55306f3c351016c949537a6e7fc99c6c106f14b81fcd08272099e.png)"
+      }
+    ],
+    "structuredContent": {
+      "results": [
+        {
+          "source_node_id": "14",
+          "filename_prefix": "renderlab_firered_controlled_inpaint_v1_s3407_raw",
+          "class_type": "SaveImage",
+          "filename": "e6057427fca55306f3c351016c949537a6e7fc99c6c106f14b81fcd08272099e.png",
+          "url": "https://cloud.comfy.org/api/s/QiTQ_M7srdGZJMaLuClmLg?raw=1",
+          "suggested_save_path": "~/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png",
+          "download_command": "curl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png.part\" -- 'https://cloud.comfy.org/api/s/QiTQ_M7srdGZJMaLuClmLg?raw=1' || { rm -f \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png.part\"; false; } && mv -f \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png.part\" \"$HOME/Downloads/ComfyUI/comfy_firered-controlled-inpaint-seed-3407-raw.png\"",
+          "width": 1160,
+          "height": 896
+        }
+      ]
+    }
+  },
+  "resolved_payload_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
+  "raw_output": "raw_output_1bdff9f9.png",
+  "runtime_status": "completed",
+  "protocol_disposition": "FAIL",
+  "failure_reason": "Outside-mask decoded RGB pixels are not exactly preserved.",
+  "visual_scoring": "Completed; see evaluation.json",
+  "postprocessing_applied": false,
+  "measurements": {
+    "output_sha256": "1ce239ac042100aac328dae6463c741a4536b36b01a52352e36476a14368c35c",
+    "dimensions": [
+      1160,
+      896
+    ],
+    "outside_changed_pixel_fraction": 0.7621410472972973,
+    "outside_mean_absolute_channel_error": 0.5408162068318318,
+    "outside_maximum_channel_error": 27,
+    "inside_changed_pixel_fraction": 1.0,
+    "outside_pixel_gate_passed": false
+  },
+  "executed_payload": "api.executed.1bdff9f9.json",
+  "evaluation": "evaluation.json",
+  "production_derivative": {
+    "path": "production_composited.png",
+    "method": "Local native CPU ImageCompositeMasked, not another Cloud job",
+    "sha256": "69a04a0a992a4a91d97c80062624b6213f6612b7887e0b8f74be04eb3b82ea4d"
+  }
+}

@@ -1,4 +1,4 @@
-# FireRed controlled inpainting v1 — prepared, not executed
+# FireRed controlled inpainting v1 — evaluated raw + deterministic production
 
 One fixed-seed feasibility case: recolor a **128 × 128 rectangular patch** on the
 existing opaque white T-shirt to royal blue. The clothed source is the previously
@@ -19,13 +19,14 @@ The bundled FireRed Image Edit 1.1 blueprint has no mask input. This experiment
 uses native `SolidMask`/`MaskComposite` and `SetLatentNoiseMask` before `KSampler`, using the blueprint's
 non-turbo settings: seed 3407, 40 steps, CFG 4, Euler/simple, denoise 1, model shift
 3.1 and CFGNorm 1. No Lightning LoRA is used. The blueprint's megapixel resize is
-omitted to preserve mask coordinates. This adaptation is unvalidated at runtime;
-Cloud catalog and dry-run checks pass; native FireRed inpainting quality remains unproven.
+omitted to preserve mask coordinates. The raw graph completed one Cloud run.
+Semantic editing passed this case; strict raw pixel containment failed. The revised
+compositing branch has been verified locally and passed Cloud dry-run validation.
 
-Only the raw decoded result is scored. There is no source recompositing or
-postprocessing to conceal outside-mask drift. A VAE round-trip can alter pixels
+The frozen primary evaluation scores only the raw decoded result and remains FAIL.
+The later production derivative uses explicit deterministic compositing, reported separately. A VAE round-trip can alter pixels
 outside a latent sampling mask; this is precisely a failure the protocol must
-detect. A later containment/compositing experiment would be a separate variant.
+detect. The production containment extension is assessed separately from that raw protocol.
 
 | Acceptance criterion | Gate | Measurement |
 |---|---:|---|
@@ -47,19 +48,18 @@ the outer edge ring. Every gate must pass; semantic success cannot override pixe
 failure. Numeric blue coverage is descriptive, not a substitute for visual texture
 and color assessment.
 
-`evaluation.pending.json` deliberately contains null scores, measurements and
-disposition. No execution is authorized by these files. The planned single attempt
-must not be replaced by a favorable seed. Any future run must retain the exact
-prompt/settings, model versions, source/mask hashes, raw output, output hash and
-dimensions, runtime status, and all failed criteria. One case cannot establish a
-backend-wide success rate.
+`evaluation.json` records the completed raw evaluation. `EVALUATION.md` separates
+semantic preservation, exact pixels, masked instruction success and boundary quality.
+`raw_output_1bdff9f9.png` is the unchanged downloaded output; `production_composited.png`
+is the deterministic production image. The latter is not substituted into the raw score.
 
-`workflow.json` is the local editor graph; `api.cloud.resolved.json` retains the
-verified Cloud source filename. `validate_native_mask.py` runs the native mask
-operations on CPU and compares normalized mask tensors and decoded RGB bytes
-against `mask.png`; no diffusion inference is performed.
+The revised graph keeps raw SaveImage node 14 and adds ImageCompositeMasked node 17:
+destination node 1, source node 13, mask node 2, x=0, y=0, resize_source=false.
+SaveImage node 18 saves the production result. Both full-resolution inputs and the mask
+share the 1160×896 canvas; the rectangle remains x=552, y=424, 128×128.
 
-The native-mask dry run is validated with zero warnings and `submitted: false`.
-See `execution_readiness.json`. `cloud_submit.gated.json` contains the exact
-one-job arguments for `mcp__comfy_cloud__submit_workflow`, including `dry_run: false`;
-it is reference data only and requires explicit execution approval. No run was submitted.
+`api.executed.1bdff9f9.json` preserves the exact graph used by the completed job.
+`workflow.json` and `api.cloud.resolved.json` describe the revised two-output graph.
+`validate_native_mask.py` validates mask equivalence and editor/API structure.
+`validate_composite.py` reproduces native CPU compositing using existing images only.
+No further inference is authorized; any gated submission data is reference only.

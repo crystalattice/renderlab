@@ -1,0 +1,81 @@
+{
+  "status": "evaluated",
+  "source_job": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+  "disposition": "FAIL",
+  "scope": "Frozen raw-output protocol; composite assessed separately.",
+  "scores": {
+    "masked_change": 4,
+    "outside_mask_pixel_preservation": 1,
+    "outside_mask_semantic_preservation": 5,
+    "edge_integration": 4,
+    "identity_preservation": 5,
+    "pose_preservation": 5,
+    "body_preservation": 5,
+    "background_preservation": 5,
+    "instruction_adherence": 4,
+    "artifact_severity": 2
+  },
+  "measurements": {
+    "outside_changed_pixels": 779652,
+    "outside_total_pixels": 1022976,
+    "outside_changed_pixel_fraction": 0.7621410472972973,
+    "outside_mae_rgb": 0.5408162068318318,
+    "outside_max_channel_error": 27,
+    "inside_blue_coverage_fraction": 0.90093994140625,
+    "inside_pixels_identical_to_raw": true,
+    "outer_ring_changed_fraction": 0.9981617647058824,
+    "inner_ring_changed_fraction": 1.0
+  },
+  "output": {
+    "path": "raw_output_1bdff9f9.png",
+    "sha256": "1ce239ac042100aac328dae6463c741a4536b36b01a52352e36476a14368c35c",
+    "dimensions": [
+      1160,
+      896
+    ],
+    "mode": "RGB"
+  },
+  "semantic_outside_mask_preservation": {
+    "disposition": "PASS",
+    "observations": "No visible change to identity, hair, head angle, posture, limbs, garment shape, gym equipment, background or lighting at full-frame inspection."
+  },
+  "exact_pixel_preservation": {
+    "disposition": "FAIL",
+    "cause": "Full-frame VAE drift",
+    "causal_limit": "Small distributed RGB differences are consistent with the full-frame VAE encode/decode path; no isolated VAE-only control run was performed."
+  },
+  "masked_region_instruction_success": {
+    "disposition": "PASS",
+    "score": 4,
+    "observations": "Saturated royal-blue rectangle present; 90.09% blue coverage. Local shading remains subtle, but cloth detail is flattened and the patch looks somewhat printed/sticker-like."
+  },
+  "boundary_artifacts": {
+    "disposition": "PASS_WITH_MINOR_ARTIFACTS",
+    "score": 4,
+    "severity": 2,
+    "inspection": "Source/raw/composite full frame and nearest-neighbor 200% crops; 8-pixel inner/outer bands.",
+    "observations": "Straight deliberate patch edge with a thin light/dark rim and slight softness. No severe tearing, doubled contours, anatomy damage or obvious blue spill. Composite restores the outer region exactly; the generated inner rim remains."
+  },
+  "production": {
+    "disposition": "PASS_CONTAINMENT",
+    "path": "production_composited.png",
+    "sha256": "69a04a0a992a4a91d97c80062624b6213f6612b7887e0b8f74be04eb3b82ea4d",
+    "metrics": {
+      "outside_changed_pixels": 0,
+      "outside_total_pixels": 1022976,
+      "outside_changed_pixel_fraction": 0.0,
+      "outside_mae_rgb": 0.0,
+      "outside_max_channel_error": 0,
+      "inside_blue_coverage_fraction": 0.90093994140625,
+      "inside_pixels_identical_to_raw": true,
+      "outer_ring_changed_fraction": 0.0,
+      "inner_ring_changed_fraction": 1.0
+    },
+    "boundary_quality": "PASS_WITH_MINOR_ARTIFACTS; no feathering; inside pixels identical to raw.",
+    "raw_protocol_reclassified": false
+  },
+  "limitations": [
+    "Single fixed-seed case, not a backend-wide success rate.",
+    "Semantic inspection is visual judgment, distinct from numeric identity."
+  ]
+}

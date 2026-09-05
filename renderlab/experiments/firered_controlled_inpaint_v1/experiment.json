@@ -1,7 +1,7 @@
 {
   "schema": "renderlab.reference-experiment.v1",
   "name": "firered-controlled-inpaint-v1",
-  "status": "prepared_not_executed",
+  "status": "evaluated_raw_fail_composited_containment_pass",
   "training_use": "evaluation_only",
   "purpose": "Test whether FireRed 1.1 with a latent noise mask can recolor a small clothed region while preserving protected content.",
   "source": {
@@ -46,7 +46,7 @@
     "path": "blueprints/Image Edit (FireRed Image Edit 1.1).json",
     "sha256": "47a00d7a9b4c632d8bf4f9964bdd96c4c6cb73e698813ee53ed69ddc1415a85f"
   },
-  "adaptation": "Use the blueprint non-turbo settings. Generate a binary rectangular mask with two SolidMask nodes and MaskComposite(add), feeding the existing SetLatentNoiseMask. Omit resizing to retain source coordinates. Runtime inpainting quality remains unvalidated.",
+  "adaptation": "Use the blueprint non-turbo settings. Generate a binary rectangular mask with two SolidMask nodes and MaskComposite(add), feeding the existing SetLatentNoiseMask. Omit resizing to retain source coordinates. One raw Cloud run completed: semantic PASS, exact raw containment FAIL. Deterministic production containment is evaluated separately.",
   "prompt": "Change only the masked rectangular patch on the existing white T-shirt to saturated royal blue. Keep the cloth texture, folds, shading, garment cut and fit. Keep the remainder of the shirt white. Preserve all pixels outside the mask, including face, hairstyle and hair length, neck, skin, body proportions, pose, hands, legs, gym equipment, background, camera and lighting. Do not add text, a logo, accessories, or a new garment.",
   "settings": {
     "seed": 3407,
@@ -69,10 +69,11 @@
     "planned_attempts": 1,
     "seed_policy": "Fixed before execution; no replacement of failures or seed selection.",
     "scope": "Single-case feasibility test, not a backend-wide benchmark.",
-    "execution_authorized": false,
-    "job_id": null,
-    "results": null,
-    "output_policy": "Preserve the raw PNG. No source recompositing, registration, resize, enhancement, or identity repair before primary scoring."
+    "execution_authorized": true,
+    "job_id": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+    "results": "evaluation.json",
+    "output_policy": "Preserve the raw PNG. No source recompositing, registration, resize, enhancement, or identity repair before primary scoring.",
+    "approval_scope": "Consumed authorization for one completed job; no further inference authorized."
   },
   "metrics": [
     "masked_change",
@@ -138,5 +139,15 @@
     "Local node declarations do not establish runtime compatibility or model availability.",
     "Informal FireRed editing success is not controlled-inpainting validation."
   ],
-  "editor_workflow": "workflow.json"
+  "editor_workflow": "workflow.json",
+  "production_compositing": {
+    "authorized_after_raw_evaluation": true,
+    "native_node": "17",
+    "save_node": "18",
+    "raw_save_node": "14",
+    "source_job": "1bdff9f9-9fdf-4094-94b2-a08c6dfd8baa",
+    "production_result": "production_composited.png",
+    "inference_runs_added": 0,
+    "scope": "Supplementary deterministic production containment; does not replace the frozen raw evaluation."
+  }
 }

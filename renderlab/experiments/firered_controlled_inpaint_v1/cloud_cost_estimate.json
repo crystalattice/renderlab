@@ -1,5 +1,5 @@
 {
-  "checked_utc": "2026-09-05T18:35:00.493Z",
+  "checked_utc": "2026-09-05T19:05:18.461Z",
   "response": {
     "content": [
       {
@@ -9,8 +9,8 @@
     ]
   },
   "workflow": "api.cloud.resolved.json",
-  "workflow_sha256": "5393d43ffb4672bc9cc4b5a64ba5b7cbb8e1ac07bdc81c61448b2af5c9639a62",
+  "workflow_sha256": "990be9b2b604e760794bac3f79424ffaf4110d285536ad59ed27d3106465d9a9",
   "paid_api_node_credits": 0,
-  "gpu_queue_and_storage": "Excluded by estimator; unknown",
+  "gpu_queue_and_storage": "Excluded by estimator; unknown. No new GPU job executed.",
   "total_cost": null
 }

@@ -190,6 +190,36 @@
         "width": 128,
         "height": 128
       }
+    },
+    "17": {
+      "class_type": "ImageCompositeMasked",
+      "inputs": {
+        "destination": [
+          "1",
+          0
+        ],
+        "source": [
+          "13",
+          0
+        ],
+        "x": 0,
+        "y": 0,
+        "resize_source": false,
+        "mask": [
+          "2",
+          0
+        ]
+      }
+    },
+    "18": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "17",
+          0
+        ],
+        "filename_prefix": "renderlab_firered_controlled_inpaint_v1_s3407_production"
+      }
     }
   },
   "dry_run": true
