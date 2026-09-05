@@ -32,7 +32,7 @@ class AppearanceTests(unittest.TestCase):
         for blueprint in BACKEND_BLUEPRINTS.values():
             self.assertTrue((repository / blueprint).is_file(), blueprint)
 
-    def test_qwen_outpaint_returns_preservation_composite(self):
+    def test_qwen_outpaint_uses_validated_generative_output(self):
         repository = Path(__file__).resolve().parents[2]
         blueprint = json.loads(
             (repository / BACKEND_BLUEPRINTS["qwen-image-outpaint"]).read_text()
@@ -41,10 +41,10 @@ class AppearanceTests(unittest.TestCase):
         nodes = {node["id"]: node for node in graph["nodes"]}
         links = {link["id"]: link for link in graph["links"]}
         self.assertEqual(nodes[200]["type"], "ImageCompositeMasked")
-        self.assertEqual(nodes[200]["mode"], 0)
-        self.assertEqual(nodes[200]["outputs"][0]["links"], [314])
-        self.assertEqual(nodes[191]["outputs"][0]["links"], [323])
-        self.assertEqual(links[314]["origin_id"], 200)
+        self.assertEqual(nodes[200]["mode"], 4)
+        self.assertEqual(nodes[200]["outputs"][0]["links"], [])
+        self.assertEqual(nodes[191]["outputs"][0]["links"], [314, 323])
+        self.assertEqual(links[314]["origin_id"], 191)
         self.assertEqual(links[314]["target_id"], -20)
 
     def test_plan_merges_preset_and_request_target(self):

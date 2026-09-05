@@ -35,6 +35,36 @@
         "seam_visibility": 1
       },
       "notes": "The stock workflow completed both legs and feet, added plausible shoes and floor, continued the gym machine, and showed no obvious horizontal seam despite internal feathering remaining at zero. It resized and subtly regenerated the original canvas, including shirt, body, and facial detail, so it passes semantic scene extension but fails strict pixel-preserving outpainting."
+    },
+    {
+      "id": "bottom_extension_preservation_composite",
+      "model": "qwen-image-outpaint",
+      "status": "completed",
+      "workflow": "blueprints/Image Outpainting (Qwen-Image).json",
+      "input_protocol": "single_reference_with_source_recomposite",
+      "settings": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 512,
+        "feathering_internal": 0,
+        "image_composite_masked": "enabled_and_routed_to_output"
+      },
+      "output": {
+        "height": 1328,
+        "path": "upload/img_00562__qwen-image-edit__single-pass__934991231621675_00001_ (2).png",
+        "sha256": "ff7be846556fe2695a6b9fda477c504370dcc7fdd564fa0e65f3afce04174a93",
+        "width": 800
+      },
+      "metrics": {
+        "artifact_severity": 4,
+        "continuation_plausibility": 4,
+        "identity_preservation": 5,
+        "original_canvas_preservation": 5,
+        "scene_continuity": 2,
+        "seam_visibility": 5
+      },
+      "notes": "Recompositing preserved the original region but created a conspicuous horizontal boundary through both thighs and the gym machine. The strict-preservation variant is rejected until the workflow exposes a usable overlap or feathering control."
     }
   ],
   "metrics": [
@@ -54,5 +84,5 @@
   },
   "decision_rule": "Accept semantic outpainting when continuation_plausibility and scene_continuity are at least 4. Accept production outpainting only when original_canvas_preservation is also at least 4.",
   "status": "completed",
-  "conclusion": "Qwen is a viable semantic outpainting backend. The bundled blueprint contained a bypassed ImageCompositeMasked preservation path whose output was disconnected. RenderLab enables that node and routes its output to the subgraph result for the next strict-preservation test."
+  "conclusion": "Qwen is accepted as a generative outpainting backend. Strict source recompositing is rejected because zero-feather compositing creates a severe boundary seam; the stock generative path remains the default."
 }
