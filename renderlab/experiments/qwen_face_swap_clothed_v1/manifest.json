@@ -1,0 +1,67 @@
+{
+  "schema": "renderlab.clothed-face-swap-validation.v1",
+  "project_commit": "a27dc7db32b07b391d5624a4a4784ecfa0122996",
+  "branch": "dev",
+  "blueprint": {
+    "path": "/home/codyjackson/PycharmProjects/renderlab/blueprints/Image Edit (Qwen 2509).json",
+    "sha256": "70d4d660bbfa93d2272e92f7159a39361b2326f362582a8d9b707304d8d02ccd"
+  },
+  "inputs": [
+    {
+      "path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+      "role": "target_image",
+      "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+      "width": 1160,
+      "height": 896,
+      "mode": "RGB"
+    },
+    {
+      "path": "/home/codyjackson/PycharmProjects/renderlab/input/renderlab_afccbc5cc07c4f88b8f397e2104664f5.png",
+      "role": "face_identity",
+      "sha256": "f30826e93d49587e997ce842d65b796e4254ee85ddb66eb608bab0150009996d",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGB"
+    }
+  ],
+  "source_semantics": "editable_canvas",
+  "image_3": null,
+  "mask": null,
+  "prompt": "Edit the first image. Replace only the primary subject's facial identity with the facial identity of the woman in the second image. Preserve the first image's body, physique, pose, expression, head angle, hairstyle, hair length, clothing, skin outside the face, camera, lighting, gym equipment, and background. Match the replacement face to the target head angle, expression, lighting, and skin transition. Do not copy the second image's body, pose, clothing, room, camera angle, or background.",
+  "negative_prompt": "",
+  "seed": 3407,
+  "control_after_generate": "fixed",
+  "output_prefix": "renderlab_qwen_face_swap_clothed_v1_s3407",
+  "expected_first_output": "renderlab_qwen_face_swap_clothed_v1_s3407_00001_.png",
+  "planned_output_dimensions": [
+    1184,
+    880
+  ],
+  "output_counter_note": "SaveImage chooses an available counter; the exact suffix is assigned at execution.",
+  "settings": {
+    "unet": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+    "clip": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "vae": "qwen_image_vae.safetensors",
+    "lora": "Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors",
+    "lora_strength": 1,
+    "turbo": true,
+    "steps": 4,
+    "cfg": 1,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "denoise": 1,
+    "model_shift": 3,
+    "cfg_norm_strength": 1
+  },
+  "acceptance": {
+    "identity_preservation": 4,
+    "morphology_preservation": 5,
+    "pose_preservation": 5,
+    "instruction_adherence": 4,
+    "artifact_severity_max": 2
+  },
+  "cloud_input_bindings": null,
+  "cloud_status": "Not uploaded. Replace only LoadImage image values with returned upload names after approval.",
+  "visual_review": "Target: opaque white T-shirt with lower body covered, clear adult face. Reference: clothed synthetic adult portrait, clear face.",
+  "provenance": "Target PNG input is_changed matches original img_00562 SHA-256 8b22ad2084cda890622612e5cf02aa5e97c18a7244b703cb8c906240f78e8c68. Reference PNG contains RealVisXL generation metadata; adulthood is a visual assessment, not an age document."
+}

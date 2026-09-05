@@ -1,0 +1,182 @@
+{
+  "433:75": {
+    "class_type": "CFGNorm",
+    "inputs": {
+      "strength": 1,
+      "model": [
+        "433:66",
+        0
+      ]
+    }
+  },
+  "433:39": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "433:38": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "433:37": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_edit_2509_fp8_e4m3fn.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "433:110": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "prompt": "",
+      "clip": [
+        "433:38",
+        0
+      ],
+      "vae": [
+        "433:39",
+        0
+      ],
+      "image1": [
+        "433:117",
+        0
+      ],
+      "image2": [
+        "471",
+        0
+      ]
+    }
+  },
+  "433:66": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "433:89",
+        0
+      ]
+    }
+  },
+  "433:111": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "prompt": "Edit the first image. Replace only the primary subject's facial identity with the facial identity of the woman in the second image. Preserve the first image's body, physique, pose, expression, head angle, hairstyle, hair length, clothing, skin outside the face, camera, lighting, gym equipment, and background. Match the replacement face to the target head angle, expression, lighting, and skin transition. Do not copy the second image's body, pose, clothing, room, camera angle, or background.",
+      "clip": [
+        "433:38",
+        0
+      ],
+      "vae": [
+        "433:39",
+        0
+      ],
+      "image1": [
+        "433:117",
+        0
+      ],
+      "image2": [
+        "471",
+        0
+      ]
+    }
+  },
+  "433:88": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "433:117",
+        0
+      ],
+      "vae": [
+        "433:39",
+        0
+      ]
+    }
+  },
+  "433:8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "433:3",
+        0
+      ],
+      "vae": [
+        "433:39",
+        0
+      ]
+    }
+  },
+  "433:89": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "lora_name": "Qwen-Image-Edit-2509-Lightning-4steps-V1.0-bf16.safetensors",
+      "strength_model": 1,
+      "model": [
+        "433:37",
+        0
+      ]
+    }
+  },
+  "433:117": {
+    "class_type": "FluxKontextImageScale",
+    "inputs": {
+      "image": [
+        "470",
+        0
+      ]
+    }
+  },
+  "433:3": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 3407,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "433:75",
+        0
+      ],
+      "positive": [
+        "433:111",
+        0
+      ],
+      "negative": [
+        "433:110",
+        0
+      ],
+      "latent_image": [
+        "433:88",
+        0
+      ]
+    }
+  },
+  "470": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png"
+    }
+  },
+  "471": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "/home/codyjackson/PycharmProjects/renderlab/input/renderlab_afccbc5cc07c4f88b8f397e2104664f5.png"
+    }
+  },
+  "472": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "433:8",
+        0
+      ],
+      "filename_prefix": "renderlab_qwen_face_swap_clothed_v1_s3407"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "status": "PASS_STATIC_LOCAL",
+  "graph_links": 43,
+  "api_nodes": 15,
+  "api_links": 21,
+  "api_inputs": 42,
+  "negative_checks_rejected": 6,
+  "checks": [
+    "image hashes and blueprint hash",
+    "every editor edge, port type and reciprocal index",
+    "every API input against local source schemas",
+    "required inputs, types, scalar ranges, enums",
+    "acyclic graph and all API nodes reachable from SaveImage",
+    "image roles and positive/negative prompt paths",
+    "target latent, turbo model branch and fixed sampler settings"
+  ],
+  "limitations": [
+    "No model weights loaded or inference performed.",
+    "Model filenames match blueprint declarations; Cloud installation is unverified.",
+    "LoadImage inventory validated against local paths; Cloud names require upload response binding.",
+    "Cloud discovery and revised credit estimate returned Auth required.",
+    "Static validation is not a runtime execution guarantee."
+  ],
+  "schema_sources": [
+    {
+      "path": "nodes.py",
+      "sha256": "918a322c43665f24513856a5bec6c564ede01a29b6081b83fd67d27a49571e0c"
+    },
+    {
+      "path": "comfy_extras/nodes_cfg.py",
+      "sha256": "688a73094509efcc81bf22bf0e77b2cd8c9f1726f455ed55f6f9747dec656e99"
+    },
+    {
+      "path": "comfy_extras/nodes_qwen.py",
+      "sha256": "b8d18d9f897c4bd5a4b2651b30643bed277f1808e033c9c376dc21025fed00a5"
+    },
+    {
+      "path": "comfy_extras/nodes_flux.py",
+      "sha256": "71c9d804a9acfb7a828fecb8fcc4b93e28f4417f0c4259a68910f4027059741f"
+    },
+    {
+      "path": "comfy_extras/nodes_model_advanced.py",
+      "sha256": "46de8e11873a00b7938737e77bdde3579a2236f54799174ab45ed80f8a10ae09"
+    }
+  ]
+}
