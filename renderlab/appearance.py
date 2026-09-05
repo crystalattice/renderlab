@@ -75,6 +75,9 @@ def plan_appearance(request_path: Path, preset_path: Path = DEFAULT_PRESETS) -> 
     source = request.get("source")
     if not isinstance(source, dict) or not source.get("path"):
         raise AppearanceError("source.path is required")
+    mask = request.get("mask")
+    if operation == "inpaint" and (not isinstance(mask, dict) or not mask.get("path")):
+        raise AppearanceError("mask.path is required for inpaint")
     subject = request.get("subject", "subject:primary")
     preserve = request.get("preserve", DEFAULT_PRESERVE)
     if not isinstance(preserve, list) or not all(isinstance(item, str) and item for item in preserve):
@@ -105,7 +108,11 @@ def plan_appearance(request_path: Path, preset_path: Path = DEFAULT_PRESETS) -> 
             "available": backend_id in BACKEND_BLUEPRINTS,
             "workflow_blueprint": BACKEND_BLUEPRINTS.get(backend_id),
         },
-        "input": {"source": source, "references": request.get("references", [])},
+        "input": {
+            "source": source,
+            "mask": mask,
+            "references": request.get("references", []),
+        },
         "subject": subject,
         "target": target,
         "controls": controls,

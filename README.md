@@ -284,6 +284,20 @@ horizontal seam across the subject and scene. RenderLab retains the validated ge
 output path and does not expose strict preservation until an overlap/blend control is
 available.
 
+The first masked-inpainting check changes only an existing white shirt to royal blue:
+
+```bash
+python -m renderlab appearance plan \
+  renderlab/experiments/examples/inpaint_shirt_color_request.json \
+  --output /tmp/inpaint-plan.json
+```
+
+Import `blueprints/Image Inpainting (Qwen-image).json`, load the white-shirt source,
+and supply a binary mask with the shirt white and every protected pixel black. Paste the
+request's `target.instruction` into the root text widget and retain the default models.
+The outer node exposes no sampler or mask-blending controls; the bundled workflow runs
+four Euler/simple steps at CFG 1 with zero mask growth and one-pixel blur.
+
 Operational commands:
 
 ```bash

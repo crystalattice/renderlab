@@ -1,0 +1,28 @@
+{
+  "schema": "renderlab.reference-experiment.v1",
+  "name": "qwen-inpaint-v0",
+  "purpose": "Determine whether the bundled Qwen inpainting blueprint can make a localized appearance edit without changing protected pixels or adjacent subject anatomy.",
+  "training_use": "evaluation_only",
+  "reference_ids": ["img_00562"],
+  "workflow": "blueprints/Image Inpainting (Qwen-image).json",
+  "test_case": "Change the existing white shirt to royal blue using a shirt-only mask.",
+  "exposed_inputs": ["image", "mask", "text", "clip_name", "vae_name", "control_net_name"],
+  "internal_settings": {
+    "steps": 4,
+    "cfg": 1,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "denoise": 1,
+    "mask_expand": 0,
+    "mask_blur_radius": 1
+  },
+  "metrics": [
+    "masked_instruction_adherence",
+    "protected_region_preservation",
+    "boundary_quality",
+    "identity_preservation",
+    "artifact_severity"
+  ],
+  "decision_rule": "Pass when masked_instruction_adherence, protected_region_preservation, boundary_quality, and identity_preservation are at least 4 and artifact_severity is at most 2.",
+  "status": "ready"
+}

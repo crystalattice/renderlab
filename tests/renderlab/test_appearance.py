@@ -81,6 +81,21 @@ class AppearanceTests(unittest.TestCase):
             with self.assertRaisesRegex(AppearanceError, "controls must be an object"):
                 plan_appearance(request)
 
+    def test_inpaint_requires_and_forwards_mask(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            request = self.write_request(root, preset="repair_region")
+            with self.assertRaisesRegex(AppearanceError, "mask.path is required for inpaint"):
+                plan_appearance(request)
+            request = self.write_request(
+                root,
+                preset="repair_region",
+                mask={"path": "mask.png", "white": "editable"},
+            )
+            stage = plan_appearance(request)["stages"][0]
+            self.assertEqual(stage["backend"]["id"], "qwen-image-inpaint")
+            self.assertEqual(stage["input"]["mask"]["path"], "mask.png")
+
     def test_semantic_evidence_is_preserved_for_future_manga_planning(self):
         with tempfile.TemporaryDirectory() as directory:
             request = self.write_request(Path(directory), source_semantics="semantic_evidence")

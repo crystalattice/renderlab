@@ -1,0 +1,28 @@
+{
+  "schema": "renderlab.appearance-request.v1",
+  "preset": "repair_region",
+  "subject": "subject:primary",
+  "source": {
+    "path": "input/img_00562_white_shirt.png",
+    "sha256": "replace-with-source-sha256"
+  },
+  "mask": {
+    "path": "input/img_00562_shirt_mask.png",
+    "sha256": "replace-with-mask-sha256",
+    "white": "editable",
+    "black": "protected"
+  },
+  "source_semantics": "editable_canvas",
+  "preserve": ["identity", "morphology", "pose", "camera", "lighting", "environment"],
+  "target": {
+    "region": "existing shirt only",
+    "instruction": "Change only the existing white T-shirt to a saturated royal-blue T-shirt. Preserve its current cut, sleeves, neckline, hem, fit, folds, and fabric texture. Leave the subject's face, hair, skin, underwear, pose, gym equipment, lighting, and background unchanged."
+  },
+  "acceptance": {
+    "identity_preservation": 5,
+    "morphology_preservation": 5,
+    "pose_preservation": 5,
+    "instruction_adherence": 4,
+    "artifact_severity_max": 2
+  }
+}
