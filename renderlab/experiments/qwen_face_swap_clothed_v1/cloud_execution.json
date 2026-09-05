@@ -1,0 +1,84 @@
+{
+  "job_id": "f1236b3d-144f-49d4-bc68-99cc034432fd",
+  "submission_attempts": 1,
+  "submission_started_utc": "2026-09-05T02:16:26.901Z",
+  "submission_returned_utc": "2026-09-05T02:16:32.031Z",
+  "observations": [
+    {
+      "observed_utc": "2026-09-05T02:17:13.257Z",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"status\":\"in_progress\",\"completed\":false,\"raw_status\":\"pending\",\"timed_out\":true}"
+          }
+        ],
+        "structuredContent": {
+          "status": "in_progress",
+          "completed": false,
+          "raw_status": "pending",
+          "timed_out": true
+        }
+      }
+    },
+    {
+      "observed_utc": "2026-09-05T02:17:31.294Z",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Job completed successfully. Use get_output to retrieve results."
+          },
+          {
+            "type": "text",
+            "text": "{\"status\":\"completed\",\"completed\":true,\"raw_status\":\"completed\"}"
+          }
+        ],
+        "structuredContent": {
+          "result": {
+            "status": "succeeded",
+            "warnings": [],
+            "job_status": "completed",
+            "raw_status": "completed"
+          }
+        }
+      }
+    }
+  ],
+  "terminal_status": "completed",
+  "billing": {
+    "events": [
+      {
+        "event_type": "cloud_workflow_executed",
+        "event_id": "cloud_workflow_f1236b3d-144f-49d4-bc68-99cc034432fd",
+        "created_at": "2026-09-05T02:17:31.585983Z",
+        "params": {
+          "job_id": "f1236b3d-144f-49d4-bc68-99cc034432fd",
+          "gpu_seconds": 13.586789,
+          "gpu_type": "rtx_pro_6000"
+        }
+      }
+    ],
+    "credits_used": null,
+    "dollar_cost": null,
+    "note": "The job event reports GPU seconds and GPU type, but no credits_used or per-job dollar cost."
+  },
+  "outputs": [
+    {
+      "source_node_id": "472",
+      "filename_prefix": "renderlab_qwen_face_swap_clothed_v1_s3407",
+      "class_type": "SaveImage",
+      "filename": "c31f475af7d112e1b59de8909306357e859ed1e7361c7a0c9209a0ee5f190bbe.png",
+      "width": 1184,
+      "height": 880,
+      "sha256": "0be2d30b68b77415c16330f711c89b49984dc9df5d0603eb2e65553034fe5095",
+      "size_bytes": 1067093,
+      "local_filename": "c31f475af7d112e1b59de8909306357e859ed1e7361c7a0c9209a0ee5f190bbe.png"
+    }
+  ],
+  "image_evaluated": false,
+  "image_modified": false,
+  "submitted_arguments_file": "cloud_submit.gated.json",
+  "submitted_arguments_sha256": "c247286a29a2ac3d79eb12c247388256a4d18d3ee004f59d06b38f04e311d065",
+  "elapsed_submission_start_to_terminal_observation_seconds": 64.393
+}

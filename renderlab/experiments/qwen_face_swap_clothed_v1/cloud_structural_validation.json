@@ -1,0 +1,12 @@
+{
+  "only_changes": ["470.inputs.image", "471.inputs.image"],
+  "all_other_payload_values_unchanged": true,
+  "local_source_sha256_matches_before_and_after_upload": true,
+  "upload_mapping_verified_by": "Each successful PUT response corresponds to the exact individually uploaded source path. No server content checksum was supplied.",
+  "dry_run_status": "validated",
+  "warnings": [],
+  "submitted": false,
+  "gated_tool": "comfy-cloud.submit_workflow",
+  "gated_arguments_file": "cloud_submit.gated.json",
+  "gated_call_executed": false
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "node": "470",
+    "role": "target_image",
+    "local_path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+    "expected_sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "local_sha256_before_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "local_sha256_after_upload": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+    "cloud_response": {
+      "name": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png",
+      "subfolder": "",
+      "type": "input"
+    },
+    "verification": "Successful individual curl PUT of the exact source path; local SHA-256 matched manifest before and after upload. Server did not return a content checksum."
+  },
+  {
+    "node": "471",
+    "role": "face_identity",
+    "local_path": "/home/codyjackson/PycharmProjects/renderlab/input/renderlab_afccbc5cc07c4f88b8f397e2104664f5.png",
+    "expected_sha256": "f30826e93d49587e997ce842d65b796e4254ee85ddb66eb608bab0150009996d",
+    "local_sha256_before_upload": "f30826e93d49587e997ce842d65b796e4254ee85ddb66eb608bab0150009996d",
+    "local_sha256_after_upload": "f30826e93d49587e997ce842d65b796e4254ee85ddb66eb608bab0150009996d",
+    "cloud_response": {
+      "name": "7f238e7cf13a61105b1d62e698bced1b7bbe50eca989b7ec87aa66cac3d2f56c.png",
+      "subfolder": "",
+      "type": "input"
+    },
+    "verification": "Successful individual curl PUT of the exact source path; local SHA-256 matched manifest before and after upload. Server did not return a content checksum."
+  }
+]

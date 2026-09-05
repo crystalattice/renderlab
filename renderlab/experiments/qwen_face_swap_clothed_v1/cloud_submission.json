@@ -1,0 +1,21 @@
+{
+  "started_utc": "2026-09-05T02:16:26.901Z",
+  "returned_utc": "2026-09-05T02:16:32.031Z",
+  "response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Workflow submitted. prompt_id: f1236b3d-144f-49d4-bc68-99cc034432fd\nJob queued — poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning."
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "prompt_id": "f1236b3d-144f-49d4-bc68-99cc034432fd",
+        "lifted_from_save": false,
+        "lifecycle": "\nJob queued — poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning.",
+        "status": "succeeded",
+        "warnings": []
+      }
+    }
+  }
+}
