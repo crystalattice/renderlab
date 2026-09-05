@@ -24,7 +24,7 @@
   ],
   "decision_rule": "Pass when source_identity_transfer, target_scene_preservation, face_boundary_quality, and instruction_adherence are at least 4; target_body_preservation and target_pose_preservation are 5; and artifact_severity is at most 2.",
   "fallback": "If Qwen fails identity transfer or alters target morphology, evaluate a dedicated swap backend. ReActor is not the default candidate because its current upstream implementation includes an NSFW detector; keep backend selection replaceable.",
-  "status": "prepared_not_executed",
+  "status": "completed",
   "authoritative_blueprint": "blueprints/Image Edit (Qwen 2509).json",
   "acceptance": {
     "identity_preservation": 4,
@@ -48,5 +48,19 @@
     "identity_preservation": "source_identity_transfer",
     "morphology_preservation": "target_body_preservation",
     "pose_preservation": "target_pose_preservation"
-  }
+  },
+  "result": {
+    "status": "failed",
+    "evaluation": "evaluation.json",
+    "metrics": {
+      "source_identity_transfer": 2,
+      "target_body_preservation": 5,
+      "target_pose_preservation": 5,
+      "target_scene_preservation": 4,
+      "face_boundary_quality": 4,
+      "instruction_adherence": 2,
+      "artifact_severity": 2
+    }
+  },
+  "conclusion": "Reject this fixed-seed result as a controlled face-identity swap. Body and pose preservation do not compensate for weak identity transfer and unauthorized hair changes."
 }

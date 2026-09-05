@@ -1,0 +1,16 @@
+{
+  "unittest": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/renderlab -v",
+    "tests": 86,
+    "status": "PASS"
+  },
+  "static_validation": {
+    "command": "python3 renderlab/experiments/qwen_face_swap_clothed_v1/validate.py",
+    "status": "PASS_STATIC_LOCAL",
+    "graph_links": 43,
+    "api_nodes": 15,
+    "api_links": 21,
+    "api_inputs": 42,
+    "negative_checks_rejected": 6
+  }
+}

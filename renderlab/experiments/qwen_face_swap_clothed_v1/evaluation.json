@@ -1,0 +1,133 @@
+{
+  "schema": "renderlab.visual-evaluation.v1",
+  "experiment": "qwen_face_swap_clothed_v1",
+  "job_id": "f1236b3d-144f-49d4-bc68-99cc034432fd",
+  "method": "Local visual comparison of all three originals and a labeled contact sheet; no Cloud access or generation.",
+  "rating_scale": {
+    "minimum": 1,
+    "maximum": 5,
+    "artifact_severity_direction": "lower_is_better",
+    "all_other_metrics_direction": "higher_is_better",
+    "source": "RenderLab convention in renderlab/experiments/qwen_outpaint_v0.json; this experiment defines thresholds and mappings but no separate numeric anchor descriptions."
+  },
+  "criteria": {
+    "source_identity_transfer": {
+      "score": 2,
+      "threshold": 4,
+      "comparison": ">=",
+      "passed": false,
+      "observation": "Weak transfer. The output retains the target-like face outline, nose, mouth, and forehead mark. The reference has a different eye/brow presentation, fuller-looking lips, and cheek/jaw appearance; the result is not a convincing transfer of that facial appearance. Dark hair is not credited as facial identity transfer. This is a subjective resemblance assessment, not identity verification."
+    },
+    "target_body_preservation": {
+      "score": 5,
+      "threshold": 5,
+      "comparison": ">=",
+      "passed": true,
+      "observation": "Visible torso, shoulder, arm and thigh proportions remain consistent with the target after accounting for the documented resize/crop. No clear body reshaping is visible. Score applies to visible morphology, not exact pixel preservation or anatomy hidden by clothing."
+    },
+    "target_pose_preservation": {
+      "score": 5,
+      "threshold": 5,
+      "comparison": ">=",
+      "passed": true,
+      "observation": "Seated lean, raised arms, bent elbows, handle grips, leg placement, and head orientation remain consistent with the target. No material pose change is visible."
+    },
+    "target_scene_preservation": {
+      "score": 4,
+      "threshold": 4,
+      "comparison": ">=",
+      "passed": true,
+      "observation": "Red exercise-machine pads, black uprights, cables, weight stacks, dark gym background and camera viewpoint remain recognizable and aligned at scene level. Small rendering/framing differences remain; the 1160x896 to 1184x880 resize/crop was planned and is not by itself a model failure."
+    },
+    "face_boundary_quality": {
+      "score": 4,
+      "threshold": 4,
+      "comparison": ">=",
+      "passed": true,
+      "observation": "Jaw-to-neck transition is continuous, with broadly compatible warm skin and flash lighting. No obvious cut-and-paste seam, halo or double jaw. Facial texture is smoother than the surrounding photographic scene; changed hair partly obscures the side boundaries."
+    },
+    "instruction_adherence": {
+      "score": 2,
+      "threshold": 4,
+      "comparison": ">=",
+      "passed": false,
+      "observation": "Fails the face-only instruction: weak facial transfer and a major unauthorized hairstyle change. The target has brown hair swept back/tied behind the head with short loose front strands; output has dark, glossy, loose shoulder-length waves. The visible length and silhouette are not preserved. Resemblance to the reference hair does not excuse this failure."
+    },
+    "artifact_severity": {
+      "score": 2,
+      "threshold": 2,
+      "comparison": "<=",
+      "passed": true,
+      "observation": "Minor synthetic smoothing of skin and glossy, clumped hair strands; no obvious new extra digits, doubled facial features, or broken face/neck edge at inspected resolution. The reflective damaged-looking seat tip and much of the bright flash appearance already exist in the target and are not counted as new artifacts."
+    }
+  },
+  "acceptance_scores": {
+    "identity_preservation": 2,
+    "morphology_preservation": 5,
+    "pose_preservation": 5,
+    "instruction_adherence": 2,
+    "artifact_severity": 2
+  },
+  "additional_assessments": {
+    "target_clothing_preservation": {
+      "score": 4,
+      "observation": "Opaque white T-shirt, sleeves, long hem and broad fold pattern preserved; minor fold/edge redraw. No reference jacket or white neckline copied."
+    },
+    "target_hairstyle_preservation": {
+      "score": 1,
+      "passed": false,
+      "observation": "Brown tied-back style replaced by dark loose waves. Explicit preservation failure."
+    },
+    "target_hair_length_preservation": {
+      "score": 1,
+      "passed": false,
+      "observation": "Longer visible strands now hang to the shoulders. Actual untied target length is not inferable; visible length and silhouette definitely changed."
+    },
+    "overall_realism": {
+      "score": 4,
+      "observation": "Plausible flash-lit gym photograph at scene scale, with some over-smooth skin and synthetic glossy hair. Realism does not rescue identity or preservation failure."
+    }
+  },
+  "disposition": "FAIL",
+  "failed_criteria": [
+    "source_identity_transfer",
+    "instruction_adherence"
+  ],
+  "preservation_failure": "Changed target hairstyle and visible hair length; enforced regardless of resemblance to the identity reference.",
+  "conclusion": "Reject this fixed-seed result as a controlled face-identity swap. Body and pose preservation do not compensate for weak identity transfer and unauthorized hair changes.",
+  "inputs": [
+    {
+      "path": "/home/codyjackson/Downloads/img_00562__firered-image-edit-1.1__single-pass__621146938678618_00001_.png",
+      "role": "target_image",
+      "sha256": "da52612e6f04b4f030e4413d54f49246a2ea34e30a4f0ec93c9641cee4f84b75",
+      "width": 1160,
+      "height": 896,
+      "mode": "RGB"
+    },
+    {
+      "path": "/home/codyjackson/PycharmProjects/renderlab/input/renderlab_afccbc5cc07c4f88b8f397e2104664f5.png",
+      "role": "face_identity",
+      "sha256": "f30826e93d49587e997ce842d65b796e4254ee85ddb66eb608bab0150009996d",
+      "width": 1024,
+      "height": 1024,
+      "mode": "RGB"
+    }
+  ],
+  "output": {
+    "source_node_id": "472",
+    "filename_prefix": "renderlab_qwen_face_swap_clothed_v1_s3407",
+    "class_type": "SaveImage",
+    "filename": "c31f475af7d112e1b59de8909306357e859ed1e7361c7a0c9209a0ee5f190bbe.png",
+    "width": 1184,
+    "height": 880,
+    "sha256": "0be2d30b68b77415c16330f711c89b49984dc9df5d0603eb2e65553034fe5095",
+    "size_bytes": 1067093,
+    "local_filename": "c31f475af7d112e1b59de8909306357e859ed1e7361c7a0c9209a0ee5f190bbe.png"
+  },
+  "raw_output_modified": false,
+  "contact_sheet": {
+    "path": "contact_sheet.local.png",
+    "committed": false,
+    "reason": "Contains source-image pixels; kept local because no policy explicitly permits publishing these source assets. Reproduce with make_contact_sheet.py."
+  }
+}

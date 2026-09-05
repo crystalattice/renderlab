@@ -1,5 +1,7 @@
-Prepared Qwen Edit 2509 clothed two-image validation baseline. No uploads,
-Cloud saves, job submissions, or inference have been performed.
+Completed Qwen Edit 2509 clothed two-image validation: **FAIL**.
+See `evaluation.json` and `EVALUATION.md` for the visual assessment, and
+`cloud_execution.json` for the single completed run. The preparation notes below
+record the original pre-execution baseline and are historical, not current run instructions.
 
 The authoritative graph is RenderLab's local `blueprints/Image Edit (Qwen 2509).json`.
 The broken saved workflow `dddf4297-3e13-4aa2-a573-e7a9eb3188dd` is not used.
