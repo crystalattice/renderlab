@@ -1,11 +1,10 @@
 {
   "execution_ready": false,
   "max_jobs": 1,
-  "uploads_authorized": false,
+  "uploads_authorized": true,
   "inference_authorized": false,
   "blocking_gates": [
-    "Upload generation and composite masks only after explicit authorization; verify successful filenames.",
-    "Resolve bindings and repeat dry_run with no uninvestigated warnings/errors.",
+    "Review two uploaded-filename advisories; do not infer runtime resolution from bundled dry run.",
     "Explicit authorization for one inference job."
   ],
   "call_template": {
@@ -21,7 +20,7 @@
         "2": {
           "class_type": "LoadImageMask",
           "inputs": {
-            "image": "UPLOAD_REQUIRED_shirt_generation_mask.rgb.png",
+            "image": "85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png",
             "channel": "red"
           }
         },
@@ -211,7 +210,7 @@
         "19": {
           "class_type": "LoadImageMask",
           "inputs": {
-            "image": "UPLOAD_REQUIRED_shirt_composite_mask.rgb.png",
+            "image": "82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png",
             "channel": "red"
           }
         }
@@ -219,5 +218,5 @@
       "dry_run": false
     }
   },
-  "warning": "TEMPLATE ONLY: contains UPLOAD_REQUIRED placeholders; must not be submitted."
+  "warning": "DO NOT EXECUTE: uploaded bindings are exact successful PUT filenames; two advisories remain and inference is not authorized."
 }

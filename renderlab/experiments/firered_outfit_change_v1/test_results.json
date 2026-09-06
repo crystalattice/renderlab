@@ -13,6 +13,7 @@
   "native_cpu_preparation": "PASS",
   "ruff": "PASS",
   "cloud_dry_runs": 2,
-  "uploads": 0,
-  "inference_jobs": 0
+  "uploads": 2,
+  "inference_jobs": 0,
+  "cloud_dry_runs_this_revision": 1
 }

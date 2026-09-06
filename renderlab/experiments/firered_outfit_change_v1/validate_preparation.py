@@ -175,7 +175,7 @@ def validate(raw_path=None, production_path=None):
     source_path = Path(manifest["source"]["path"])
     assert digest(source_path) == manifest["source"]["sha256"]
     source = image_array(source_path, "RGB")
-    graph = read("api.cloud.pending.json")
+    graph = read("api.cloud.resolved.json")
     prepared = read("api.prepared.json")
     for key in graph:
         for field, value in graph[key]["inputs"].items():
@@ -201,11 +201,33 @@ def validate(raw_path=None, production_path=None):
     assert {k: v for k, v in graph["8"]["inputs"].items() if k != "prompt"} == {
         k: v for k, v in baseline["8"]["inputs"].items() if k != "prompt"
     }
+    upload_evidence = {
+        u["node"]: u for u in read("cloud_upload_evidence.json")["uploads"]
+    }
+    pending = read("api.cloud.pending.json")
+    expected_resolved = json.loads(json.dumps(pending))
+    for key, evidence in upload_evidence.items():
+        assert (
+            evidence["put_exit_code"] == 0
+            and evidence["put_attempts"] == 1
+            and evidence["retry_attempts"] == 0
+        )
+        assert (
+            evidence["sha256_before_upload"]
+            == evidence["sha256_after_upload"]
+            == digest(Path(evidence["path"]))
+        )
+        assert (
+            evidence["put_response"]["subfolder"] == ""
+            and evidence["put_response"]["type"] == "input"
+        )
+        expected_resolved[key]["inputs"]["image"] = evidence["put_response"]["name"]
+    assert graph == expected_resolved
     for key, kind in (("2", "generation"), ("19", "composite")):
         assert graph[key] == {
             "class_type": "LoadImageMask",
             "inputs": {
-                "image": f"UPLOAD_REQUIRED_shirt_{kind}_mask.rgb.png",
+                "image": upload_evidence[key]["put_response"]["name"],
                 "channel": "red",
             },
         }
@@ -243,7 +265,8 @@ def validate(raw_path=None, production_path=None):
     result["cloud"] = {
         "status": "validated",
         "submitted": False,
-        "unresolved_mask_filename_warnings": 2,
+        "filename_advisories": 2,
+        "runtime_file_resolution_verified": False,
         "execution_ready": False,
     }
     return result, source, core, generation, composite

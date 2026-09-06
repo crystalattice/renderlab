@@ -6,7 +6,8 @@
     "evidence": "source_upload_evidence.json",
     "status": "REUSE_PRIOR_SUCCESSFUL_UPLOAD_AND_COMPLETED_JOB"
   },
-  "required_uploads": [
+  "binding_rule": "After separately authorized uploads, bind only node 2 and node 19 image to exact successful upload response filenames, verify hashes/dimensions and repeat dry run. No filename inferred from local basename.",
+  "uploaded_masks": [
     {
       "node": "2",
       "input": "image",
@@ -19,8 +20,8 @@
       ],
       "mode": "RGB",
       "channel": "red",
-      "cloud_filename": null,
-      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "cloud_filename": "85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png",
+      "status": "UPLOADED_SUCCESSFUL_PUT",
       "derived_from": "mask_candidates_v1/shirt_generation_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     },
@@ -36,11 +37,11 @@
       ],
       "mode": "RGB",
       "channel": "red",
-      "cloud_filename": null,
-      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "cloud_filename": "82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png",
+      "status": "UPLOADED_SUCCESSFUL_PUT",
       "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     }
   ],
-  "binding_rule": "After separately authorized uploads, bind only node 2 and node 19 image to exact successful upload response filenames, verify hashes/dimensions and repeat dry run. No filename inferred from local basename."
+  "required_uploads": []
 }

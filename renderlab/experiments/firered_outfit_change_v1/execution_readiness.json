@@ -1,7 +1,7 @@
 {
-  "preparation_status": "PASS_LOCAL_AND_GRAPH_PREFLIGHT",
+  "preparation_status": "PASS_LOCAL_GRAPH_VALIDATED_WITH_ADVISORIES",
   "execution_ready": false,
-  "reason": "Two approved RGB mask assets require separately authorized uploads and authoritative filename binding.",
+  "reason": "Successful PUT filenames still trigger bundled-index advisories. Review required; runtime file resolution not independently tested. Inference not authorized.",
   "base_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
   "mask_invariants": {
     "core_outside_generation": 0,
@@ -25,12 +25,19 @@
   "cloud_dry_run": {
     "status": "validated",
     "submitted": false,
-    "unresolved_mask_filename_warnings": 2,
-    "execution_ready": false
+    "filename_advisories": 2,
+    "runtime_file_resolution_verified": false
   },
   "models_found": 3,
   "node_types_found": 14,
-  "required_uploads": [
+  "required_uploads": [],
+  "source_upload_required": false,
+  "uploads_performed": 2,
+  "inference_jobs_submitted": 0,
+  "visual_acceptance": "NOT_EVALUATED_NO_OUTFIT_OUTPUT",
+  "gated_submission": "cloud_submit.gated.json",
+  "total_cost": null,
+  "uploaded_masks": [
     {
       "node": "2",
       "input": "image",
@@ -43,8 +50,8 @@
       ],
       "mode": "RGB",
       "channel": "red",
-      "cloud_filename": null,
-      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "cloud_filename": "85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png",
+      "status": "UPLOADED_SUCCESSFUL_PUT",
       "derived_from": "mask_candidates_v1/shirt_generation_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     },
@@ -60,16 +67,10 @@
       ],
       "mode": "RGB",
       "channel": "red",
-      "cloud_filename": null,
-      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "cloud_filename": "82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png",
+      "status": "UPLOADED_SUCCESSFUL_PUT",
       "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     }
-  ],
-  "source_upload_required": false,
-  "uploads_performed": 0,
-  "inference_jobs_submitted": 0,
-  "visual_acceptance": "NOT_EVALUATED_NO_OUTFIT_OUTPUT",
-  "gated_submission": "cloud_submit.gated.json",
-  "total_cost": null
+  ]
 }

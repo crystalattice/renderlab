@@ -31,8 +31,8 @@
       ],
       "mode": "RGB",
       "channel": "red",
-      "cloud_filename": null,
-      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "cloud_filename": "85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png",
+      "status": "UPLOADED_SUCCESSFUL_PUT",
       "derived_from": "mask_candidates_v1/shirt_generation_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     },
@@ -48,8 +48,8 @@
       ],
       "mode": "RGB",
       "channel": "red",
-      "cloud_filename": null,
-      "status": "UPLOAD_REQUIRED_NOT_AUTHORIZED",
+      "cloud_filename": "82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png",
+      "status": "UPLOADED_SUCCESSFUL_PUT",
       "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     }
@@ -94,7 +94,8 @@
   "raw_output_node": "14",
   "production_output_node": "18",
   "runtime_executed": false,
-  "uploads_performed": 0,
+  "uploads_performed": 2,
   "inference_authorized": false,
-  "composite_reference_sha256": "7970448344bbcc802b0bf2df1f7a5289e38ac1add3e5e33d02082ae45e097c59"
+  "composite_reference_sha256": "7970448344bbcc802b0bf2df1f7a5289e38ac1add3e5e33d02082ae45e097c59",
+  "resolved_payload": "api.cloud.resolved.json"
 }

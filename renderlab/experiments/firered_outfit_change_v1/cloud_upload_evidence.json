@@ -1,0 +1,56 @@
+{
+  "recorded_utc": "2026-09-06T17:56:51.916273+00:00",
+  "authorization": "User: upload; applies to the two prepared RGB mask assets only.",
+  "uploads": [
+    {
+      "node": "2",
+      "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_generation_mask.rgb.png",
+      "sha256_before_upload": "0206faa8b3ed69675c50e893e1e23ab90779eebd8eb5e1c0fc42d3ef569cce9b",
+      "sha256_after_upload": "0206faa8b3ed69675c50e893e1e23ab90779eebd8eb5e1c0fc42d3ef569cce9b",
+      "dimensions_before_upload": [
+        1160,
+        896
+      ],
+      "dimensions_after_upload": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "put_attempts": 1,
+      "retry_attempts": 0,
+      "put_exit_code": 0,
+      "put_response": {
+        "name": "85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png",
+        "subfolder": "",
+        "type": "input"
+      },
+      "authority": "Successful PUT response; Cloud did not return a content checksum."
+    },
+    {
+      "node": "19",
+      "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/cloud_assets/shirt_composite_mask.rgb.png",
+      "sha256_before_upload": "1146ea530aee23976b934c3d6db4cc0d3be4fc00a8ca10ff7e85ec656df9a2b0",
+      "sha256_after_upload": "1146ea530aee23976b934c3d6db4cc0d3be4fc00a8ca10ff7e85ec656df9a2b0",
+      "dimensions_before_upload": [
+        1160,
+        896
+      ],
+      "dimensions_after_upload": [
+        1160,
+        896
+      ],
+      "mode": "RGB",
+      "put_attempts": 1,
+      "retry_attempts": 0,
+      "put_exit_code": 0,
+      "put_response": {
+        "name": "82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png",
+        "subfolder": "",
+        "type": "input"
+      },
+      "authority": "Successful PUT response; Cloud did not return a content checksum."
+    }
+  ],
+  "source_uploaded": false,
+  "inference_submitted": false
+}

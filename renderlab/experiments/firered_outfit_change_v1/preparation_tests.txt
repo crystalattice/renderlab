@@ -7,6 +7,6 @@ test_one_core_pixel_different_from_raw_fails (test_preparation.PreparationTests.
 test_single_channel_outside_error_fails (test_preparation.PreparationTests.test_single_channel_outside_error_fails) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests in 0.311s
+Ran 7 tests in 0.320s
 
 OK

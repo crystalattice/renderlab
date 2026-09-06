@@ -2,7 +2,7 @@
   "content": [
     {
       "type": "text",
-      "text": "Workflow passed local pre-flight validation. NOT submitted (dry_run) — no GPU run, no credits spent, no job created. Re-call without dry_run to actually submit. Local validation uses a bundled node catalog that can lag the cloud, so this is a strong signal, not a guarantee.\nAdvisory (non-blocking) - the following input value(s) were not found in the bundled node index, which can lag the cloud's live catalog. The cloud is the authoritative validator, so this is informational only and does not block the submit. If submission does fail on one of these fields, use search_nodes for the current valid options:\nNode #2 (LoadImageMask): \"image\" value \"UPLOAD_REQUIRED_shirt_generation_mask.rgb.png\" was not found in the bundled node index\nNode #19 (LoadImageMask): \"image\" value \"UPLOAD_REQUIRED_shirt_composite_mask.rgb.png\" was not found in the bundled node index"
+      "text": "Workflow passed local pre-flight validation. NOT submitted (dry_run) \u2014 no GPU run, no credits spent, no job created. Re-call without dry_run to actually submit. Local validation uses a bundled node catalog that can lag the cloud, so this is a strong signal, not a guarantee.\nAdvisory (non-blocking) - the following input value(s) were not found in the bundled node index, which can lag the cloud's live catalog. The cloud is the authoritative validator, so this is informational only and does not block the submit. If submission does fail on one of these fields, use search_nodes for the current valid options:\nNode #2 (LoadImageMask): \"image\" value \"85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png\" was not found in the bundled node index\nNode #19 (LoadImageMask): \"image\" value \"82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png\" was not found in the bundled node index"
     }
   ],
   "structuredContent": {
@@ -11,11 +11,11 @@
       "warnings": [
         {
           "code": "input_validation",
-          "detail": "Node #2 (LoadImageMask): \"image\" value \"UPLOAD_REQUIRED_shirt_generation_mask.rgb.png\" was not found in the bundled node index"
+          "detail": "Node #2 (LoadImageMask): \"image\" value \"85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png\" was not found in the bundled node index"
         },
         {
           "code": "input_validation",
-          "detail": "Node #19 (LoadImageMask): \"image\" value \"UPLOAD_REQUIRED_shirt_composite_mask.rgb.png\" was not found in the bundled node index"
+          "detail": "Node #19 (LoadImageMask): \"image\" value \"82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png\" was not found in the bundled node index"
         }
       ],
       "submitted": false

@@ -42,7 +42,8 @@
   "cloud": {
     "status": "validated",
     "submitted": false,
-    "unresolved_mask_filename_warnings": 2,
+    "filename_advisories": 2,
+    "runtime_file_resolution_verified": false,
     "execution_ready": false
   },
   "native_load_image_mask_red_channel_equivalent": true,
