@@ -1,29 +1,61 @@
 {
   "case": "dress_to_top_and_miniskirt",
-  "status": "BLOCKED_SOURCE_SELECTION",
-  "source": null,
-  "required_source": "Clothed adult with complete dress, waist, hips and sufficient legs visible for a fitted top and separate short miniskirt.",
-  "source_record_required": [
-    "original_path",
-    "sha256",
-    "dimensions",
-    "visible_garments_and_anatomy",
-    "adult_clothed_subject",
-    "selection_rationale",
-    "result_fits_existing_canvas"
-  ],
+  "status": "PREPARED_PENDING_UPLOAD_AND_EXECUTION_AUTHORIZATION",
+  "source": {
+    "review_id": "S0534",
+    "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
+    "sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+    "dimensions": [
+      680,
+      1024
+    ],
+    "mode": "RGB",
+    "exif_orientation": 1,
+    "approval_received": true,
+    "approval": "User final source selection: shoes S0040; dress S0534; bikini S0040.",
+    "why_suitable": "Complete dress, waist, hips, knees and sufficient legs are visible. A fitted top and distinct short miniskirt fit above the existing leg region; no new off-frame anatomy is needed.",
+    "result_fits_existing_canvas": true,
+    "outpainting_required": false,
+    "reframing_required": false,
+    "off_frame_anatomy_required": false,
+    "visible_garments_and_anatomy": "Complete black dress with turquoise dots and black hem; waist/hip silhouette, both hands, knees and calves visible. Feet meet the lower image edge.",
+    "adult_status": {
+      "assessment": "Clothed adult-appearing subject",
+      "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+      "documentary_age_verified": false
+    },
+    "framing_limitations": "Feet/toes meet the lower border. This is approved only for dress editing; preserve the existing crop and do not reconstruct feet."
+  },
   "prompt": "Replace only the subject\u2019s dress with a fitted top and a separate short miniskirt. Keep the top and skirt visibly distinct; do not create a dress, bodysuit, or one-piece garment. Preserve her identity, face, hairstyle, body shape, anatomy, pose, shoes, accessories, camera, lighting, background, and all unrelated objects.",
+  "prompt_sha256": "1e73c34338de143e08c5e06c500763e03a2dff13bdc443c7981c79babc88e294",
   "settings": "../settings.json",
-  "rubric": "../evaluation_rubric.json",
-  "output_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_dress_to_top_and_miniskirt_s3407_native",
-  "expected_local_output": "native_output.png",
+  "settings_sha256": "8690427a29c1352677b68e188a9fa9925597ffed1870e8b753e214a7b128411a",
+  "seed": 3407,
+  "api_payload": "api.prepared.json",
+  "cloud_payload": "api.cloud.pending.json",
+  "editor_workflow": "workflow.json",
+  "rubric": "evaluation_rubric.json",
+  "output": {
+    "node": "14",
+    "prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_dress_to_top_and_miniskirt_s3407_native",
+    "expected_comfyui_filename_pattern": "renderlab_firered_single_pass_outfit_benchmark_v1_dress_to_top_and_miniskirt_s3407_native_?????_.png",
+    "exact_cloud_filename": "Unknown until successful job output response; do not guess from prefix.",
+    "expected_local_output": "native_output.png",
+    "dimensions": [
+      680,
+      1024
+    ],
+    "mode": "RGB",
+    "preserve_download_bytes": true,
+    "postprocessing_allowed": false
+  },
   "cloud_filename": null,
   "uploads_authorized": false,
   "inference_authorized": false,
   "max_jobs": 1,
   "retries_authorized": false,
   "batch_allowed": false,
-  "api_payload": null,
-  "editor_workflow": null,
-  "dry_run": null
+  "dry_run_request": "cloud_dry_run_request.json",
+  "dry_run_response": "cloud_dry_run_response.json",
+  "gated_submission": "cloud_submit.gated.json"
 }

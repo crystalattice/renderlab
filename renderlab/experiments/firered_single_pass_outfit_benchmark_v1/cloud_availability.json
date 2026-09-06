@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-09-06T19:30:06.017Z",
-  "scope": "Read-only Comfy Cloud MCP node/model catalog",
+  "checked_at": "2026-09-06T20:10:30.348Z",
+  "scope": "Read-only MCP catalog; dry run is bundled preflight, not GPU execution or uploaded-file verification",
   "node_schemas": {
     "LoadImage": {
       "name": "LoadImage",

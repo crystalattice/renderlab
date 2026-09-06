@@ -1,29 +1,61 @@
 {
   "case": "shoes_to_stilettos",
-  "status": "BLOCKED_SOURCE_SELECTION",
-  "source": null,
-  "required_source": "Clothed adult with both original shoes and complete feet visible, with enough existing canvas for black closed-toe stiletto heels.",
-  "source_record_required": [
-    "original_path",
-    "sha256",
-    "dimensions",
-    "visible_garments_and_anatomy",
-    "adult_clothed_subject",
-    "selection_rationale",
-    "result_fits_existing_canvas"
-  ],
+  "status": "PREPARED_PENDING_UPLOAD_AND_EXECUTION_AUTHORIZATION",
+  "source": {
+    "review_id": "S0040",
+    "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+    "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+    "dimensions": [
+      1440,
+      2160
+    ],
+    "mode": "RGB",
+    "exif_orientation": 1,
+    "approval_received": true,
+    "approval": "User final source selection: shoes S0040; dress S0534; bikini S0040.",
+    "why_suitable": "Both existing sneaker silhouettes and complete foot positions are inside the frame with floor margin. Black closed-toe stilettos can replace these shoes without moving limbs or extending the canvas.",
+    "result_fits_existing_canvas": true,
+    "outpainting_required": false,
+    "reframing_required": false,
+    "off_frame_anatomy_required": false,
+    "visible_garments_and_anatomy": "Olive tank top, denim shorts, white choker and black canvas sneakers. Full head, torso and hips; both arms/hands, legs and complete shoes visible. Legs naturally cross without a missing off-frame body region.",
+    "adult_status": {
+      "assessment": "Clothed adult-appearing subject",
+      "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+      "documentary_age_verified": false
+    },
+    "framing_limitations": "Preserve existing crossed-leg stance; do not reveal naturally occluded surfaces or move feet."
+  },
   "prompt": "Replace only the subject\u2019s existing shoes with black closed-toe stiletto heels. Preserve her identity, face, hairstyle, body shape, anatomy, pose, clothing, hands, camera, lighting, background, and all unrelated objects.",
+  "prompt_sha256": "66bf313dd73c55dde7bf58bb7beb66ed5da1788607d94e82eb77c3ce20ee4794",
   "settings": "../settings.json",
-  "rubric": "../evaluation_rubric.json",
-  "output_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native",
-  "expected_local_output": "native_output.png",
+  "settings_sha256": "8690427a29c1352677b68e188a9fa9925597ffed1870e8b753e214a7b128411a",
+  "seed": 3407,
+  "api_payload": "api.prepared.json",
+  "cloud_payload": "api.cloud.pending.json",
+  "editor_workflow": "workflow.json",
+  "rubric": "evaluation_rubric.json",
+  "output": {
+    "node": "14",
+    "prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native",
+    "expected_comfyui_filename_pattern": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native_?????_.png",
+    "exact_cloud_filename": "Unknown until successful job output response; do not guess from prefix.",
+    "expected_local_output": "native_output.png",
+    "dimensions": [
+      1440,
+      2160
+    ],
+    "mode": "RGB",
+    "preserve_download_bytes": true,
+    "postprocessing_allowed": false
+  },
   "cloud_filename": null,
   "uploads_authorized": false,
   "inference_authorized": false,
   "max_jobs": 1,
   "retries_authorized": false,
   "batch_allowed": false,
-  "api_payload": null,
-  "editor_workflow": null,
-  "dry_run": null
+  "dry_run_request": "cloud_dry_run_request.json",
+  "dry_run_response": "cloud_dry_run_response.json",
+  "gated_submission": "cloud_submit.gated.json"
 }

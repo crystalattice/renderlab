@@ -1,19 +1,47 @@
 {
   "benchmark": "firered_single_pass_outfit_benchmark_v1",
-  "status": "BLOCKED_SOURCE_SELECTION",
-  "source_selection_complete": false,
+  "status": "PREPARED_VALIDATED_PENDING_TWO_UPLOADS",
+  "source_selection_complete": true,
   "cases": [
     "shoes_to_stilettos",
     "dress_to_top_and_miniskirt",
     "clothing_to_bikini"
   ],
-  "selected_sources": {},
+  "selected_sources": {
+    "shoes_to_stilettos": {
+      "review_id": "S0040",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ]
+    },
+    "dress_to_top_and_miniskirt": {
+      "review_id": "S0534",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
+      "sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+      "dimensions": [
+        680,
+        1024
+      ]
+    },
+    "clothing_to_bikini": {
+      "review_id": "S0040",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ]
+    }
+  },
   "cloud_discovery": {
     "node_types_found": 11,
     "exact_models_found": 3,
     "evidence": "cloud_availability.json"
   },
-  "dry_runs_performed": 0,
+  "dry_runs_performed": 3,
   "uploads_performed": 0,
   "inference_jobs": 0,
   "batch_allowed": false,
@@ -27,20 +55,50 @@
     "feathered_compositing": "Unresolved",
     "tank_top_visual_acceptance": "FAIL: white hem halo, missing necklace, bodysuit-like lower silhouette"
   },
-  "blocker": "Full tagged corpus and image archives not located. Downloads references.jsonl describes three originals, none meets this clothed-source selection. Awaiting authoritative corpus location.",
-  "rejected_originals": [
-    {
-      "path": "/home/codyjackson/Downloads/img_00317.jpg",
-      "reason": "Not clothed: exposed chest."
+  "blocker": "Two unique sources are not uploaded. No inference authorized.",
+  "corpus_root": "/home/codyjackson/Datasets/renderlab-source",
+  "source_inventory": "source_review/inventory.jsonl",
+  "source_review": "source_review/selection.json",
+  "unique_source_count": 2,
+  "same_source_comparison": {
+    "source_id": "S0040",
+    "source_sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+    "cases": [
+      "shoes_to_stilettos",
+      "clothing_to_bikini"
+    ],
+    "controlled_variables": [
+      "source bytes",
+      "native dimensions",
+      "model files",
+      "all sampler settings",
+      "seed",
+      "graph topology"
+    ],
+    "varying_variables": [
+      "positive prompt",
+      "output prefix"
+    ],
+    "purpose": "Controlled same-source comparison: localized footwear transformation versus large outfit transformation.",
+    "statistical_limit": "Three cases use two source images. Scores are descriptive; do not treat the reused source as independent evidence or infer a population pass rate."
+  },
+  "execution_ready": false,
+  "dry_run_results": {
+    "shoes_to_stilettos": {
+      "status": "validated",
+      "warnings": [],
+      "submitted": false
     },
-    {
-      "path": "/home/codyjackson/Downloads/img_00414.jpg",
-      "reason": "Lingerie reference rather than ordinary clothing/dress."
+    "dress_to_top_and_miniskirt": {
+      "status": "validated",
+      "warnings": [],
+      "submitted": false
     },
-    {
-      "path": "/home/codyjackson/Downloads/img_00562.jpg",
-      "reason": "Reference metadata marks nude_or_lingerie; gym framing unsuitable for full feet/limb requirements."
+    "clothing_to_bikini": {
+      "status": "validated",
+      "warnings": [],
+      "submitted": false
     }
-  ],
-  "corpus_reference_manifest": "/home/codyjackson/Downloads/references.jsonl"
+  },
+  "validation": "validation.json"
 }

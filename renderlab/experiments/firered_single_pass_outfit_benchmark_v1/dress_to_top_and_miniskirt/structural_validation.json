@@ -1,0 +1,28 @@
+{
+  "source_id": "S0534",
+  "source_sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+  "dimensions": [
+    680,
+    1024
+  ],
+  "source_hash_dimensions_mode": "PASS",
+  "source_selection_user_approved": true,
+  "adult_status_basis": {
+    "assessment": "Clothed adult-appearing subject",
+    "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+    "documentary_age_verified": false
+  },
+  "node_count": 12,
+  "unique_node_types": 11,
+  "typed_links_acyclic_all_nodes_reach_native_save": true,
+  "editor_api_equivalent": true,
+  "settings_and_prompt_frozen": true,
+  "no_mask_composite_outpaint_reframe_repair_nodes": true,
+  "dry_run": {
+    "status": "validated",
+    "warnings": [],
+    "submitted": false
+  },
+  "file_uploaded": false,
+  "payload_sha256": "2130b2c3c64b6c9338cbb3b10cc15f9fa25cb5771f7009a1f080b241da1e9475"
+}

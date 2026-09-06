@@ -1,0 +1,15 @@
+{
+  "source_id": "S0534",
+  "asset_registry": "../cloud_bindings.json",
+  "node": "1",
+  "input": "image",
+  "cloud_filename": null,
+  "pending_filename": "UPLOAD_REQUIRED_S0534.jpg",
+  "shared_with": [],
+  "required_upload_original": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
+  "expected_sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+  "dimensions": [
+    680,
+    1024
+  ]
+}

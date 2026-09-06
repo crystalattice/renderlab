@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "unique_hashes": 670,
+  "unique_locations": 2261,
+  "physical_images_rehashed_unchanged": 1102,
+  "duplicate_occurrences": 1591,
+  "contact_sheets_outside_repository": true,
+  "corpus_images_copied_into_repository": 0,
+  "previous_completed_experiments_unchanged": true,
+  "python_ruff": "PASS",
+  "json_integrity": "PASS",
+  "initial_inventory_review": {
+    "proposed_sources_rehashed": 3,
+    "source_approval_received": false,
+    "scope": "Local inventory and proposed-source review; no Cloud calls, uploads or inference."
+  },
+  "source_approval_received": true,
+  "final_unique_sources_rehashed": 2,
+  "approved_source_ids": [
+    "S0040",
+    "S0534"
+  ],
+  "final_source_validation": "../validation.json",
+  "scope": "Inventory verification with final user-approved source selection; source bytes remain local."
+}

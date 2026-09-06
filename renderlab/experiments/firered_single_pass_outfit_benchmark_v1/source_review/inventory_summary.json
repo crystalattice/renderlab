@@ -1,0 +1,63 @@
+{
+  "root": "/home/codyjackson/Datasets/renderlab-source",
+  "scope": "Recursive filesystem images and image members of every discovered ZIP; SHA-256 deduplication over complete image-file bytes.",
+  "files_by_suffix": {
+    ".jpg": 566,
+    ".zip": 11,
+    ".webp": 467,
+    ".png": 69
+  },
+  "unique_images": 670,
+  "image_occurrences": 2261,
+  "duplicate_occurrences": 1591,
+  "duplicate_groups": 670,
+  "archives": [
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/additional.zip",
+      "image_members": 75
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/babepedia/babepedia/Mia_Melano/39icg6uym4g3-3925246461.zip",
+      "image_members": 19
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/babepedia(1)/babepedia/Mia_Melano/39icg6uym4g3-3925246461.zip",
+      "image_members": 19
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/babepedia(1).zip",
+      "image_members": 199
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/babepedia(2)/babepedia/Mia_Melano/39icg6uym4g3-3925246461.zip",
+      "image_members": 19
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/babepedia(2).zip",
+      "image_members": 285
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/babepedia.zip",
+      "image_members": 179
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/male.zip",
+      "image_members": 15
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/more.zip",
+      "image_members": 92
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/round2.zip",
+      "image_members": 187
+    },
+    {
+      "path": "/home/codyjackson/Datasets/renderlab-source/sets.zip",
+      "image_members": 70
+    }
+  ],
+  "errors": [],
+  "deduplication_mutated_sources": false,
+  "semantic_deduplication": false
+}

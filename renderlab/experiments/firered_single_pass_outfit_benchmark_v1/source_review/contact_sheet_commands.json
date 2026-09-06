@@ -1,0 +1,75 @@
+{
+  "interpreter": "openai_env/bin/python",
+  "script": "renderlab/experiments/firered_single_pass_outfit_benchmark_v1/source_review/contact_sheets.py",
+  "output_directory": "/tmp/firered_single_pass_source_review",
+  "inventory_and_screening": [
+    "--inventory",
+    "--page-size",
+    "60"
+  ],
+  "proposed_sources": [
+    "--ids",
+    "S0555",
+    "S0542",
+    "S0040",
+    "--prefix",
+    "proposed_sources",
+    "--columns",
+    "3",
+    "--page-size",
+    "3",
+    "--tile-width",
+    "600",
+    "--tile-height",
+    "1000"
+  ],
+  "candidate_sheets": [
+    [
+      "--ids",
+      "S0555",
+      "S0040",
+      "S0542",
+      "--prefix",
+      "shoes_candidates",
+      "--columns",
+      "3",
+      "--page-size",
+      "3",
+      "--tile-width",
+      "500",
+      "--tile-height",
+      "820"
+    ],
+    [
+      "--ids",
+      "S0542",
+      "S0534",
+      "--prefix",
+      "dress_candidates",
+      "--columns",
+      "2",
+      "--page-size",
+      "2",
+      "--tile-width",
+      "500",
+      "--tile-height",
+      "820"
+    ],
+    [
+      "--ids",
+      "S0040",
+      "S0555",
+      "S0542",
+      "--prefix",
+      "bikini_candidates",
+      "--columns",
+      "3",
+      "--page-size",
+      "3",
+      "--tile-width",
+      "500",
+      "--tile-height",
+      "820"
+    ]
+  ]
+}

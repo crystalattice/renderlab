@@ -1,0 +1,260 @@
+{
+  "status": "FINAL_SOURCES_USER_APPROVED",
+  "selection_method": "Manual visual inspection of locally generated screening sheets followed by original-resolution inspection; no model inference or automatic semantic selection.",
+  "inventory_complete": true,
+  "all_images_semantically_reviewed": false,
+  "screening_pages_inspected": [
+    1,
+    3,
+    4,
+    9,
+    10
+  ],
+  "candidate_sheets": {
+    "shoes_to_stilettos": {
+      "path": "/tmp/firered_single_pass_source_review/shoes_candidates_01.jpg",
+      "review_ids": [
+        "S0555",
+        "S0040",
+        "S0542"
+      ]
+    },
+    "dress_to_top_and_miniskirt": {
+      "path": "/tmp/firered_single_pass_source_review/dress_candidates_01.jpg",
+      "review_ids": [
+        "S0542",
+        "S0534"
+      ],
+      "alternative_cautions": {
+        "S0534": "Complete dress/waist/hips/knees/calves visible, but toes meet the lower edge. Suitable only for garment edit with unchanged framing; not a shoe source."
+      }
+    },
+    "clothing_to_bikini": {
+      "path": "/tmp/firered_single_pass_source_review/bikini_candidates_01.jpg",
+      "review_ids": [
+        "S0040",
+        "S0555",
+        "S0542"
+      ],
+      "alternative_cautions": {
+        "S0555": "Belt preservation with bikini may conflict visually; one arm naturally hidden.",
+        "S0542": "Longer dress hides more upper-leg surface than the preferred short-clothing source; output dimension alignment remains to be checked."
+      }
+    }
+  },
+  "proposed_comparison": "/tmp/firered_single_pass_source_review/proposed_sources_01.jpg",
+  "rejected_on_detailed_review": [
+    {
+      "review_id": "S0177",
+      "reason": "One original shoe is cropped by bottom edge; reject for shoes-to-stilettos."
+    },
+    {
+      "review_id": "S0514",
+      "reason": "One foot partly occluded, one hand partly hidden; stronger ordinary-clothing source S0040 available."
+    }
+  ],
+  "repository_image_copies": 0,
+  "cloud_calls": 0,
+  "uploads": 0,
+  "inference_runs": 0,
+  "source_files_modified": false,
+  "initial_proposals": [
+    {
+      "operation": "shoes_to_stilettos",
+      "status": "PROPOSED_AWAITING_USER_VISUAL_APPROVAL",
+      "review_id": "S0555",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing5/258192958c8532c7b679.jpg",
+      "sha256": "e52946471c7745de9a5384c0aa07045d75d63f743fc8ca987b22826b3523dc5c",
+      "dimensions": [
+        1024,
+        768
+      ],
+      "mode": "RGB",
+      "duplicate_locations": [
+        {
+          "path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing5/258192958c8532c7b679.jpg"
+        },
+        {
+          "member": "clothing5/258192958c8532c7b679.jpg",
+          "path": "/home/codyjackson/Datasets/renderlab-source/round2.zip"
+        }
+      ],
+      "visible_garments_and_anatomy": "Pink sleeveless blouse, cream short skirt, broad gold belt and two beige platform pumps. Entire head, torso, hips, both legs and both shoes are inside the canvas. One arm naturally passes behind the body; the requested shoe edit does not require revealing it.",
+      "why_suitable": "Both existing shoe silhouettes and their foot positions are visible with floor margin. Replacing beige platform pumps with black closed-toe stiletto heels is an existing-shoe edit; preserve crossed-leg stance, clothing, belt, room and camera.",
+      "adult_clothed_assessment": "Clothed, adult-appearing subject on visual inspection; no exact age inferred.",
+      "result_fits_existing_canvas": true,
+      "outpainting_required": false,
+      "reframing_required": false,
+      "off_frame_anatomy_required": false,
+      "approval_received": false,
+      "cautions": [
+        "Shoes are relatively small in the full-room frame; inspect footwear detail at native resolution.",
+        "Do not straighten the crossed legs or reveal the naturally occluded arm."
+      ]
+    },
+    {
+      "operation": "dress_to_top_and_miniskirt",
+      "status": "PROPOSED_AWAITING_USER_VISUAL_APPROVAL",
+      "review_id": "S0542",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing4/254435158c7217f159d9.jpg",
+      "sha256": "4f28ac9f350cfff84352cc544b2f6cddcbfb3e5f8cd5f2ec3ba9c6e6548fdbd4",
+      "dimensions": [
+        683,
+        1024
+      ],
+      "mode": "RGB",
+      "duplicate_locations": [
+        {
+          "path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing4/254435158c7217f159d9.jpg"
+        },
+        {
+          "member": "clothing4/254435158c7217f159d9.jpg",
+          "path": "/home/codyjackson/Datasets/renderlab-source/round2.zip"
+        }
+      ],
+      "visible_garments_and_anatomy": "Complete white short-sleeved dress with lace lower panel, visible waist/hip silhouette, bare lower legs, both white peep-toe shoes, both hands and face. Earrings, ring, nail color, wall artwork and couch are visible.",
+      "why_suitable": "Dress extends through its entire hem; waist, hips, knees and enough lower legs are in frame. A fitted top and visibly separate short miniskirt can replace the garment without adding any off-frame body region.",
+      "adult_clothed_assessment": "Clothed, adult-appearing subject on visual inspection; no exact age inferred.",
+      "result_fits_existing_canvas": true,
+      "outpainting_required": false,
+      "reframing_required": false,
+      "off_frame_anatomy_required": false,
+      "approval_received": false,
+      "cautions": [
+        "Preserve the natural leg overlap and all accessories.",
+        "683-pixel native width is not a multiple of eight. No crop or resize is approved here; later API preparation must explicitly check native output dimensions."
+      ]
+    },
+    {
+      "operation": "clothing_to_bikini",
+      "status": "PROPOSED_AWAITING_USER_VISUAL_APPROVAL",
+      "review_id": "S0040",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "mode": "RGB",
+      "duplicate_locations": [
+        {
+          "path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg"
+        },
+        {
+          "path": "/home/codyjackson/Datasets/renderlab-source/babepedia(2)/babepedia/Ziggy_Star/SCPE02977_001.jpg"
+        },
+        {
+          "member": "Ziggy_Star/SCPE02977_001.jpg",
+          "path": "/home/codyjackson/Datasets/renderlab-source/additional.zip"
+        },
+        {
+          "member": "babepedia/Ziggy_Star/SCPE02977_001.jpg",
+          "path": "/home/codyjackson/Datasets/renderlab-source/babepedia(2).zip"
+        }
+      ],
+      "visible_garments_and_anatomy": "Opaque olive tank top, denim shorts, white choker and black canvas sneakers. Head, complete torso and hips, both arms/hands, both legs and both shoes are within the canvas.",
+      "why_suitable": "Ordinary clothing covers only body regions already inside the existing frame. A black bikini top and separate bottoms can occupy those regions without inventing off-frame anatomy; the white choker is a clear accessory-preservation check.",
+      "adult_clothed_assessment": "Clothed, adult-appearing subject on visual inspection; no exact age inferred.",
+      "result_fits_existing_canvas": true,
+      "outpainting_required": false,
+      "reframing_required": false,
+      "off_frame_anatomy_required": false,
+      "approval_received": false,
+      "cautions": [
+        "Preserve the crossed-leg pose, choker, hands and sneakers.",
+        "Lower-resolution contact-sheet previews are review aids only; original source bytes remain untouched."
+      ]
+    }
+  ],
+  "approved_sources": [
+    {
+      "operation": "shoes_to_stilettos",
+      "review_id": "S0040",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "mode": "RGB",
+      "exif_orientation": 1,
+      "approval_received": true,
+      "approval": "User final source selection: shoes S0040; dress S0534; bikini S0040.",
+      "why_suitable": "Both existing sneaker silhouettes and complete foot positions are inside the frame with floor margin. Black closed-toe stilettos can replace these shoes without moving limbs or extending the canvas.",
+      "result_fits_existing_canvas": true,
+      "outpainting_required": false,
+      "reframing_required": false,
+      "off_frame_anatomy_required": false,
+      "visible_garments_and_anatomy": "Olive tank top, denim shorts, white choker and black canvas sneakers. Full head, torso and hips; both arms/hands, legs and complete shoes visible. Legs naturally cross without a missing off-frame body region.",
+      "adult_status": {
+        "assessment": "Clothed adult-appearing subject",
+        "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+        "documentary_age_verified": false
+      },
+      "framing_limitations": "Preserve existing crossed-leg stance; do not reveal naturally occluded surfaces or move feet."
+    },
+    {
+      "operation": "dress_to_top_and_miniskirt",
+      "review_id": "S0534",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
+      "sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+      "dimensions": [
+        680,
+        1024
+      ],
+      "mode": "RGB",
+      "exif_orientation": 1,
+      "approval_received": true,
+      "approval": "User final source selection: shoes S0040; dress S0534; bikini S0040.",
+      "why_suitable": "Complete dress, waist, hips, knees and sufficient legs are visible. A fitted top and distinct short miniskirt fit above the existing leg region; no new off-frame anatomy is needed.",
+      "result_fits_existing_canvas": true,
+      "outpainting_required": false,
+      "reframing_required": false,
+      "off_frame_anatomy_required": false,
+      "visible_garments_and_anatomy": "Complete black dress with turquoise dots and black hem; waist/hip silhouette, both hands, knees and calves visible. Feet meet the lower image edge.",
+      "adult_status": {
+        "assessment": "Clothed adult-appearing subject",
+        "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+        "documentary_age_verified": false
+      },
+      "framing_limitations": "Feet/toes meet the lower border. This is approved only for dress editing; preserve the existing crop and do not reconstruct feet."
+    },
+    {
+      "operation": "clothing_to_bikini",
+      "review_id": "S0040",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "mode": "RGB",
+      "exif_orientation": 1,
+      "approval_received": true,
+      "approval": "User final source selection: shoes S0040; dress S0534; bikini S0040.",
+      "why_suitable": "The tank and shorts cover torso/hip regions already inside the frame. Separate bikini top and bottoms fit these regions; preserve all limb positions, sneakers and choker.",
+      "result_fits_existing_canvas": true,
+      "outpainting_required": false,
+      "reframing_required": false,
+      "off_frame_anatomy_required": false,
+      "visible_garments_and_anatomy": "Olive tank top, denim shorts, white choker and black canvas sneakers. Full head, torso and hips; both arms/hands, legs and complete shoes visible. Legs naturally cross without a missing off-frame body region.",
+      "adult_status": {
+        "assessment": "Clothed adult-appearing subject",
+        "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+        "documentary_age_verified": false
+      },
+      "framing_limitations": "Preserve existing crossed-leg stance; do not reveal naturally occluded surfaces or move feet."
+    }
+  ],
+  "approval": "User final selection overrides initial proposals; S0040 reuse intentional.",
+  "controlled_same_source_comparison": {
+    "source_id": "S0040",
+    "operations": [
+      "shoes_to_stilettos",
+      "clothing_to_bikini"
+    ],
+    "purpose": "Localized footwear transformation versus large outfit transformation with identical original bytes, model settings and seed.",
+    "source_upload_count": 1
+  },
+  "unique_approved_sources": 2
+}

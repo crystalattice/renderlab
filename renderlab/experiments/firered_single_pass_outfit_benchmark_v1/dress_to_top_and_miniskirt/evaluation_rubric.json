@@ -1,0 +1,152 @@
+{
+  "status": "NOT_EXECUTED_NOT_SCORED",
+  "independent_scores": {
+    "requested_transformation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "identity_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "body_shape_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "anatomy_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "pose_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "unrelated_clothing_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "accessory_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "camera_and_framing_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "lighting_and_background_preservation": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "instruction_adherence": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    },
+    "artifact_severity": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "lower_is_better",
+      "evidence": null
+    },
+    "overall_usability": {
+      "score": null,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": null
+    }
+  },
+  "positive_anchors": {
+    "1": "Failed or materially changed",
+    "2": "Major deficiencies",
+    "3": "Mixed or noticeable deficiencies",
+    "4": "Good with minor deficiencies",
+    "5": "Fully satisfied or preserved"
+  },
+  "artifact_severity_anchors": {
+    "1": "None visible",
+    "2": "Minor",
+    "3": "Noticeable",
+    "4": "Major",
+    "5": "Severe"
+  },
+  "hard_fail_conditions": [
+    "Missing requested garment",
+    "Wrong garment category",
+    "One-piece garment where two pieces requested",
+    "Material identity change",
+    "Significant body or limb distortion",
+    "Cropped, compressed, shortened, duplicated or missing limbs",
+    "Pose or framing change intended to force requested item into view",
+    "Major unrelated scene changes",
+    "Severe garment or anatomy artifacts"
+  ],
+  "decision_rule": "Any hard-fail condition fails the case regardless of scores. Record each dimension independently; do not conceal a failure in an average. Final usability requires visual review.",
+  "review_required": [
+    "source/native output comparison",
+    "face and accessories",
+    "full body and every visible limb",
+    "requested garments and boundaries",
+    "camera and scene"
+  ],
+  "exact_pixel_preservation_required": false,
+  "reason": "Unmasked native image editing; evaluate semantic preservation rather than deterministic pixel identity.",
+  "case": "dress_to_top_and_miniskirt",
+  "source_id": "S0534",
+  "operation_acceptance": "Fitted top and separate short miniskirt with visible separation; no dress, bodysuit or one-piece. Preserve existing lower-edge crop.",
+  "source_specific_limitations": "Feet/toes meet the lower border. This is approved only for dress editing; preserve the existing crop and do not reconstruct feet."
+}

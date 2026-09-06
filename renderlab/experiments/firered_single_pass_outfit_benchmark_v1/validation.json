@@ -1,14 +1,119 @@
 {
-  "scope": "Shared specification only; source selection blocked",
-  "renderlab_tests": {
-    "count": 90,
-    "result": "PASS",
-    "command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s tests/renderlab -v"
+  "status": "PASS_PREPARATION_ONLY",
+  "execution_ready": false,
+  "case_results": {
+    "shoes_to_stilettos": {
+      "source_id": "S0040",
+      "source_sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "source_hash_dimensions_mode": "PASS",
+      "source_selection_user_approved": true,
+      "adult_status_basis": {
+        "assessment": "Clothed adult-appearing subject",
+        "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+        "documentary_age_verified": false
+      },
+      "node_count": 12,
+      "unique_node_types": 11,
+      "typed_links_acyclic_all_nodes_reach_native_save": true,
+      "editor_api_equivalent": true,
+      "settings_and_prompt_frozen": true,
+      "no_mask_composite_outpaint_reframe_repair_nodes": true,
+      "dry_run": {
+        "status": "validated",
+        "warnings": [],
+        "submitted": false
+      },
+      "file_uploaded": false,
+      "payload_sha256": "9088bad4208025afbeebb8c6b414cb56f5d5cb3c73984d89ef34a0ed48496f1b"
+    },
+    "dress_to_top_and_miniskirt": {
+      "source_id": "S0534",
+      "source_sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+      "dimensions": [
+        680,
+        1024
+      ],
+      "source_hash_dimensions_mode": "PASS",
+      "source_selection_user_approved": true,
+      "adult_status_basis": {
+        "assessment": "Clothed adult-appearing subject",
+        "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+        "documentary_age_verified": false
+      },
+      "node_count": 12,
+      "unique_node_types": 11,
+      "typed_links_acyclic_all_nodes_reach_native_save": true,
+      "editor_api_equivalent": true,
+      "settings_and_prompt_frozen": true,
+      "no_mask_composite_outpaint_reframe_repair_nodes": true,
+      "dry_run": {
+        "status": "validated",
+        "warnings": [],
+        "submitted": false
+      },
+      "file_uploaded": false,
+      "payload_sha256": "2130b2c3c64b6c9338cbb3b10cc15f9fa25cb5771f7009a1f080b241da1e9475"
+    },
+    "clothing_to_bikini": {
+      "source_id": "S0040",
+      "source_sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "source_hash_dimensions_mode": "PASS",
+      "source_selection_user_approved": true,
+      "adult_status_basis": {
+        "assessment": "Clothed adult-appearing subject",
+        "basis": "Original-resolution visual inspection and user-approved final source selection from the adult corpus",
+        "documentary_age_verified": false
+      },
+      "node_count": 12,
+      "unique_node_types": 11,
+      "typed_links_acyclic_all_nodes_reach_native_save": true,
+      "editor_api_equivalent": true,
+      "settings_and_prompt_frozen": true,
+      "no_mask_composite_outpaint_reframe_repair_nodes": true,
+      "dry_run": {
+        "status": "validated",
+        "warnings": [],
+        "submitted": false
+      },
+      "file_uploaded": false,
+      "payload_sha256": "e571fc3c0361cc389eed140f36bcd364cce09bb96552c5700a30ccd572d74a07"
+    }
   },
-  "json_integrity": "PASS",
-  "prior_experiments_unchanged": "PASS",
-  "git_diff_check": "PASS",
-  "workflow_structural_validation": "NOT_RUN_NO_SELECTED_SOURCES",
-  "cloud_dry_runs": "NOT_RUN_NO_SELECTED_SOURCES",
-  "no_uploads_or_inference": true
+  "unique_sources": 2,
+  "uploads": 0,
+  "inference_jobs": 0,
+  "same_source_comparison": {
+    "status": "PASS",
+    "only_differences": [
+      "8.prompt",
+      "14.filename_prefix"
+    ],
+    "shared_source_sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+    "unique_uploads_for_pair": 1
+  },
+  "previous_experiments_unchanged": true,
+  "corpus_images_or_contact_sheets_in_repository": 0,
+  "checks": {
+    "renderlab_tests": {
+      "count": 97,
+      "result": "PASS",
+      "command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s tests/renderlab -v"
+    },
+    "preserved_outfit_preparation_tests": {
+      "count": 7,
+      "result": "PASS",
+      "command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s renderlab/experiments/firered_outfit_change_v1 -p test_preparation.py -v"
+    },
+    "ruff": "PASS",
+    "json_integrity": "PASS",
+    "git_diff_check": "PASS"
+  }
 }

@@ -1,0 +1,53 @@
+{
+  "unique_upload_count": 2,
+  "uploads_authorized": false,
+  "source_assets": [
+    {
+      "source_id": "S0040",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "mode": "RGB",
+      "cloud_filename": null,
+      "pending_filename": "UPLOAD_REQUIRED_S0040.jpg",
+      "status": "NOT_UPLOADED",
+      "uses": [
+        {
+          "case": "shoes_to_stilettos",
+          "node": "1",
+          "input": "image"
+        },
+        {
+          "case": "clothing_to_bikini",
+          "node": "1",
+          "input": "image"
+        }
+      ]
+    },
+    {
+      "source_id": "S0534",
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
+      "sha256": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+      "dimensions": [
+        680,
+        1024
+      ],
+      "mode": "RGB",
+      "cloud_filename": null,
+      "pending_filename": "UPLOAD_REQUIRED_S0534.jpg",
+      "status": "NOT_UPLOADED",
+      "uses": [
+        {
+          "case": "dress_to_top_and_miniskirt",
+          "node": "1",
+          "input": "image"
+        }
+      ]
+    }
+  ],
+  "binding_rule": "After separate upload authorization, verify exact original hash/dimensions/mode, use each successful PUT response filename for node 1 only. Reuse the S0040 response in shoes and bikini; never upload it twice. Revalidate all affected cases.",
+  "all_other_inputs_frozen": true
+}

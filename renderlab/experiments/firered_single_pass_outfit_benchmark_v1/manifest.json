@@ -1,0 +1,41 @@
+{
+  "benchmark": "firered_single_pass_outfit_benchmark_v1",
+  "cases": {
+    "shoes_to_stilettos": "S0040",
+    "dress_to_top_and_miniskirt": "S0534",
+    "clothing_to_bikini": "S0040"
+  },
+  "unique_source_count": 2,
+  "bindings": "cloud_bindings.json",
+  "settings": "settings.json",
+  "evaluation": "evaluation_rubric.json",
+  "informal_evidence": "informal_observations.json",
+  "same_source_comparison": {
+    "source_id": "S0040",
+    "source_sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+    "cases": [
+      "shoes_to_stilettos",
+      "clothing_to_bikini"
+    ],
+    "controlled_variables": [
+      "source bytes",
+      "native dimensions",
+      "model files",
+      "all sampler settings",
+      "seed",
+      "graph topology"
+    ],
+    "varying_variables": [
+      "positive prompt",
+      "output prefix"
+    ],
+    "purpose": "Controlled same-source comparison: localized footwear transformation versus large outfit transformation.",
+    "statistical_limit": "Three cases use two source images. Scores are descriptive; do not treat the reused source as independent evidence or infer a population pass rate."
+  },
+  "prior_completed_evidence_preserved_at": "2e37059cd2bfd18dc6c877b716b7e977221d4a90",
+  "native_outputs_only": true,
+  "uploads_performed": 0,
+  "inference_jobs": 0,
+  "batch_allowed": false,
+  "retries_authorized": false
+}

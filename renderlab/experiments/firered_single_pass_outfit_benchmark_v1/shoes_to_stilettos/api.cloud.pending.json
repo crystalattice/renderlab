@@ -1,0 +1,148 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "UPLOAD_REQUIRED_S0040.jpg"
+    }
+  },
+  "3": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "FireRed-Image-Edit-1.1-transformer.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "4": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "5": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    }
+  },
+  "6": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "model": [
+        "3",
+        0
+      ],
+      "shift": 3.1
+    }
+  },
+  "7": {
+    "class_type": "CFGNorm",
+    "inputs": {
+      "model": [
+        "6",
+        0
+      ],
+      "strength": 1
+    }
+  },
+  "8": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "4",
+        0
+      ],
+      "vae": [
+        "5",
+        0
+      ],
+      "image1": [
+        "1",
+        0
+      ],
+      "prompt": "Replace only the subject\u2019s existing shoes with black closed-toe stiletto heels. Preserve her identity, face, hairstyle, body shape, anatomy, pose, clothing, hands, camera, lighting, background, and all unrelated objects."
+    }
+  },
+  "9": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "4",
+        0
+      ],
+      "vae": [
+        "5",
+        0
+      ],
+      "image1": [
+        "1",
+        0
+      ],
+      "prompt": ""
+    }
+  },
+  "10": {
+    "class_type": "VAEEncode",
+    "inputs": {
+      "pixels": [
+        "1",
+        0
+      ],
+      "vae": [
+        "5",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "7",
+        0
+      ],
+      "positive": [
+        "8",
+        0
+      ],
+      "negative": [
+        "9",
+        0
+      ],
+      "latent_image": [
+        "10",
+        0
+      ],
+      "seed": 3407,
+      "steps": 40,
+      "cfg": 4,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    }
+  },
+  "13": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "12",
+        0
+      ],
+      "vae": [
+        "5",
+        0
+      ]
+    }
+  },
+  "14": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ],
+      "filename_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native"
+    }
+  }
+}

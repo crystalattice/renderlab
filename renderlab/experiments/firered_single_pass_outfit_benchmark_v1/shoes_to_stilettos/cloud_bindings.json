@@ -1,0 +1,17 @@
+{
+  "source_id": "S0040",
+  "asset_registry": "../cloud_bindings.json",
+  "node": "1",
+  "input": "image",
+  "cloud_filename": null,
+  "pending_filename": "UPLOAD_REQUIRED_S0040.jpg",
+  "shared_with": [
+    "clothing_to_bikini"
+  ],
+  "required_upload_original": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+  "expected_sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+  "dimensions": [
+    1440,
+    2160
+  ]
+}
