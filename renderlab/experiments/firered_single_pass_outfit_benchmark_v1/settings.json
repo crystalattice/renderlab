@@ -1,0 +1,18 @@
+{
+  "diffusion_model": "FireRed-Image-Edit-1.1-transformer.safetensors",
+  "text_encoder": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+  "vae": "qwen_image_vae.safetensors",
+  "turbo": false,
+  "loras": [],
+  "steps": 40,
+  "cfg": 4,
+  "sampler_name": "euler",
+  "scheduler": "simple",
+  "denoise": 1,
+  "shift": 3.1,
+  "cfg_norm_strength": 1,
+  "seed": 3407,
+  "negative_prompt": "",
+  "editing": "full-image unmasked single-pass",
+  "output_policy": "Preserve native output unchanged; no repair or compositing."
+}

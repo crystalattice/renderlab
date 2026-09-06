@@ -1,0 +1,13 @@
+{
+  "provenance": "User-supplied manual observations, not formal benchmark measurements",
+  "observations": [
+    "FireRed generally performs outfit changes, reclothing, body morphing, and similar existing-canvas edits well.",
+    "Informal failure rate roughly one in four, primarily incomplete instruction adherence.",
+    "This is not a formal benchmark pass rate.",
+    "FireRed outpainting is unreliable; it may compress or distort visible limbs to satisfy additions inside the existing canvas instead of extending it correctly.",
+    "Do not use FireRed as the preferred outpainting backend."
+  ],
+  "benchmark_purpose": "Validate reproducible API behavior for manually observed capabilities; not exploratory proof that FireRed can edit clothing.",
+  "formal_runs": 0,
+  "formal_pass_rate": null
+}

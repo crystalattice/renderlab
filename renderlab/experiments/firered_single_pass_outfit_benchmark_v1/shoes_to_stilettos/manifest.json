@@ -1,0 +1,29 @@
+{
+  "case": "shoes_to_stilettos",
+  "status": "BLOCKED_SOURCE_SELECTION",
+  "source": null,
+  "required_source": "Clothed adult with both original shoes and complete feet visible, with enough existing canvas for black closed-toe stiletto heels.",
+  "source_record_required": [
+    "original_path",
+    "sha256",
+    "dimensions",
+    "visible_garments_and_anatomy",
+    "adult_clothed_subject",
+    "selection_rationale",
+    "result_fits_existing_canvas"
+  ],
+  "prompt": "Replace only the subject\u2019s existing shoes with black closed-toe stiletto heels. Preserve her identity, face, hairstyle, body shape, anatomy, pose, clothing, hands, camera, lighting, background, and all unrelated objects.",
+  "settings": "../settings.json",
+  "rubric": "../evaluation_rubric.json",
+  "output_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native",
+  "expected_local_output": "native_output.png",
+  "cloud_filename": null,
+  "uploads_authorized": false,
+  "inference_authorized": false,
+  "max_jobs": 1,
+  "retries_authorized": false,
+  "batch_allowed": false,
+  "api_payload": null,
+  "editor_workflow": null,
+  "dry_run": null
+}

@@ -1,0 +1,46 @@
+{
+  "benchmark": "firered_single_pass_outfit_benchmark_v1",
+  "status": "BLOCKED_SOURCE_SELECTION",
+  "source_selection_complete": false,
+  "cases": [
+    "shoes_to_stilettos",
+    "dress_to_top_and_miniskirt",
+    "clothing_to_bikini"
+  ],
+  "selected_sources": {},
+  "cloud_discovery": {
+    "node_types_found": 11,
+    "exact_models_found": 3,
+    "evidence": "cloud_availability.json"
+  },
+  "dry_runs_performed": 0,
+  "uploads_performed": 0,
+  "inference_jobs": 0,
+  "batch_allowed": false,
+  "retry_authorized": false,
+  "prior_evidence": {
+    "preserved_commit": "2e37059cd2bfd18dc6c877b716b7e977221d4a90",
+    "controlled_inpainting": "Validated",
+    "deterministic_containment": "Validated",
+    "automatic_garment_masking": "Unresolved",
+    "accessory_preservation": "Unresolved",
+    "feathered_compositing": "Unresolved",
+    "tank_top_visual_acceptance": "FAIL: white hem halo, missing necklace, bodysuit-like lower silhouette"
+  },
+  "blocker": "Full tagged corpus and image archives not located. Downloads references.jsonl describes three originals, none meets this clothed-source selection. Awaiting authoritative corpus location.",
+  "rejected_originals": [
+    {
+      "path": "/home/codyjackson/Downloads/img_00317.jpg",
+      "reason": "Not clothed: exposed chest."
+    },
+    {
+      "path": "/home/codyjackson/Downloads/img_00414.jpg",
+      "reason": "Lingerie reference rather than ordinary clothing/dress."
+    },
+    {
+      "path": "/home/codyjackson/Downloads/img_00562.jpg",
+      "reason": "Reference metadata marks nude_or_lingerie; gym framing unsuitable for full feet/limb requirements."
+    }
+  ],
+  "corpus_reference_manifest": "/home/codyjackson/Downloads/references.jsonl"
+}

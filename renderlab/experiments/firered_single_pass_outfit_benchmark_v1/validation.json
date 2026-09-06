@@ -1,0 +1,14 @@
+{
+  "scope": "Shared specification only; source selection blocked",
+  "renderlab_tests": {
+    "count": 90,
+    "result": "PASS",
+    "command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s tests/renderlab -v"
+  },
+  "json_integrity": "PASS",
+  "prior_experiments_unchanged": "PASS",
+  "git_diff_check": "PASS",
+  "workflow_structural_validation": "NOT_RUN_NO_SELECTED_SOURCES",
+  "cloud_dry_runs": "NOT_RUN_NO_SELECTED_SOURCES",
+  "no_uploads_or_inference": true
+}
