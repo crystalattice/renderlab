@@ -1,0 +1,25 @@
+{
+  "job_id": "0255351d-07d4-4e0c-9027-286782324b3e",
+  "overall": "FAIL_VISUAL_QUALITY",
+  "requested_garment_and_sleeve_removal": "PASS",
+  "raw_strict_containment": "FAIL",
+  "production_strict_containment": "PASS",
+  "boundary_quality": "FAIL",
+  "white_remnants": "FAIL",
+  "semantic_preservation": "PARTIAL: thin necklace absent; outside-generation semantic content preserved",
+  "visual_inspection": [
+    "raw_output_0255351d.png",
+    "production_composited.png",
+    "output_upper_detail.png",
+    "output_hem_detail.png"
+  ],
+  "rubric": "evaluation_rubric.json",
+  "numeric_metrics": "output_metrics.json",
+  "saved_raw_recomposition": {
+    "status": "FAIL_EXACT_REPRODUCTION",
+    "maximum_channel_error": 1,
+    "changed_pixels": 2975,
+    "interpretation": "Consistent with compositing the unquantized VAE image before SaveImage quantization; not proof of the cause. Strict saved-raw recomposition validator remains failed; no gate was relaxed."
+  },
+  "additional_generation_authorized": false
+}

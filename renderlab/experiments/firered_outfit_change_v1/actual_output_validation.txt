@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/validate_preparation.py", line 340, in <module>
+    main()
+    ~~~~^^
+  File "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_outfit_change_v1/validate_preparation.py", line 328, in main
+    assert np.array_equal(expected, production), (
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Production differs from native full composite

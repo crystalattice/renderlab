@@ -1,5 +1,5 @@
 {
-  "status": "NOT_EXECUTED_NOT_SCORED",
+  "status": "EVALUATED_FAIL_VISUAL_QUALITY",
   "visual_scale": {
     "0": "fail",
     "1": "major defects",
@@ -11,44 +11,44 @@
     {
       "id": "garment",
       "requirement": "Fitted matte-black sleeveless athletic tank top with realistic neckline, armholes, seams, fabric tension, folds and lighting.",
-      "score": null,
-      "evidence": null
+      "score": 3,
+      "evidence": "Matte-black fitted sleeveless athletic top, scoop neckline, armholes, seams and folds are visible."
     },
     {
       "id": "sleeves",
       "requirement": "Both old sleeves removed cleanly; no short-sleeve silhouette.",
-      "score": null,
-      "evidence": null
+      "score": 3,
+      "evidence": "Both white sleeves replaced by exposed shoulders/upper arms."
     },
     {
       "id": "exposed_anatomy",
       "requirement": "Plausible shoulders and proximal upper arms; no anatomy distortion.",
-      "score": null,
-      "evidence": null
+      "score": 3,
+      "evidence": "Exposed shoulders and upper arms look plausible at the inspected resolution."
     },
     {
       "id": "preservation",
       "requirement": "Identity, hair, body proportions, pose, hands, forearms, lower clothing, thighs, environment, equipment, camera and lighting preserved.",
-      "score": null,
-      "evidence": null
+      "score": 2,
+      "evidence": "Face, hair, hands, pose and environment retained; original thin necklace visible over the white shirt is absent inside the edited region. Outside-generation pixels are exact."
     },
     {
       "id": "remnants",
       "requirement": "No old white-shirt remnants anywhere, including hem, collar and cuffs.",
-      "score": null,
-      "evidence": null
+      "score": 0,
+      "evidence": "White remnants remain along the left lower side and curved hem near both thighs, visible in raw and production."
     },
     {
       "id": "boundary",
       "requirement": "No seams, halos, white rims, skin smears, clipping or blend discontinuities at 100% and enlarged inspection.",
-      "score": null,
-      "evidence": null
+      "score": 1,
+      "evidence": "White edge halo and sharp skin/hem transition prevent a clean composite. Upper neckline/armholes are substantially cleaner than the hem."
     },
     {
       "id": "containment",
       "requirement": "Production has zero changed pixels and maximum channel error 0 outside binary generation; every core production pixel equals raw; 1160x896 RGB, no alpha.",
-      "score": null,
-      "evidence": null
+      "score": 3,
+      "evidence": "Production: 0 changed outside pixels, max outside error 0, all core pixels identical to raw; RGB 1160x896."
     }
   ],
   "raw_policy": "Preserve raw unchanged; report raw semantic preservation separately from strict pixel drift. Only production can pass exact containment.",

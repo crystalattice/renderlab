@@ -7,5 +7,5 @@
   "composite_mask_node": "19",
   "raw_output_node": "14",
   "production_output_node": "18",
-  "status": "UPLOADED_DRY_RUN_VALIDATED_WITH_FILENAME_ADVISORIES"
+  "status": "COMPLETED_CONTAINMENT_PASS_VISUAL_QUALITY_FAIL"
 }

@@ -1,0 +1,310 @@
+{
+  "prompt_id": "0255351d-07d4-4e0c-9027-286782324b3e",
+  "authorization": "User: Approve the one-job submission from the gated payload",
+  "submission_attempts": 1,
+  "retry_attempts": 0,
+  "new_uploads": 0,
+  "request": {
+    "workflow": {
+      "1": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": "faaf6afe9b797e48ac07605964f151e538f91320a1952812718921eaf17ec24f.png"
+        }
+      },
+      "2": {
+        "class_type": "LoadImageMask",
+        "inputs": {
+          "image": "85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png",
+          "channel": "red"
+        }
+      },
+      "3": {
+        "class_type": "UNETLoader",
+        "inputs": {
+          "unet_name": "FireRed-Image-Edit-1.1-transformer.safetensors",
+          "weight_dtype": "default"
+        }
+      },
+      "4": {
+        "class_type": "CLIPLoader",
+        "inputs": {
+          "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+          "type": "qwen_image",
+          "device": "default"
+        }
+      },
+      "5": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": "qwen_image_vae.safetensors"
+        }
+      },
+      "6": {
+        "class_type": "ModelSamplingAuraFlow",
+        "inputs": {
+          "model": [
+            "3",
+            0
+          ],
+          "shift": 3.1
+        }
+      },
+      "7": {
+        "class_type": "CFGNorm",
+        "inputs": {
+          "model": [
+            "6",
+            0
+          ],
+          "strength": 1
+        }
+      },
+      "8": {
+        "class_type": "TextEncodeQwenImageEditPlus",
+        "inputs": {
+          "clip": [
+            "4",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ],
+          "image1": [
+            "1",
+            0
+          ],
+          "prompt": "Replace only the white T-shirt with a fitted matte-black sleeveless athletic tank top, with realistic neckline, armholes, seams, fabric tension, folds, and lighting; preserve everything else exactly. Remove both original sleeves cleanly and reconstruct plausible newly exposed shoulders and upper arms. Preserve identity, face, hair, body proportions, anatomy, pose, hands, forearms, lower clothing, thighs, gym equipment, camera, lighting, and background. No old white-shirt remnants, logos, text, or added accessories."
+        }
+      },
+      "9": {
+        "class_type": "TextEncodeQwenImageEditPlus",
+        "inputs": {
+          "clip": [
+            "4",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ],
+          "image1": [
+            "1",
+            0
+          ],
+          "prompt": ""
+        }
+      },
+      "10": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "1",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ]
+        }
+      },
+      "11": {
+        "class_type": "SetLatentNoiseMask",
+        "inputs": {
+          "samples": [
+            "10",
+            0
+          ],
+          "mask": [
+            "2",
+            0
+          ]
+        }
+      },
+      "12": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "7",
+            0
+          ],
+          "positive": [
+            "8",
+            0
+          ],
+          "negative": [
+            "9",
+            0
+          ],
+          "latent_image": [
+            "11",
+            0
+          ],
+          "seed": 3407,
+          "steps": 40,
+          "cfg": 4,
+          "sampler_name": "euler",
+          "scheduler": "simple",
+          "denoise": 1
+        }
+      },
+      "13": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "12",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ]
+        }
+      },
+      "14": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "13",
+            0
+          ],
+          "filename_prefix": "renderlab_firered_outfit_change_v1_s3407_raw"
+        }
+      },
+      "17": {
+        "class_type": "ImageCompositeMasked",
+        "inputs": {
+          "destination": [
+            "1",
+            0
+          ],
+          "source": [
+            "13",
+            0
+          ],
+          "x": 0,
+          "y": 0,
+          "resize_source": false,
+          "mask": [
+            "19",
+            0
+          ]
+        }
+      },
+      "18": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "17",
+            0
+          ],
+          "filename_prefix": "renderlab_firered_outfit_change_v1_s3407_production"
+        }
+      },
+      "19": {
+        "class_type": "LoadImageMask",
+        "inputs": {
+          "image": "82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png",
+          "channel": "red"
+        }
+      }
+    },
+    "dry_run": false
+  },
+  "submission_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Workflow submitted. prompt_id: 0255351d-07d4-4e0c-9027-286782324b3e\nAdvisory (non-blocking) - the following input value(s) were not found in the bundled node index, which can lag the cloud's live catalog. The cloud is the authoritative validator, so this is informational only and does not block the submit. If submission does fail on one of these fields, use search_nodes for the current valid options:\nNode #2 (LoadImageMask): \"image\" value \"85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png\" was not found in the bundled node index\nNode #19 (LoadImageMask): \"image\" value \"82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png\" was not found in the bundled node index\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning."
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "prompt_id": "0255351d-07d4-4e0c-9027-286782324b3e",
+        "lifted_from_save": false,
+        "lifecycle": "\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning.",
+        "status": "succeeded_with_warnings",
+        "warnings": [
+          {
+            "code": "input_validation",
+            "detail": "Node #2 (LoadImageMask): \"image\" value \"85a7d3f9d519b74135dd390b332ffbcf1a1c56e36c163d353aa40d1b2f91025a.png\" was not found in the bundled node index"
+          },
+          {
+            "code": "input_validation",
+            "detail": "Node #19 (LoadImageMask): \"image\" value \"82c3062207b2d5027c3b3438dcf74020370b2ddf2581b376587d46f9c2b0ec47.png\" was not found in the bundled node index"
+          }
+        ]
+      }
+    }
+  },
+  "runtime_status": "completed",
+  "executed_payload": "api.executed.0255351d.json",
+  "completion_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Job completed successfully. Use get_output to retrieve results."
+      },
+      {
+        "type": "text",
+        "text": "{\"status\":\"completed\",\"completed\":true,\"raw_status\":\"completed\"}"
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "status": "succeeded",
+        "warnings": [],
+        "job_status": "completed",
+        "raw_status": "completed"
+      }
+    }
+  },
+  "output_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Image ready.\nDownload URL (no auth needed, expires in ~5 min; re-run get_output for a fresh link): https://cloud.comfy.org/api/s/x3JN0qhZh40IWo_VULyk6w?raw=1\nSuggested save path: ~/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png\nSource: node 14, SaveImage, filename_prefix=\"renderlab_firered_outfit_change_v1_s3407_raw\"\nRun this command yourself now (via your own shell/tool) to save the file (keep the URL exactly as given \u2014 do not strip the ?raw=1 query parameter, or the download reverts to a redirect a sandbox may block), then tell the user the saved path \u2014 do NOT just print the command and ask the user to run it. Only hand the command to the user if you cannot execute it yourself (no shell, or a sandbox egress block returning 403 Host not in allowlist):\ncurl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png.part\" -- 'https://cloud.comfy.org/api/s/x3JN0qhZh40IWo_VULyk6w?raw=1' || { rm -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png.part\"; false; } && mv -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png.part\" \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png\"\nImage size: 1160x896 px (1e29a766fd8a25d068cdcbf4db9fc83c4a3ae688c42d4fbcd392831168c95581.png)"
+      },
+      {
+        "type": "text",
+        "text": "Image ready.\nDownload URL (no auth needed, expires in ~5 min; re-run get_output for a fresh link): https://cloud.comfy.org/api/s/8aoaborqgxYY7gCLNOAUbQ?raw=1\nSuggested save path: ~/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png\nSource: node 18, SaveImage, filename_prefix=\"renderlab_firered_outfit_change_v1_s3407_production\"\nRun this command yourself now (via your own shell/tool) to save the file (keep the URL exactly as given \u2014 do not strip the ?raw=1 query parameter, or the download reverts to a redirect a sandbox may block), then tell the user the saved path \u2014 do NOT just print the command and ask the user to run it. Only hand the command to the user if you cannot execute it yourself (no shell, or a sandbox egress block returning 403 Host not in allowlist):\ncurl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png.part\" -- 'https://cloud.comfy.org/api/s/8aoaborqgxYY7gCLNOAUbQ?raw=1' || { rm -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png.part\"; false; } && mv -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png.part\" \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png\"\nImage size: 1160x896 px (184df6dd6f7911955b089797ef7f271b54eb62e601efe47034ffdcf5dc6d4207.png)"
+      },
+      {
+        "type": "text",
+        "text": "Batch download (2 files, 4 at a time) \u2014 run this single command yourself now (via your own shell/tool) to save all the files (keep each URL exactly as given \u2014 do not strip query parameters, as they are part of the URL signature), then tell the user the saved paths; prefer it over running each curl separately. Only hand the command to the user if you cannot execute it yourself (no shell, or a sandbox egress block returning 403 Host not in allowlist):\n# Download all 2 files (4 at a time) \u2014 prefer this single command over running each curl separately:\nprintf '%s\\0' \\\n  'https://cloud.comfy.org/api/s/x3JN0qhZh40IWo_VULyk6w?raw=1' \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png\" \\\n  'https://cloud.comfy.org/api/s/8aoaborqgxYY7gCLNOAUbQ?raw=1' \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png\" |\n  xargs -0 -P 4 -n 2 sh -c 'curl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$1.part\" -- \"$0\" || { rm -f \"$1.part\"; false; } && mv -f \"$1.part\" \"$1\"'"
+      }
+    ],
+    "structuredContent": {
+      "results": [
+        {
+          "source_node_id": "14",
+          "filename_prefix": "renderlab_firered_outfit_change_v1_s3407_raw",
+          "class_type": "SaveImage",
+          "filename": "1e29a766fd8a25d068cdcbf4db9fc83c4a3ae688c42d4fbcd392831168c95581.png",
+          "url": "https://cloud.comfy.org/api/s/x3JN0qhZh40IWo_VULyk6w?raw=1",
+          "suggested_save_path": "~/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png",
+          "download_command": "curl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png.part\" -- 'https://cloud.comfy.org/api/s/x3JN0qhZh40IWo_VULyk6w?raw=1' || { rm -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png.part\"; false; } && mv -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png.part\" \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production.png\"",
+          "width": 1160,
+          "height": 896
+        },
+        {
+          "source_node_id": "18",
+          "filename_prefix": "renderlab_firered_outfit_change_v1_s3407_production",
+          "class_type": "SaveImage",
+          "filename": "184df6dd6f7911955b089797ef7f271b54eb62e601efe47034ffdcf5dc6d4207.png",
+          "url": "https://cloud.comfy.org/api/s/8aoaborqgxYY7gCLNOAUbQ?raw=1",
+          "suggested_save_path": "~/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png",
+          "download_command": "curl -L --fail-with-body --retry 3 --retry-all-errors --retry-delay 1 --connect-timeout 20 --speed-limit 1024 --speed-time 30 --create-dirs -o \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png.part\" -- 'https://cloud.comfy.org/api/s/8aoaborqgxYY7gCLNOAUbQ?raw=1' || { rm -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png.part\"; false; } && mv -f \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png.part\" \"$HOME/Downloads/ComfyUI/comfy_firered-outfit-change-seed-3407-raw-and-production_1.png\"",
+          "width": 1160,
+          "height": 896
+        }
+      ]
+    }
+  },
+  "raw_output": "raw_output_0255351d.png",
+  "production_output": "production_composited.png",
+  "evaluation": "evaluation.json",
+  "containment_pass": true,
+  "quality_pass": false
+}

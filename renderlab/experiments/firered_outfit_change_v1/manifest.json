@@ -93,9 +93,15 @@
   "numeric_validator": "validate_preparation.py",
   "raw_output_node": "14",
   "production_output_node": "18",
-  "runtime_executed": false,
+  "runtime_executed": true,
   "uploads_performed": 2,
   "inference_authorized": false,
   "composite_reference_sha256": "7970448344bbcc802b0bf2df1f7a5289e38ac1add3e5e33d02082ae45e097c59",
-  "resolved_payload": "api.cloud.resolved.json"
+  "resolved_payload": "api.cloud.resolved.json",
+  "one_job_authorization_consumed": true,
+  "executed_payload": "api.executed.0255351d.json",
+  "completed_job": "0255351d-07d4-4e0c-9027-286782324b3e",
+  "raw_output": "raw_output_0255351d.png",
+  "production_output": "production_composited.png",
+  "evaluation": "evaluation.json"
 }

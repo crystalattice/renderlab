@@ -1,0 +1,33 @@
+{
+  "job_id": "0255351d-07d4-4e0c-9027-286782324b3e",
+  "dimensions": [
+    1160,
+    896
+  ],
+  "modes": [
+    "RGB",
+    "RGB",
+    "RGB"
+  ],
+  "alpha_added": false,
+  "raw": {
+    "outside_changed_pixels": 688703,
+    "outside_max_channel_error": 197,
+    "outside_mae": 0.6502800617700024,
+    "outside_total_pixels": 888673
+  },
+  "production": {
+    "outside_changed_pixels": 0,
+    "outside_max_channel_error": 0,
+    "outside_mae": 0.0,
+    "outside_total_pixels": 888673
+  },
+  "core_pixels_different_from_raw": 0,
+  "saved_raw_recomposite_max_error": 1,
+  "saved_raw_recomposite_changed_pixels": 2975,
+  "files": {
+    "raw.png": "a5e094729a5f1688d980ee2973c8c905b63ed06f657ddb8bcb8a47fe80f9315e",
+    "production.png": "8b886b47394cdb66630ab10b3d911ef71f1ceb1d0845cf5f08e9d6e4bfbe7260"
+  },
+  "containment_pass": true
+}

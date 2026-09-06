@@ -1,7 +1,7 @@
 {
   "preparation_status": "PASS_LOCAL_GRAPH_VALIDATED_WITH_ADVISORIES",
   "execution_ready": false,
-  "reason": "Successful PUT filenames still trigger bundled-index advisories. Review required; runtime file resolution not independently tested. Inference not authorized.",
+  "reason": "One-job approval consumed; job completed. Visual quality gates failed; no repeat authorized.",
   "base_commit": "1a50854cc0824d24178c7c1d03f9ab185d0e7eb0",
   "mask_invariants": {
     "core_outside_generation": 0,
@@ -33,8 +33,8 @@
   "required_uploads": [],
   "source_upload_required": false,
   "uploads_performed": 2,
-  "inference_jobs_submitted": 0,
-  "visual_acceptance": "NOT_EVALUATED_NO_OUTFIT_OUTPUT",
+  "inference_jobs_submitted": 1,
+  "visual_acceptance": "FAIL_WHITE_REMNANTS_AND_BOUNDARY",
   "gated_submission": "cloud_submit.gated.json",
   "total_cost": null,
   "uploaded_masks": [
@@ -72,5 +72,8 @@
       "derived_from": "mask_candidates_v1/shirt_composite_mask.png",
       "pixel_equivalence": "Each RGB channel equals the L reference; no geometry or weight changes."
     }
-  ]
+  ],
+  "completed_job": "0255351d-07d4-4e0c-9027-286782324b3e",
+  "runtime_file_resolution_verified": true,
+  "production_containment": "PASS"
 }

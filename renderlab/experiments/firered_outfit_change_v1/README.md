@@ -1,6 +1,8 @@
+Completed one approved job `0255351d-07d4-4e0c-9027-286782324b3e`. Production containment passed; visual quality failed at the lower hem/side. No further job authorized. See EVALUATION.md.
+
 # FireRed outfit change v1
 
-Prepared from controlled-inpainting commit `1a50854c`. Two RGB mask uploads succeeded; no outfit inference has occurred. The approved geometry is frozen. The composite correction changed 9,821 weights to make all core pixels fully generated; core and generation PNG hashes are unchanged.
+Prepared from controlled-inpainting commit `1a50854c`. Two RGB mask uploads succeeded; one outfit inference has completed. The approved geometry is frozen. The composite correction changed 9,821 weights to make all core pixels fully generated; core and generation PNG hashes are unchanged.
 
 `api.prepared.json` records local asset references. `workflow.json` is the editor graph matching `api.cloud.resolved.json`; `api.cloud.pending.json` is retained as pre-upload evidence. The source retains its previously successful Cloud binding. Mask nodes 2 and 19 now use their exact successful PUT response filenames. Only those two image inputs changed from the pending payload.
 
@@ -8,11 +10,11 @@ Seed 3407, 40 steps, CFG 4, Euler/simple, denoise 1, AuraFlow shift 3.1, CFGNorm
 
 The composite is 255 throughout core and 0 outside generation. The previous inward distance ramp remains only in generation minus core. Production must preserve every original pixel outside generation and equal raw throughout core. Feather-zone pixels intentionally blend raw and original.
 
-Cloud dry run: `validated`, `submitted: false`, with two bundled-index warnings for the uploaded mask filenames. All 14 node classes and all three exact model filenames appear in the discovery schemas/catalog. Bundled preflight does not verify a live GPU filesystem. These advisories remain unreviewed; successful uploads do not independently prove runtime resolution. Execution remains gated. The estimator reports 0 paid-API credits but excludes GPU, queue and storage; total cost is unknown.
+Cloud dry run: `validated`, `submitted: false`, with two bundled-index warnings for the uploaded mask filenames. All 14 node classes and all three exact model filenames appear in the discovery schemas/catalog. Bundled preflight does not verify a live GPU filesystem. These advisories remain unreviewed; successful uploads do not independently prove runtime resolution. The completed job resolved both files; this confirms the prior bundled-index warnings were advisory for these exact assets. The estimator reports 0 paid-API credits but excludes GPU, queue and storage; total cost is unknown.
 
 Both RGB masks are uploaded (one PUT each, zero retries). No uploads remain required; do not re-upload. `cloud_upload_evidence.json` records exact filenames, SHA-256, RGB mode, dimensions and successful responses. The source binding is unchanged.
 
-`cloud_submit.gated.json` contains the resolved one-job call, but execution remains blocked by advisory review and lack of inference authorization. No non-dry-run call was made.
+`cloud_submit.gated.json` contains the resolved one-job call, but the one-job authorization is consumed; do not resubmit. Exactly one authorized non-dry-run call completed.
 
 Run `python validate_preparation.py` for frozen hash checks, mask relationships, editor/API roundtrip, model/settings/connection checks, actual native red-channel mask loading, and adversarial native CPU compositor containment. Run `python -m unittest discover -s . -p 'test_*.py' -v` for rejection tests. These require the RenderLab environment (NumPy, Pillow, Torch and native ComfyUI dependencies).
 

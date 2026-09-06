@@ -4,8 +4,7 @@
   "uploads_authorized": true,
   "inference_authorized": false,
   "blocking_gates": [
-    "Review two uploaded-filename advisories; do not infer runtime resolution from bundled dry run.",
-    "Explicit authorization for one inference job."
+    "One-job authorization consumed. Do not resubmit."
   ],
   "call_template": {
     "tool": "submit_workflow",
@@ -218,5 +217,7 @@
       "dry_run": false
     }
   },
-  "warning": "DO NOT EXECUTE: uploaded bindings are exact successful PUT filenames; two advisories remain and inference is not authorized."
+  "warning": "ALREADY SUBMITTED. Any additional job requires fresh authorization.",
+  "approval_consumed": true,
+  "submitted_prompt_id": "0255351d-07d4-4e0c-9027-286782324b3e"
 }

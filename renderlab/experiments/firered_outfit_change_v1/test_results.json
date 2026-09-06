@@ -14,6 +14,9 @@
   "ruff": "PASS",
   "cloud_dry_runs": 2,
   "uploads": 2,
-  "inference_jobs": 0,
-  "cloud_dry_runs_this_revision": 1
+  "inference_jobs": 1,
+  "cloud_dry_runs_this_revision": 1,
+  "actual_output_containment": "PASS",
+  "actual_saved_raw_full_recomposition": "FAIL: max error 1 at 2975 pixels",
+  "actual_output_validation_log": "actual_output_validation.txt"
 }
