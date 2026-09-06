@@ -1,6 +1,6 @@
 {
   "case": "shoes_to_stilettos",
-  "status": "PREPARED_PENDING_UPLOAD_AND_EXECUTION_AUTHORIZATION",
+  "status": "BOUND_VALIDATED_PENDING_EXECUTION_AUTHORIZATION",
   "source": {
     "review_id": "S0040",
     "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
@@ -32,7 +32,7 @@
   "settings_sha256": "8690427a29c1352677b68e188a9fa9925597ffed1870e8b753e214a7b128411a",
   "seed": 3407,
   "api_payload": "api.prepared.json",
-  "cloud_payload": "api.cloud.pending.json",
+  "cloud_payload": "api.cloud.resolved.json",
   "editor_workflow": "workflow.json",
   "rubric": "evaluation_rubric.json",
   "output": {
@@ -49,7 +49,7 @@
     "preserve_download_bytes": true,
     "postprocessing_allowed": false
   },
-  "cloud_filename": null,
+  "cloud_filename": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg",
   "uploads_authorized": false,
   "inference_authorized": false,
   "max_jobs": 1,
@@ -57,5 +57,6 @@
   "batch_allowed": false,
   "dry_run_request": "cloud_dry_run_request.json",
   "dry_run_response": "cloud_dry_run_response.json",
-  "gated_submission": "cloud_submit.gated.json"
+  "gated_submission": "cloud_submit.gated.json",
+  "resolved_api_payload": "api.cloud.resolved.json"
 }

@@ -20,6 +20,7 @@
       "unique_node_types": 11,
       "typed_links_acyclic_all_nodes_reach_native_save": true,
       "editor_api_equivalent": true,
+      "only_change_from_committed_pending_graph": "1.inputs.image",
       "settings_and_prompt_frozen": true,
       "no_mask_composite_outpaint_reframe_repair_nodes": true,
       "dry_run": {
@@ -27,8 +28,8 @@
         "warnings": [],
         "submitted": false
       },
-      "file_uploaded": false,
-      "payload_sha256": "9088bad4208025afbeebb8c6b414cb56f5d5cb3c73984d89ef34a0ed48496f1b"
+      "file_uploaded": true,
+      "payload_sha256": "b61e7d4b7dbc9fb846ded1a30822ec8449bdd422c6cf4c43ec86e9584b192ca2"
     },
     "dress_to_top_and_miniskirt": {
       "source_id": "S0534",
@@ -48,6 +49,7 @@
       "unique_node_types": 11,
       "typed_links_acyclic_all_nodes_reach_native_save": true,
       "editor_api_equivalent": true,
+      "only_change_from_committed_pending_graph": "1.inputs.image",
       "settings_and_prompt_frozen": true,
       "no_mask_composite_outpaint_reframe_repair_nodes": true,
       "dry_run": {
@@ -55,8 +57,8 @@
         "warnings": [],
         "submitted": false
       },
-      "file_uploaded": false,
-      "payload_sha256": "2130b2c3c64b6c9338cbb3b10cc15f9fa25cb5771f7009a1f080b241da1e9475"
+      "file_uploaded": true,
+      "payload_sha256": "8721d1a24110094c9516606e3432ecf6984ffcb90f91d85d1ab3f23c04699c3a"
     },
     "clothing_to_bikini": {
       "source_id": "S0040",
@@ -76,6 +78,7 @@
       "unique_node_types": 11,
       "typed_links_acyclic_all_nodes_reach_native_save": true,
       "editor_api_equivalent": true,
+      "only_change_from_committed_pending_graph": "1.inputs.image",
       "settings_and_prompt_frozen": true,
       "no_mask_composite_outpaint_reframe_repair_nodes": true,
       "dry_run": {
@@ -83,12 +86,12 @@
         "warnings": [],
         "submitted": false
       },
-      "file_uploaded": false,
-      "payload_sha256": "e571fc3c0361cc389eed140f36bcd364cce09bb96552c5700a30ccd572d74a07"
+      "file_uploaded": true,
+      "payload_sha256": "6c9450b7c0fbb1f7e65922284f84802d05d3540fbf849af6c6b020c5841d49c1"
     }
   },
   "unique_sources": 2,
-  "uploads": 0,
+  "uploads": 2,
   "inference_jobs": 0,
   "same_source_comparison": {
     "status": "PASS",
@@ -106,11 +109,6 @@
       "count": 97,
       "result": "PASS",
       "command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s tests/renderlab -v"
-    },
-    "preserved_outfit_preparation_tests": {
-      "count": 7,
-      "result": "PASS",
-      "command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s renderlab/experiments/firered_outfit_change_v1 -p test_preparation.py -v"
     },
     "ruff": "PASS",
     "json_integrity": "PASS",

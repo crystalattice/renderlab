@@ -11,9 +11,9 @@
         2160
       ],
       "mode": "RGB",
-      "cloud_filename": null,
+      "cloud_filename": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg",
       "pending_filename": "UPLOAD_REQUIRED_S0040.jpg",
-      "status": "NOT_UPLOADED",
+      "status": "UPLOADED",
       "uses": [
         {
           "case": "shoes_to_stilettos",
@@ -25,7 +25,8 @@
           "node": "1",
           "input": "image"
         }
-      ]
+      ],
+      "upload_evidence": "cloud_upload_evidence.json"
     },
     {
       "source_id": "S0534",
@@ -36,18 +37,22 @@
         1024
       ],
       "mode": "RGB",
-      "cloud_filename": null,
+      "cloud_filename": "2c7c33e3d43335acb2df095ca32120fa19e320897fe1ed26233d4e968519562f.jpg",
       "pending_filename": "UPLOAD_REQUIRED_S0534.jpg",
-      "status": "NOT_UPLOADED",
+      "status": "UPLOADED",
       "uses": [
         {
           "case": "dress_to_top_and_miniskirt",
           "node": "1",
           "input": "image"
         }
-      ]
+      ],
+      "upload_evidence": "cloud_upload_evidence.json"
     }
   ],
   "binding_rule": "After separate upload authorization, verify exact original hash/dimensions/mode, use each successful PUT response filename for node 1 only. Reuse the S0040 response in shoes and bikini; never upload it twice. Revalidate all affected cases.",
-  "all_other_inputs_frozen": true
+  "all_other_inputs_frozen": true,
+  "uploads_completed": 2,
+  "retries": 0,
+  "upload_authorization_consumed": true
 }

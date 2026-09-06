@@ -34,7 +34,7 @@
   },
   "prior_completed_evidence_preserved_at": "2e37059cd2bfd18dc6c877b716b7e977221d4a90",
   "native_outputs_only": true,
-  "uploads_performed": 0,
+  "uploads_performed": 2,
   "inference_jobs": 0,
   "batch_allowed": false,
   "retries_authorized": false

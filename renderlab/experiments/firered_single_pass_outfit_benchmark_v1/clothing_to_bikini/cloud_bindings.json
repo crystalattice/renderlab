@@ -3,7 +3,7 @@
   "asset_registry": "../cloud_bindings.json",
   "node": "1",
   "input": "image",
-  "cloud_filename": null,
+  "cloud_filename": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg",
   "pending_filename": "UPLOAD_REQUIRED_S0040.jpg",
   "shared_with": [
     "shoes_to_stilettos"
@@ -13,5 +13,7 @@
   "dimensions": [
     1440,
     2160
-  ]
+  ],
+  "status": "UPLOADED",
+  "upload_evidence": "../cloud_upload_evidence.json"
 }

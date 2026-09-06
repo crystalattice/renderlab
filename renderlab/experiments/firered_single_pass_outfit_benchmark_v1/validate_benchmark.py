@@ -66,7 +66,9 @@ def sha(path):
 
 def validate_graph(graph, case, specs):
     assert {key: node["class_type"] for key, node in graph.items()} == CLASSES
-    assert graph["1"]["inputs"] == {"image": f"UPLOAD_REQUIRED_{CASES[case]}.jpg"}
+    assert graph["1"]["inputs"] == {
+        "image": read(case + "/cloud_bindings.json")["cloud_filename"]
+    }
     for key, inputs in MODEL_INPUTS.items():
         assert graph[key]["inputs"] == inputs
     assert graph["6"]["inputs"] == {"model": ["3", 0], "shift": 3.1}
@@ -189,12 +191,26 @@ def validate():
     assert bindings["unique_upload_count"] == 2 and not bindings["uploads_authorized"]
     assert {a["source_id"] for a in bindings["source_assets"]} == {"S0040", "S0534"}
     assets = {a["source_id"]: a for a in bindings["source_assets"]}
+    evidence = read("cloud_upload_evidence.json")
+    assert evidence["upload_count"] == 2 and evidence["retry_count"] == 0
+    for source_id, asset in assets.items():
+        upload = evidence["uploads"][source_id]
+        assert upload["exit_code"] == 0 and upload["upload_attempts"] == 1
+        assert upload["retries"] == 0
+        assert upload["put_response"]["name"] == asset["cloud_filename"]
+        assert upload["put_response"]["type"] == "input"
+        assert upload["put_response"]["subfolder"] == ""
+        assert (
+            upload["sha256_before_upload"]
+            == upload["sha256_after_upload"]
+            == asset["sha256"]
+        )
     report = {
         "status": "PASS_PREPARATION_ONLY",
         "execution_ready": False,
         "case_results": {},
         "unique_sources": 2,
-        "uploads": 0,
+        "uploads": 2,
         "inference_jobs": 0,
     }
     for case, source_id in CASES.items():
@@ -228,10 +244,22 @@ def validate():
         assert prompt_path.read_bytes() == baseline_prompt
         assert sha(prompt_path) == m["prompt_sha256"]
         assert sha(P / "settings.json") == m["settings_sha256"]
-        graph = read(case + "/api.cloud.pending.json")
+        graph = read(case + "/api.cloud.resolved.json")
         prepared = read(case + "/api.prepared.json")
-        prepared["1"]["inputs"]["image"] = assets[source_id]["pending_filename"]
+        prepared["1"]["inputs"]["image"] = assets[source_id]["cloud_filename"]
         assert prepared == graph
+        baseline = json.loads(
+            subprocess.check_output(
+                [
+                    "git",
+                    "show",
+                    f"142c5df9:{(P / case / 'api.cloud.pending.json').relative_to(ROOT)}",
+                ],
+                cwd=ROOT,
+            )
+        )
+        baseline["1"]["inputs"]["image"] = assets[source_id]["cloud_filename"]
+        assert baseline == graph
         validate_graph(graph, case, specs)
         validate_editor(graph, read(case + "/workflow.json"), specs)
         gate = read(case + "/cloud_submit.gated.json")
@@ -284,14 +312,15 @@ def validate():
             "unique_node_types": len({n["class_type"] for n in graph.values()}),
             "typed_links_acyclic_all_nodes_reach_native_save": True,
             "editor_api_equivalent": True,
+            "only_change_from_committed_pending_graph": "1.inputs.image",
             "settings_and_prompt_frozen": True,
             "no_mask_composite_outpaint_reframe_repair_nodes": True,
             "dry_run": dry,
-            "file_uploaded": False,
-            "payload_sha256": sha(P / case / "api.cloud.pending.json"),
+            "file_uploaded": True,
+            "payload_sha256": sha(P / case / "api.cloud.resolved.json"),
         }
-    a = read("shoes_to_stilettos/api.cloud.pending.json")
-    b = read("clothing_to_bikini/api.cloud.pending.json")
+    a = read("shoes_to_stilettos/api.cloud.resolved.json")
+    b = read("clothing_to_bikini/api.cloud.resolved.json")
     report["same_source_comparison"] = {
         "status": "PASS",
         "only_differences": validate_same_source(a, b),

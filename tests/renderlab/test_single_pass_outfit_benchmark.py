@@ -14,12 +14,12 @@ class SinglePassOutfitBenchmarkTests(unittest.TestCase):
     def setUp(self):
         self.specs = read("cloud_availability.json")["node_schemas"]
         self.case = "shoes_to_stilettos"
-        self.graph = read(self.case + "/api.cloud.pending.json")
+        self.graph = read(self.case + "/api.cloud.resolved.json")
 
     def test_all_graphs_and_editors(self):
         for case in CASES:
             with self.subTest(case=case):
-                graph = read(case + "/api.cloud.pending.json")
+                graph = read(case + "/api.cloud.resolved.json")
                 validate_graph(graph, case, self.specs)
                 validate_editor(graph, read(case + "/workflow.json"), self.specs)
 
@@ -42,7 +42,7 @@ class SinglePassOutfitBenchmarkTests(unittest.TestCase):
             validate_graph(self.graph, self.case, self.specs)
 
     def test_same_source_pair_cannot_change_other_inputs(self):
-        bikini = read("clothing_to_bikini/api.cloud.pending.json")
+        bikini = read("clothing_to_bikini/api.cloud.resolved.json")
         validate_same_source(self.graph, bikini)
         changed = copy.deepcopy(bikini)
         changed["1"]["inputs"]["image"] = "different.jpg"

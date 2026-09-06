@@ -3,7 +3,7 @@
   "asset_registry": "../cloud_bindings.json",
   "node": "1",
   "input": "image",
-  "cloud_filename": null,
+  "cloud_filename": "2c7c33e3d43335acb2df095ca32120fa19e320897fe1ed26233d4e968519562f.jpg",
   "pending_filename": "UPLOAD_REQUIRED_S0534.jpg",
   "shared_with": [],
   "required_upload_original": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
@@ -11,5 +11,7 @@
   "dimensions": [
     680,
     1024
-  ]
+  ],
+  "status": "UPLOADED",
+  "upload_evidence": "../cloud_upload_evidence.json"
 }

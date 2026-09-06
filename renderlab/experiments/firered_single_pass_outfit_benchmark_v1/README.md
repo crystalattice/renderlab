@@ -1,6 +1,6 @@
 # FireRed single-pass outfit benchmark v1
 
-All three cases are prepared and passed Cloud dry-run preflight: `validated`, `submitted: false`, no warnings. They are **not execution-ready**: two unique originals still require separately authorized upload and authoritative filename binding. No upload, inference, batch or retry is authorized or performed.
+All three cases are prepared and passed Cloud dry-run preflight: `validated`, `submitted: false`, no warnings. Both authorized originals were uploaded exactly once and bound using their successful PUT response filenames. All three bound graphs passed a second dry run. **Execution remains gated pending separate per-case authorization.** No inference, batch, retry or Cloud workflow save was performed.
 
 This benchmark validates reproducible API behavior for clothing-editing capabilities already observed manually. It is not exploratory proof that FireRed can edit clothing.
 
@@ -22,14 +22,16 @@ Each 12-node graph loads one original, encodes it with the Qwen VAE, applies ful
 
 ## Artifacts and gates
 
-Each case includes api.prepared.json (local source path), api.cloud.pending.json (explicit unresolved upload placeholder), workflow.json (editor form matching the pending API graph), manifest.json, evaluation_rubric.json, cloud_bindings.json, dry-run request/response, structural_validation.json and cloud_submit.gated.json. SaveImage prefixes are unique and end in s3407_native. Exact Cloud output filenames remain unknown until execution; expected filename patterns are documented per case.
+Each case includes api.prepared.json (local source path), api.cloud.pending.json (explicit unresolved upload placeholder), api.cloud.resolved.json (authoritative upload binding), workflow.json (editor form matching the resolved API graph), manifest.json, evaluation_rubric.json, cloud_bindings.json, dry-run request/response, structural_validation.json and cloud_submit.gated.json. SaveImage prefixes are unique and end in s3407_native. Exact Cloud output filenames remain unknown until execution; expected filename patterns are documented per case.
 
-Upload only these two originals after separate authorization:
+Exactly two uploads completed, with no retries:
 
-- `/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg`: bind its one successful upload response filename to node 1 in shoes and bikini.
-- `/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg`: bind its successful response filename to node 1 in dress.
+- S0040: `5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg`, shared by shoes and bikini.
+- S0534: `2c7c33e3d43335acb2df095ca32120fa19e320897fe1ed26233d4e968519562f.jpg`, used by dress.
 
-Do not infer a Cloud name from these basenames and do not duplicate S0040's upload. cloud_bindings.json is the unique-asset registry. After binding only node 1, repeat dry-run validation and review every warning/error. The current clean preflight does not mean placeholder files exist at runtime. Obtain explicit authorization for each one-job call; do not batch, retry or reuse a consumed authorization. The three case-local cloud_submit.gated.json files hold the exact call templates. No executable resolved graph is claimed before upload.
+Original paths, pre/post-upload SHA-256, dimensions and successful PUT response bodies are in cloud_upload_evidence.json. Only node 1 image differs from each committed pending graph; the original pending payload and pre-upload dry runs remain historical evidence. The editor's matching filename is updated locally. No Cloud workflow was saved.
+
+Each case-local cloud_submit.gated.json contains the exact remaining `submit_workflow` arguments in `call_template.arguments`, including its resolved graph and `dry_run: false`. Require separate explicit one-job authorization before invoking any of them. Do not batch or retry. Clean bundled-catalog preflight is not a guarantee of runtime success.
 
 ## Evaluation and validation
 

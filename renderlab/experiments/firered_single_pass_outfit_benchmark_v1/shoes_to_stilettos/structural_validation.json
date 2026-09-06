@@ -16,6 +16,7 @@
   "unique_node_types": 11,
   "typed_links_acyclic_all_nodes_reach_native_save": true,
   "editor_api_equivalent": true,
+  "only_change_from_committed_pending_graph": "1.inputs.image",
   "settings_and_prompt_frozen": true,
   "no_mask_composite_outpaint_reframe_repair_nodes": true,
   "dry_run": {
@@ -23,6 +24,6 @@
     "warnings": [],
     "submitted": false
   },
-  "file_uploaded": false,
-  "payload_sha256": "9088bad4208025afbeebb8c6b414cb56f5d5cb3c73984d89ef34a0ed48496f1b"
+  "file_uploaded": true,
+  "payload_sha256": "b61e7d4b7dbc9fb846ded1a30822ec8449bdd422c6cf4c43ec86e9584b192ca2"
 }

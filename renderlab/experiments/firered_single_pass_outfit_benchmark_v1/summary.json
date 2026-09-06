@@ -1,6 +1,6 @@
 {
   "benchmark": "firered_single_pass_outfit_benchmark_v1",
-  "status": "PREPARED_VALIDATED_PENDING_TWO_UPLOADS",
+  "status": "BOUND_VALIDATED_PENDING_EXECUTION_AUTHORIZATION",
   "source_selection_complete": true,
   "cases": [
     "shoes_to_stilettos",
@@ -41,8 +41,8 @@
     "exact_models_found": 3,
     "evidence": "cloud_availability.json"
   },
-  "dry_runs_performed": 3,
-  "uploads_performed": 0,
+  "dry_runs_performed": 6,
+  "uploads_performed": 2,
   "inference_jobs": 0,
   "batch_allowed": false,
   "retry_authorized": false,
@@ -55,7 +55,7 @@
     "feathered_compositing": "Unresolved",
     "tank_top_visual_acceptance": "FAIL: white hem halo, missing necklace, bodysuit-like lower silhouette"
   },
-  "blocker": "Two unique sources are not uploaded. No inference authorized.",
+  "blocker": "Inference is not authorized; each one-job call requires separate approval.",
   "corpus_root": "/home/codyjackson/Datasets/renderlab-source",
   "source_inventory": "source_review/inventory.jsonl",
   "source_review": "source_review/selection.json",
@@ -100,5 +100,7 @@
       "submitted": false
     }
   },
-  "validation": "validation.json"
+  "validation": "validation.json",
+  "retries_performed": 0,
+  "bound_dry_runs_performed": 3
 }

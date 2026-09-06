@@ -1,0 +1,48 @@
+{
+  "baseline_commit": "142c5df90201104251c1b8f1498f3788401b2845",
+  "uploads": {
+    "S0040": {
+      "put_response": {
+        "name": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg",
+        "subfolder": "",
+        "type": "input"
+      },
+      "exit_code": 0,
+      "raw_response": "{\"name\":\"5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg\",\"subfolder\":\"\",\"type\":\"input\"}\n",
+      "upload_attempts": 1,
+      "retries": 0,
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256_before_upload": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "sha256_after_upload": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "dimensions": [
+        1440,
+        2160
+      ],
+      "mode": "RGB",
+      "verification": "Matched committed manifests before upload; bytes unchanged afterward"
+    },
+    "S0534": {
+      "put_response": {
+        "name": "2c7c33e3d43335acb2df095ca32120fa19e320897fe1ed26233d4e968519562f.jpg",
+        "subfolder": "",
+        "type": "input"
+      },
+      "exit_code": 0,
+      "raw_response": "{\"name\":\"2c7c33e3d43335acb2df095ca32120fa19e320897fe1ed26233d4e968519562f.jpg\",\"subfolder\":\"\",\"type\":\"input\"}\n",
+      "upload_attempts": 1,
+      "retries": 0,
+      "original_path": "/home/codyjackson/Datasets/renderlab-source/round2/clothing3/250917858c660eb225f3.jpg",
+      "sha256_before_upload": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+      "sha256_after_upload": "33babc233f58d82a313c923627f0ae302ea3d50669a1c92105f2bffb81ec8a29",
+      "dimensions": [
+        680,
+        1024
+      ],
+      "mode": "RGB",
+      "verification": "Matched committed manifests before upload; bytes unchanged afterward"
+    }
+  },
+  "upload_count": 2,
+  "retry_count": 0,
+  "inference_jobs": 0
+}
