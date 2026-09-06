@@ -1,6 +1,6 @@
 {
   "benchmark": "firered_single_pass_outfit_benchmark_v1",
-  "status": "BOUND_VALIDATED_PENDING_EXECUTION_AUTHORIZATION",
+  "status": "COMPLETED_AND_EVALUATED",
   "source_selection_complete": true,
   "cases": [
     "shoes_to_stilettos",
@@ -43,7 +43,7 @@
   },
   "dry_runs_performed": 6,
   "uploads_performed": 2,
-  "inference_jobs": 0,
+  "inference_jobs": 3,
   "batch_allowed": false,
   "retry_authorized": false,
   "prior_evidence": {
@@ -55,7 +55,7 @@
     "feathered_compositing": "Unresolved",
     "tank_top_visual_acceptance": "FAIL: white hem halo, missing necklace, bodysuit-like lower silhouette"
   },
-  "blocker": "Inference is not authorized; each one-job call requires separate approval.",
+  "blocker": "All three one-job authorizations consumed. No additional generation authorized.",
   "corpus_root": "/home/codyjackson/Datasets/renderlab-source",
   "source_inventory": "source_review/inventory.jsonl",
   "source_review": "source_review/selection.json",
@@ -102,5 +102,11 @@
   },
   "validation": "validation.json",
   "retries_performed": 0,
-  "bound_dry_runs_performed": 3
+  "bound_dry_runs_performed": 3,
+  "execution_evidence": "execution_summary.json",
+  "visual_results": {
+    "shoes_to_stilettos": "PASS",
+    "dress_to_top_and_miniskirt": "FAIL",
+    "clothing_to_bikini": "PASS"
+  }
 }

@@ -335,6 +335,7 @@ def validate():
         path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}
         for path in P.rglob("*")
         if path.is_file()
+        and path not in {P / case / "native_output.png" for case in CASES}
     )
     for prior in ["firered_controlled_inpaint_v1", "firered_outfit_change_v1"]:
         assert not subprocess.check_output(

@@ -1,6 +1,10 @@
 # FireRed single-pass outfit benchmark v1
 
-All three cases are prepared and passed Cloud dry-run preflight: `validated`, `submitted: false`, no warnings. Both authorized originals were uploaded exactly once and bound using their successful PUT response filenames. All three bound graphs passed a second dry run. **Execution remains gated pending separate per-case authorization.** No inference, batch, retry or Cloud workflow save was performed.
+All three authorized jobs completed once, sequentially, using the committed payloads at `35bc10c9`. No inference retries, batch calls, workflow saves or additional uploads occurred. **Visual results: shoes PASS, dress FAIL, bikini PASS.** Execution evidence and the complete twelve-score evaluations are in execution_summary.json and each case's execution.json/evaluation.json. Raw native_output.png files are preserved unchanged and tracked.
+
+The dress output reads as a fitted one-piece dress despite the explicit separate top/miniskirt instruction. Shoes and bikini meet the requested categories with mild preservation drift; bikini body-shape preservation has additional uncertainty beneath the original clothing. This is a three-case result using two sources, not a general pass rate or proof of deterministic rerun equivalence. All authorizations are consumed; the frozen gated-call files are historical specifications, not permission to rerun.
+
+Comparison sheets remain outside Git at `/tmp/firered_single_pass_results/`; regenerate them locally with compare_outputs.py. Source copies are excluded. The contact-sheet script only creates review previews and never writes to native outputs. Billing reports 313.546681 total GPU seconds on RTX PRO 6000; per-job dollar costs are unavailable. Dress output retrieval needed a refreshed link after HTTP 404; this did not rerun inference.
 
 This benchmark validates reproducible API behavior for clothing-editing capabilities already observed manually. It is not exploratory proof that FireRed can edit clothing.
 
@@ -31,11 +35,11 @@ Exactly two uploads completed, with no retries:
 
 Original paths, pre/post-upload SHA-256, dimensions and successful PUT response bodies are in cloud_upload_evidence.json. Only node 1 image differs from each committed pending graph; the original pending payload and pre-upload dry runs remain historical evidence. The editor's matching filename is updated locally. No Cloud workflow was saved.
 
-Each case-local cloud_submit.gated.json contains the exact remaining `submit_workflow` arguments in `call_template.arguments`, including its resolved graph and `dry_run: false`. Require separate explicit one-job authorization before invoking any of them. Do not batch or retry. Clean bundled-catalog preflight is not a guarantee of runtime success.
+Each case-local cloud_submit.gated.json contains the exact remaining `submit_workflow` arguments in `call_template.arguments`, including its resolved graph and `dry_run: false`. These three authorizations have now been consumed. Do not invoke them again. Do not batch or retry. Clean bundled-catalog preflight is not a guarantee of runtime success.
 
 ## Evaluation and validation
 
-Each case has twelve independent 1–5 scores, with artifact severity lower-is-better, and nine hard-fail conditions. One-piece substitution, identity/limb distortion, forced pose/framing changes and major unrelated changes fail regardless of averaged scores. All scores remain null: no benchmark inference has run.
+Each case has twelve independent 1–5 scores, with artifact severity lower-is-better, and nine hard-fail conditions. One-piece substitution, identity/limb distortion, forced pose/framing changes and major unrelated changes fail regardless of averaged scores. The frozen rubric files retain their original null scores; populated scores and evidence are stored separately in evaluation.json.
 
 Run `PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python renderlab/experiments/firered_single_pass_outfit_benchmark_v1/validate_benchmark.py` from the repository root. It verifies sources, source approval, exact frozen prompts/settings, native decode-to-save routing, typed acyclic links, editor/API equivalence, same-source controls, unique upload registry, dry-run verdicts and independent execution gates. Run the complete RenderLab suite with `PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python -m unittest discover -s tests/renderlab -v`.
 
@@ -46,3 +50,5 @@ Inventory metadata and the local contact-sheet script are in source_review/. Cor
 The two completed experiments remain unchanged at their recorded evidence. Controlled inpainting and deterministic containment are validated. Automatic garment masking, accessory preservation and feathered compositing remain unresolved. The tank-top case failed visual acceptance due to its white hem halo, missing necklace and bodysuit-like lower silhouette.
 
 User-supplied informal observations live separately in informal_observations.json: FireRed generally performs existing-canvas outfit changes, reclothing and body morphing well; the approximate one-in-four informal failure rate concerns incomplete instruction adherence and is not a formal benchmark pass rate. Outpainting is unreliable and can compress or distort visible limbs to force additions into the existing canvas. FireRed is not the preferred outpainting backend.
+
+Run `PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python renderlab/experiments/firered_single_pass_outfit_benchmark_v1/validate_execution.py` to verify committed inputs, sequential one-attempt execution, raw hashes/dimensions, billing job IDs and complete scores. Preparation validation remains historical preflight evidence; execution_summary.json records the completed run.

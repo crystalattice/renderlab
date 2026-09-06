@@ -1,0 +1,237 @@
+{
+  "request": {
+    "workflow": {
+      "1": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+        }
+      },
+      "3": {
+        "class_type": "UNETLoader",
+        "inputs": {
+          "unet_name": "FireRed-Image-Edit-1.1-transformer.safetensors",
+          "weight_dtype": "default"
+        }
+      },
+      "4": {
+        "class_type": "CLIPLoader",
+        "inputs": {
+          "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+          "type": "qwen_image",
+          "device": "default"
+        }
+      },
+      "5": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": "qwen_image_vae.safetensors"
+        }
+      },
+      "6": {
+        "class_type": "ModelSamplingAuraFlow",
+        "inputs": {
+          "model": [
+            "3",
+            0
+          ],
+          "shift": 3.1
+        }
+      },
+      "7": {
+        "class_type": "CFGNorm",
+        "inputs": {
+          "model": [
+            "6",
+            0
+          ],
+          "strength": 1
+        }
+      },
+      "8": {
+        "class_type": "TextEncodeQwenImageEditPlus",
+        "inputs": {
+          "clip": [
+            "4",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ],
+          "image1": [
+            "1",
+            0
+          ],
+          "prompt": "Replace only the subject\u2019s existing clothing with a simple black two-piece bikini. The bikini top and bottoms must remain visibly separate; do not create a bodysuit or one-piece swimsuit. Preserve her identity, face, hairstyle, body shape, anatomy, pose, hands, feet, accessories, camera, lighting, background, and all unrelated objects."
+        }
+      },
+      "9": {
+        "class_type": "TextEncodeQwenImageEditPlus",
+        "inputs": {
+          "clip": [
+            "4",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ],
+          "image1": [
+            "1",
+            0
+          ],
+          "prompt": ""
+        }
+      },
+      "10": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "1",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ]
+        }
+      },
+      "12": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "7",
+            0
+          ],
+          "positive": [
+            "8",
+            0
+          ],
+          "negative": [
+            "9",
+            0
+          ],
+          "latent_image": [
+            "10",
+            0
+          ],
+          "seed": 3407,
+          "steps": 40,
+          "cfg": 4,
+          "sampler_name": "euler",
+          "scheduler": "simple",
+          "denoise": 1
+        }
+      },
+      "13": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "12",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ]
+        }
+      },
+      "14": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "13",
+            0
+          ],
+          "filename_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_clothing_to_bikini_s3407_native"
+        }
+      }
+    },
+    "dry_run": false
+  },
+  "started_at": {
+    "current_time": "2026-09-06 22:30:24 UTC"
+  },
+  "submission": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Workflow submitted. prompt_id: 7882b635-e46c-4652-b4a3-9a46f0797bc2\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning."
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "prompt_id": "7882b635-e46c-4652-b4a3-9a46f0797bc2",
+        "lifted_from_save": false,
+        "lifecycle": "\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning.",
+        "status": "succeeded",
+        "warnings": []
+      }
+    }
+  },
+  "submission_attempts": 1,
+  "retries": 0,
+  "authorization_consumed": true,
+  "terminal_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Job completed successfully. Use get_output to retrieve results."
+      },
+      {
+        "type": "text",
+        "text": "{\"status\":\"completed\",\"completed\":true,\"raw_status\":\"completed\"}"
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "status": "succeeded",
+        "warnings": [],
+        "job_status": "completed",
+        "raw_status": "completed"
+      }
+    }
+  },
+  "terminal_observed_at": {
+    "current_time": "2026-09-06 22:43:04 UTC"
+  },
+  "output": {
+    "source_node_id": "14",
+    "filename_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_clothing_to_bikini_s3407_native",
+    "class_type": "SaveImage",
+    "filename": "ce5c768080d253f4c49b8ba9b97c4b642853acd6466dbaffc2073a9aa14edab4.png",
+    "url": "https://cloud.comfy.org/api/s/Ilq4ZexyTl_rNiDsWqTgvQ?raw=1",
+    "suggested_save_path": "~/Downloads/ComfyUI/comfy_firered-benchmark-bikini-native.png",
+    "width": 1440,
+    "height": 2160
+  },
+  "raw_file": {
+    "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_single_pass_outfit_benchmark_v1/clothing_to_bikini/native_output.png",
+    "sha256": "69de523824b976b617955966858205776243dd159559d43b8743f891ee8021d5",
+    "dimensions": [
+      1440,
+      2160
+    ],
+    "mode": "RGB",
+    "bytes": 2986509
+  },
+  "download_exit_code": 0,
+  "download_attempts": 1,
+  "job_id": "7882b635-e46c-4652-b4a3-9a46f0797bc2",
+  "terminal_status": "completed",
+  "billing_event": {
+    "event_type": "cloud_workflow_executed",
+    "event_id": "cloud_workflow_7882b635-e46c-4652-b4a3-9a46f0797bc2",
+    "created_at": "2026-09-06T22:33:39.956199Z",
+    "params": {
+      "job_id": "7882b635-e46c-4652-b4a3-9a46f0797bc2",
+      "gpu_seconds": 131.594096,
+      "gpu_type": "rtx_pro_6000"
+    }
+  },
+  "per_job_dollar_cost": null,
+  "per_job_dollar_cost_reason": "Cloud billing feed reports GPU seconds, not a per-job invoiced dollar amount.",
+  "observed_elapsed_seconds": 760.0,
+  "timing_note": "Wall interval from submit-call initiation to observing terminal status includes queue, polling and tool/approval delays; billed GPU seconds are separate."
+}

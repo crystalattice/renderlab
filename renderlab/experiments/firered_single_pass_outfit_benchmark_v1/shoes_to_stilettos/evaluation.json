@@ -1,0 +1,205 @@
+{
+  "status": "SCORED",
+  "independent_scores": {
+    "requested_transformation": {
+      "score": 5,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Both sneakers replaced by black closed-toe pumps with thin stiletto heels; mild platform soles still fit the requested category."
+    },
+    "identity_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Same recognizable facial appearance and hairstyle; face is softened and expression/eye details shift slightly."
+    },
+    "body_shape_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Overall proportions remain similar; torso contour and folds shift slightly."
+    },
+    "anatomy_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Both legs, feet, arms and hands remain plausible; ankle angles adapt to heels, with minor contour smoothing."
+    },
+    "pose_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Crossed-leg stance and hands-at-hips placement retained; small head and ankle-position changes."
+    },
+    "unrelated_clothing_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Olive tank and denim shorts retained, with regenerated folds and denim details."
+    },
+    "accessory_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "White floral choker retained; fine pattern is softened."
+    },
+    "camera_and_framing_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Same full-body canvas and camera viewpoint; small landmark shifts, no new crop or forced reframing."
+    },
+    "lighting_and_background_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Wall, curtain, bed, floor and lighting retained; textures and tonal detail are softened."
+    },
+    "instruction_adherence": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Requested footwear edit achieved; unrelated areas show mild native redraw drift."
+    },
+    "artifact_severity": {
+      "score": 2,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "lower_is_better",
+      "evidence": "Minor softness and shoe/ankle contact-detail imperfections; no severe garment or limb artifact."
+    },
+    "overall_usability": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Usable footwear transformation with mild preservation drift."
+    }
+  },
+  "positive_anchors": {
+    "1": "Failed or materially changed",
+    "2": "Major deficiencies",
+    "3": "Mixed or noticeable deficiencies",
+    "4": "Good with minor deficiencies",
+    "5": "Fully satisfied or preserved"
+  },
+  "artifact_severity_anchors": {
+    "1": "None visible",
+    "2": "Minor",
+    "3": "Noticeable",
+    "4": "Major",
+    "5": "Severe"
+  },
+  "hard_fail_conditions": [
+    "Missing requested garment",
+    "Wrong garment category",
+    "One-piece garment where two pieces requested",
+    "Material identity change",
+    "Significant body or limb distortion",
+    "Cropped, compressed, shortened, duplicated or missing limbs",
+    "Pose or framing change intended to force requested item into view",
+    "Major unrelated scene changes",
+    "Severe garment or anatomy artifacts"
+  ],
+  "decision_rule": "Any hard-fail condition fails the case regardless of scores. Record each dimension independently; do not conceal a failure in an average. Final usability requires visual review.",
+  "review_required": [
+    "source/native output comparison",
+    "face and accessories",
+    "full body and every visible limb",
+    "requested garments and boundaries",
+    "camera and scene"
+  ],
+  "exact_pixel_preservation_required": false,
+  "reason": "Unmasked native image editing; evaluate semantic preservation rather than deterministic pixel identity.",
+  "case": "shoes_to_stilettos",
+  "source_id": "S0040",
+  "operation_acceptance": "Both original shoes become black closed-toe stiletto heels; preserve foot positions, every limb, all clothing and choker.",
+  "source_specific_limitations": "Preserve existing crossed-leg stance; do not reveal naturally occluded surfaces or move feet.",
+  "result": "PASS",
+  "reviewer": "Codex visual assessment; not a user acceptance decision",
+  "review_method": "Full source/native output inspection and side-by-side review at native or readable resolution. Scores are subjective rubric judgments, not biometric measurements.",
+  "raw_sha256": "93416fb23769a135121d489404510a54d77f3aa401730ec49e7d9882e0843391",
+  "rubric_baseline_commit": "35bc10c97aea8219fc17bdf1c05decc43b587d42",
+  "review_sheet": "/tmp/firered_single_pass_results/shoes_to_stilettos.jpg",
+  "hard_fail_assessment": [
+    {
+      "condition": "Missing requested garment",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Wrong garment category",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "One-piece garment where two pieces requested",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Material identity change",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Significant body or limb distortion",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Cropped, compressed, shortened, duplicated or missing limbs",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Pose or framing change intended to force requested item into view",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Major unrelated scene changes",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Severe garment or anatomy artifacts",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    }
+  ]
+}

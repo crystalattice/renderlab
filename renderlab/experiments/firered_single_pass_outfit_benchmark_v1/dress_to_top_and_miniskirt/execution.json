@@ -1,0 +1,238 @@
+{
+  "request": {
+    "workflow": {
+      "1": {
+        "class_type": "LoadImage",
+        "inputs": {
+          "image": "2c7c33e3d43335acb2df095ca32120fa19e320897fe1ed26233d4e968519562f.jpg"
+        }
+      },
+      "3": {
+        "class_type": "UNETLoader",
+        "inputs": {
+          "unet_name": "FireRed-Image-Edit-1.1-transformer.safetensors",
+          "weight_dtype": "default"
+        }
+      },
+      "4": {
+        "class_type": "CLIPLoader",
+        "inputs": {
+          "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+          "type": "qwen_image",
+          "device": "default"
+        }
+      },
+      "5": {
+        "class_type": "VAELoader",
+        "inputs": {
+          "vae_name": "qwen_image_vae.safetensors"
+        }
+      },
+      "6": {
+        "class_type": "ModelSamplingAuraFlow",
+        "inputs": {
+          "model": [
+            "3",
+            0
+          ],
+          "shift": 3.1
+        }
+      },
+      "7": {
+        "class_type": "CFGNorm",
+        "inputs": {
+          "model": [
+            "6",
+            0
+          ],
+          "strength": 1
+        }
+      },
+      "8": {
+        "class_type": "TextEncodeQwenImageEditPlus",
+        "inputs": {
+          "clip": [
+            "4",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ],
+          "image1": [
+            "1",
+            0
+          ],
+          "prompt": "Replace only the subject\u2019s dress with a fitted top and a separate short miniskirt. Keep the top and skirt visibly distinct; do not create a dress, bodysuit, or one-piece garment. Preserve her identity, face, hairstyle, body shape, anatomy, pose, shoes, accessories, camera, lighting, background, and all unrelated objects."
+        }
+      },
+      "9": {
+        "class_type": "TextEncodeQwenImageEditPlus",
+        "inputs": {
+          "clip": [
+            "4",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ],
+          "image1": [
+            "1",
+            0
+          ],
+          "prompt": ""
+        }
+      },
+      "10": {
+        "class_type": "VAEEncode",
+        "inputs": {
+          "pixels": [
+            "1",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ]
+        }
+      },
+      "12": {
+        "class_type": "KSampler",
+        "inputs": {
+          "model": [
+            "7",
+            0
+          ],
+          "positive": [
+            "8",
+            0
+          ],
+          "negative": [
+            "9",
+            0
+          ],
+          "latent_image": [
+            "10",
+            0
+          ],
+          "seed": 3407,
+          "steps": 40,
+          "cfg": 4,
+          "sampler_name": "euler",
+          "scheduler": "simple",
+          "denoise": 1
+        }
+      },
+      "13": {
+        "class_type": "VAEDecode",
+        "inputs": {
+          "samples": [
+            "12",
+            0
+          ],
+          "vae": [
+            "5",
+            0
+          ]
+        }
+      },
+      "14": {
+        "class_type": "SaveImage",
+        "inputs": {
+          "images": [
+            "13",
+            0
+          ],
+          "filename_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_dress_to_top_and_miniskirt_s3407_native"
+        }
+      }
+    },
+    "dry_run": false
+  },
+  "started_at": {
+    "current_time": "2026-09-06 22:26:29 UTC"
+  },
+  "submission": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Workflow submitted. prompt_id: 8f092873-2fe5-42c1-9391-ccf13dab5ea3\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning."
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "prompt_id": "8f092873-2fe5-42c1-9391-ccf13dab5ea3",
+        "lifted_from_save": false,
+        "lifecycle": "\nJob queued \u2014 poll wait_for_job (or get_job_status) with this prompt_id, then get_output. Conversion/slot warnings above are non-fatal; the job will run as submitted. Do not cancel or resubmit to address a warning.",
+        "status": "succeeded",
+        "warnings": []
+      }
+    }
+  },
+  "submission_attempts": 1,
+  "retries": 0,
+  "authorization_consumed": true,
+  "terminal_response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Job completed successfully. Use get_output to retrieve results."
+      },
+      {
+        "type": "text",
+        "text": "{\"status\":\"completed\",\"completed\":true,\"raw_status\":\"completed\"}"
+      }
+    ],
+    "structuredContent": {
+      "result": {
+        "status": "succeeded",
+        "warnings": [],
+        "job_status": "completed",
+        "raw_status": "completed"
+      }
+    }
+  },
+  "terminal_observed_at": {
+    "current_time": "2026-09-06 22:30:22 UTC"
+  },
+  "output": {
+    "source_node_id": "14",
+    "filename_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_dress_to_top_and_miniskirt_s3407_native",
+    "class_type": "SaveImage",
+    "filename": "6a06e87875d164bfcf85075640f2da777426888b0806f396f079351a26abaad5.png",
+    "url": "https://cloud.comfy.org/api/s/nOFgzXINoV4ZHx1OTtcamw?raw=1",
+    "suggested_save_path": "~/Downloads/ComfyUI/comfy_firered-benchmark-dress-native.png",
+    "width": 680,
+    "height": 1024
+  },
+  "raw_file": {
+    "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_single_pass_outfit_benchmark_v1/dress_to_top_and_miniskirt/native_output.png",
+    "sha256": "060407a51ceee931854700ec6f4112f2dfc6c70234ad31b4c3b57303b51db6ec",
+    "dimensions": [
+      680,
+      1024
+    ],
+    "mode": "RGB",
+    "bytes": 805865
+  },
+  "download_exit_code": 0,
+  "download_attempts": 2,
+  "download_issue": "First capability link returned HTTP 404; refreshed get_output for the same job and downloaded successfully. No inference retry.",
+  "job_id": "8f092873-2fe5-42c1-9391-ccf13dab5ea3",
+  "terminal_status": "completed",
+  "billing_event": {
+    "event_type": "cloud_workflow_executed",
+    "event_id": "cloud_workflow_8f092873-2fe5-42c1-9391-ccf13dab5ea3",
+    "created_at": "2026-09-06T22:30:04.096767Z",
+    "params": {
+      "job_id": "8f092873-2fe5-42c1-9391-ccf13dab5ea3",
+      "gpu_seconds": 54.055185,
+      "gpu_type": "rtx_pro_6000"
+    }
+  },
+  "per_job_dollar_cost": null,
+  "per_job_dollar_cost_reason": "Cloud billing feed reports GPU seconds, not a per-job invoiced dollar amount.",
+  "observed_elapsed_seconds": 233.0,
+  "timing_note": "Wall interval from submit-call initiation to observing terminal status includes queue, polling and tool/approval delays; billed GPU seconds are separate."
+}

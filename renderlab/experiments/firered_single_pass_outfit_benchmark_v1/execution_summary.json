@@ -1,0 +1,120 @@
+{
+  "status": "COMPLETED_AND_EVALUATED",
+  "baseline_commit": "35bc10c97aea8219fc17bdf1c05decc43b587d42",
+  "submission_count": 3,
+  "submissions_per_case": 1,
+  "inference_retries": 0,
+  "batch_calls": 0,
+  "cloud_workflow_saves": 0,
+  "additional_uploads": 0,
+  "all_authorizations_consumed": true,
+  "further_generation_authorized": false,
+  "results": {
+    "shoes_to_stilettos": {
+      "job_id": "9c53a9f2-10e2-4789-b192-1bf769840227",
+      "terminal_status": "completed",
+      "result": "PASS",
+      "scores": {
+        "requested_transformation": 5,
+        "identity_preservation": 4,
+        "body_shape_preservation": 4,
+        "anatomy_preservation": 4,
+        "pose_preservation": 4,
+        "unrelated_clothing_preservation": 4,
+        "accessory_preservation": 4,
+        "camera_and_framing_preservation": 4,
+        "lighting_and_background_preservation": 4,
+        "instruction_adherence": 4,
+        "artifact_severity": 2,
+        "overall_usability": 4
+      },
+      "raw_file": {
+        "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_single_pass_outfit_benchmark_v1/shoes_to_stilettos/native_output.png",
+        "sha256": "93416fb23769a135121d489404510a54d77f3aa401730ec49e7d9882e0843391",
+        "dimensions": [
+          1440,
+          2160
+        ],
+        "mode": "RGB",
+        "bytes": 3111465
+      },
+      "billing_gpu_seconds": 127.8974,
+      "observed_elapsed_seconds": 202.0,
+      "evaluation": "shoes_to_stilettos/evaluation.json"
+    },
+    "dress_to_top_and_miniskirt": {
+      "job_id": "8f092873-2fe5-42c1-9391-ccf13dab5ea3",
+      "terminal_status": "completed",
+      "result": "FAIL",
+      "scores": {
+        "requested_transformation": 2,
+        "identity_preservation": 3,
+        "body_shape_preservation": 3,
+        "anatomy_preservation": 4,
+        "pose_preservation": 3,
+        "unrelated_clothing_preservation": 5,
+        "accessory_preservation": 4,
+        "camera_and_framing_preservation": 4,
+        "lighting_and_background_preservation": 3,
+        "instruction_adherence": 2,
+        "artifact_severity": 3,
+        "overall_usability": 2
+      },
+      "raw_file": {
+        "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_single_pass_outfit_benchmark_v1/dress_to_top_and_miniskirt/native_output.png",
+        "sha256": "060407a51ceee931854700ec6f4112f2dfc6c70234ad31b4c3b57303b51db6ec",
+        "dimensions": [
+          680,
+          1024
+        ],
+        "mode": "RGB",
+        "bytes": 805865
+      },
+      "billing_gpu_seconds": 54.055185,
+      "observed_elapsed_seconds": 233.0,
+      "evaluation": "dress_to_top_and_miniskirt/evaluation.json"
+    },
+    "clothing_to_bikini": {
+      "job_id": "7882b635-e46c-4652-b4a3-9a46f0797bc2",
+      "terminal_status": "completed",
+      "result": "PASS",
+      "scores": {
+        "requested_transformation": 5,
+        "identity_preservation": 4,
+        "body_shape_preservation": 3,
+        "anatomy_preservation": 4,
+        "pose_preservation": 4,
+        "unrelated_clothing_preservation": 4,
+        "accessory_preservation": 4,
+        "camera_and_framing_preservation": 4,
+        "lighting_and_background_preservation": 4,
+        "instruction_adherence": 4,
+        "artifact_severity": 2,
+        "overall_usability": 4
+      },
+      "raw_file": {
+        "path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/experiments/firered_single_pass_outfit_benchmark_v1/clothing_to_bikini/native_output.png",
+        "sha256": "69de523824b976b617955966858205776243dd159559d43b8743f891ee8021d5",
+        "dimensions": [
+          1440,
+          2160
+        ],
+        "mode": "RGB",
+        "bytes": 2986509
+      },
+      "billing_gpu_seconds": 131.594096,
+      "observed_elapsed_seconds": 760.0,
+      "evaluation": "clothing_to_bikini/evaluation.json"
+    }
+  },
+  "api_execution_result": "PASS: three committed API argument objects each submitted once sequentially and completed with correctly sized RGB native outputs.",
+  "visual_result": "PARTIAL: shoes PASS, dress FAIL, bikini PASS.",
+  "conclusion": "On these three cases using two unique sources, the fixed single-pass API configuration produced usable footwear and bikini edits. It did not reliably obey the visibly distinct top/miniskirt instruction. Native outputs show facial, shape, pose and scene-detail drift; exact preservation is not claimed. One run per case demonstrates execution of fixed inputs, not deterministic repeatability or a general pass rate.",
+  "independence_limit": "S0040 is intentionally shared by footwear and bikini; the three cases are not independent source samples.",
+  "informal_observations": "Remain unchanged in informal_observations.json; not included in benchmark scores or counts.",
+  "contact_sheet": "/tmp/firered_single_pass_results/comparison.jpg",
+  "contact_sheet_command": "PYTHONDONTWRITEBYTECODE=1 openai_env/bin/python renderlab/experiments/firered_single_pass_outfit_benchmark_v1/compare_outputs.py",
+  "billing_total_gpu_seconds": 313.54668100000004,
+  "per_job_dollar_cost": null,
+  "download_issue": "Dress download needed a refreshed capability link after HTTP 404; inference submission count remained one."
+}

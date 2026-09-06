@@ -1,0 +1,205 @@
+{
+  "status": "SCORED",
+  "independent_scores": {
+    "requested_transformation": {
+      "score": 2,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Hem shortened and garment fitted, but matching fabric joined by a dark waist band still reads as a fitted dress; separate top and skirt are not visually established."
+    },
+    "identity_preservation": {
+      "score": 3,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Recognizable facial/hair appearance, but eyes, facial proportions and texture are noticeably redrawn."
+    },
+    "body_shape_preservation": {
+      "score": 3,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Waist/hip silhouette becomes markedly more fitted; original loose dress prevents exact underlying-body comparison."
+    },
+    "anatomy_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "All originally visible limbs retained and generally plausible; hand and leg contours soften."
+    },
+    "pose_preservation": {
+      "score": 3,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Hand-on-hip arrangement retained, but shoulder/hip stance and feet positions shift noticeably."
+    },
+    "unrelated_clothing_preservation": {
+      "score": 5,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "No separate unrelated clothing item was visible to preserve; original bare feet remain bare."
+    },
+    "accessory_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Ponytail and hair tie retained; foot tattoo/detail is softened."
+    },
+    "camera_and_framing_preservation": {
+      "score": 4,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "680x1024 frame and pre-existing bottom-edge foot crop retained; no canvas extension."
+    },
+    "lighting_and_background_preservation": {
+      "score": 3,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Same room and furniture remain, but lamp, table, thermostat and upholstery details are redrawn and softened."
+    },
+    "instruction_adherence": {
+      "score": 2,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Does not convincingly satisfy the explicit visibly-distinct two-piece requirement or no-dress instruction."
+    },
+    "artifact_severity": {
+      "score": 3,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "lower_is_better",
+      "evidence": "Noticeable blur and loss of fine detail across face, hands and room; no severe duplicated/missing anatomy."
+    },
+    "overall_usability": {
+      "score": 2,
+      "range": [
+        1,
+        5
+      ],
+      "direction": "higher_is_better",
+      "evidence": "Fails requested garment distinction despite producing a plausible fitted short garment."
+    }
+  },
+  "positive_anchors": {
+    "1": "Failed or materially changed",
+    "2": "Major deficiencies",
+    "3": "Mixed or noticeable deficiencies",
+    "4": "Good with minor deficiencies",
+    "5": "Fully satisfied or preserved"
+  },
+  "artifact_severity_anchors": {
+    "1": "None visible",
+    "2": "Minor",
+    "3": "Noticeable",
+    "4": "Major",
+    "5": "Severe"
+  },
+  "hard_fail_conditions": [
+    "Missing requested garment",
+    "Wrong garment category",
+    "One-piece garment where two pieces requested",
+    "Material identity change",
+    "Significant body or limb distortion",
+    "Cropped, compressed, shortened, duplicated or missing limbs",
+    "Pose or framing change intended to force requested item into view",
+    "Major unrelated scene changes",
+    "Severe garment or anatomy artifacts"
+  ],
+  "decision_rule": "Any hard-fail condition fails the case regardless of scores. Record each dimension independently; do not conceal a failure in an average. Final usability requires visual review.",
+  "review_required": [
+    "source/native output comparison",
+    "face and accessories",
+    "full body and every visible limb",
+    "requested garments and boundaries",
+    "camera and scene"
+  ],
+  "exact_pixel_preservation_required": false,
+  "reason": "Unmasked native image editing; evaluate semantic preservation rather than deterministic pixel identity.",
+  "case": "dress_to_top_and_miniskirt",
+  "source_id": "S0534",
+  "operation_acceptance": "Fitted top and separate short miniskirt with visible separation; no dress, bodysuit or one-piece. Preserve existing lower-edge crop.",
+  "source_specific_limitations": "Feet/toes meet the lower border. This is approved only for dress editing; preserve the existing crop and do not reconstruct feet.",
+  "result": "FAIL",
+  "reviewer": "Codex visual assessment; not a user acceptance decision",
+  "review_method": "Full source/native output inspection and side-by-side review at native or readable resolution. Scores are subjective rubric judgments, not biometric measurements.",
+  "raw_sha256": "060407a51ceee931854700ec6f4112f2dfc6c70234ad31b4c3b57303b51db6ec",
+  "rubric_baseline_commit": "35bc10c97aea8219fc17bdf1c05decc43b587d42",
+  "review_sheet": "/tmp/firered_single_pass_results/dress_to_top_and_miniskirt.jpg",
+  "hard_fail_assessment": [
+    {
+      "condition": "Missing requested garment",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Wrong garment category",
+      "triggered": true,
+      "evidence": "Visual category failure: output reads as a fitted one-piece dress; waist band alone does not establish the required separate garments. Physical construction cannot be established from pixels."
+    },
+    {
+      "condition": "One-piece garment where two pieces requested",
+      "triggered": true,
+      "evidence": "Visual category failure: output reads as a fitted one-piece dress; waist band alone does not establish the required separate garments. Physical construction cannot be established from pixels."
+    },
+    {
+      "condition": "Material identity change",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Significant body or limb distortion",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Cropped, compressed, shortened, duplicated or missing limbs",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Pose or framing change intended to force requested item into view",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Major unrelated scene changes",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    },
+    {
+      "condition": "Severe garment or anatomy artifacts",
+      "triggered": false,
+      "evidence": "Not observed at a hard-fail level during visual comparison."
+    }
+  ]
+}
