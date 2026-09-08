@@ -2,7 +2,7 @@
   "schema_version": 1,
   "profile_id": "firered_shoes_v1",
   "capability": "footwear_change",
-  "backend": "comfy-cloud",
+  "backend": "comfy-local",
   "workflow": {
     "path": "../experiments/firered_single_pass_outfit_benchmark_v1/shoes_to_stilettos/api.cloud.resolved.json",
     "sha256": "b61e7d4b7dbc9fb846ded1a30822ec8449bdd422c6cf4c43ec86e9584b192ca2"
@@ -135,7 +135,11 @@
   "annotations": {
     "fixture_commit": "1ac5e4e80bff45301c1c2da8a12361c212200b2b",
     "purpose": "Existing successful non-explicit shoes transformation; offline preparation only",
-    "preservation": "Policy records caller intent; a generative backend cannot guarantee exact geometry or pixel preservation."
+    "preservation": "Policy records caller intent; a generative backend cannot guarantee exact geometry or pixel preservation.",
+    "execution_backend": "Comfy Local; exact historical input filename must exist locally with identical bytes. No upload is implicit."
   },
-  "content_hash": "bbccb355eef6fcc404b681aa94f17fa007a77a8d5b579c7498876f255a9ed239"
+  "content_hash": "2317a28aa466a2b0c58cb8e945846525e0ba52df8b4c9110242c3ae14550d3cf",
+  "aliases": [
+    "firered_shoes_to_stilettos"
+  ]
 }

@@ -28,6 +28,7 @@ Unknown fields are rejected except inside the optional `annotations` object. Pat
 | `immutable_source_policy` | `read_only_verified` |
 | `metadata_capture_policy` | `complete_v1` |
 | `annotations` | Optional profile-specific JSON object |
+| `aliases` | Optional nonempty string aliases for registered profile lookup |
 | `content_hash` | SHA-256 of canonical profile JSON excluding this field |
 
 Canonical JSON is UTF-8 from Python `json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False)`. Whitespace changes in the profile file do not change its content hash. Any byte change in the external workflow does change its file hash. Authors can compute the profile hash with `renderlab.workflow_profiles.profile_hash(profile)`; loading never silently repairs hashes.
@@ -40,9 +41,9 @@ Reconstruction policy records caller intent; it does not add controls to the ext
 
 ## Preparation, lineage and exact replay
 
-`prepare_job(profile, values=None, backend=None, parent_job=None)` returns a copied, resolved graph plus a version-1 job record. It never submits. Each record includes a unique job ID, UTC creation timestamp, parent job identifier, source paths/hashes, all resolved bindings, prompt UTF-8 bytes, numeric settings, output declarations, policies, profile snapshot/hash, original workflow bytes/hash, resolved workflow bytes/hash and the resource inventory used. Full graph bytes capture fixed settings beyond configurable bindings. `record_hash` covers the complete record except itself.
+`prepare_job(profile, values=None, backend=None, parent_job=None, source=None)` returns a copied, resolved graph plus a version-1 job record. It never submits. Each record includes a unique job ID, UTC creation timestamp, parent job identifier, source paths/hashes, all resolved bindings, prompt UTF-8 bytes, numeric settings, output declarations, policies, profile snapshot/hash, original workflow bytes/hash, resolved workflow bytes/hash and the resource inventory used. Full graph bytes capture fixed settings beyond configurable bindings. `record_hash` covers the complete record except itself.
 
-`workflow_bytes_base64` is the exact serialized UTF-8 API workflow document for a future backend adapter. An adapter must use those decoded bytes as the workflow document; backend-specific transport envelopes and server-assigned job/output metadata are not fabricated at preparation time. This change intentionally provides no executing adapter for profiles. A later explicitly authorized adapter must capture its request envelope, remote job ID, terminal status and outputs as execution evidence.
+`workflow_bytes_base64` is the exact serialized UTF-8 API workflow document for a future backend adapter. An adapter must use those decoded bytes as the workflow document; backend-specific transport envelopes and server-assigned job/output metadata are not fabricated at preparation time. The execution adapter in `renderlab/execution_backend.py` consumes this document directly. Comfy Local embeds it unchanged in the `/prompt` envelope and records its hash, job ID, status history and downloaded outputs.
 
 `replay_job(record_path)` verifies the record, embedded hashes and current original asset hashes, then returns the unchanged record. It does not reread the current profile or base workflow, regenerate a seed, recompile a prompt, create a child job or submit. Thus recorded workflow-input bytes are reproducible even if the original profile/workflow files were moved or changed. Exact input replay does not promise identical generated pixels. `parent_job_id` plus hashed sources records lineage for a new preparation; it is caller-supplied provenance, not an inferred relationship.
 
@@ -62,6 +63,35 @@ python -m renderlab generate --profile firered_shoes_v1 --dry-run --output shoes
 
 `profiles inspect` loads and validates the profile schema/hash. `profiles validate` additionally checks the workflow, default bindings and local dependency inventory using preparation, without saving or submitting a job. For profiles with required values and no defaults, use `jobs prepare --bindings` to validate a complete request. `profiles list` scans only immediate JSON profile files; put inventories in a subdirectory. A bare profile ID resolves in `renderlab/profiles`; external JSON paths are supported.
 
-`jobs` without a subcommand still lists existing ComfyUI jobs. `jobs prepare`, `jobs replay` and profile-based `generate` are offline and print JSON; `--output` saves a new record only. The new `generate` command requires `--dry-run` and rejects its omission. Existing positional-prompt generation and existing top-level `replay` retain their prior behavior, including submission; they are separate from these profile preparation commands.
+`jobs` without a subcommand still lists existing ComfyUI jobs. `jobs prepare`, `jobs replay` and profile-based `generate` are offline and print JSON; `--output` saves a new record only. The `generate` command requires exactly one of `--dry-run` and `--execute`. Preparation-only dry run remains offline; `--dry-run --check-backend` additionally performs read-only readiness, source-presence and live-schema checks. Existing positional-prompt generation and existing top-level `replay` retain their prior behavior, including submission; they are separate from these profile preparation commands.
 
-To load a user-authored external profile, provide the schema-v1 profile with its computed content hash, the exact API JSON and hash, the offline resource inventory, verified local asset files and any required binding values. No model-specific Python code is needed. Actual execution requires a separately authorized backend adapter; none is invoked by these commands.
+To load a user-authored external profile, provide the schema-v1 profile with its computed content hash, the exact API JSON and hash, the offline resource inventory, verified local asset files and any required binding values. No model-specific Python code is needed. Actual execution requires the separate explicit `--execute` gate and a ready backend. `profiles`, `jobs prepare` and `jobs replay` never submit.
+
+## One-job execution adapter
+
+`ExecutionBackend` declares bounded readiness, asset-presence, validation, single submission, status, output selection/download and explicit cancellation operations. `run_job` accepts the existing prepared record, verifies it with `validate_job`, and passes its exact decoded workflow bytes to the adapter. It does not bind inputs again. It verifies originals again immediately before submission.
+
+The first concrete adapter is **Comfy Local**, using the same HTTP routes already used by RenderLab and defined by this repository's `server.py`: GET `/object_info`, `/view`, `/history/{id}`; POST `/prompt`; explicit targeted cancellation via `/queue` and `/interrupt`. HTTP polling is used instead of introducing a WebSocket client. Only image outputs (PNG, JPEG or WebP) are currently supported. No API endpoint is invented and no core ComfyUI module is changed.
+
+A live schema check is not a server execution-validator call: Comfy Local's POST `/prompt` validates and queues together, so it must never be used as a dry run. Preflight checks required nodes, scalar types/ranges, model/combo membership and connection slots/types against `/object_info`, and compares `/view?type=input` bytes against every declared asset SHA-256. Backend-specific custom validation still occurs during the single authorized POST. Missing models, inputs or remote originals block submission. No upload operation is implemented here.
+
+The sibling `comfy_cloud_mcp` repository was inspected read-only. Its modern MCP client uses `mcp`, `httpx`, `X-API-Key` and the supported `https://cloud.comfy.org/mcp` transport; it also defaults to connection retries. RenderLab's active Python environment lacks `mcp`. Its older render adapter additionally rebinds workflows, polls without a bound and can create placeholder output images. Neither adapter was imported or reused. Cloud requires deliberate integration of its optional SDK/authenticated transport and authoritative private-asset presence checks; this implementation does not borrow Codex-session credentials or infer undocumented HTTP endpoints. No credential contents were read and no Cloud calls were made.
+
+`generate --execute` authorizes at most one submission per invocation. No retry, batch, upload, workflow save, automatic cancellation or output repair exists. HTTP redirects are rejected, avoiding repeated POSTs. Requests have a 30-second socket timeout and a 64-MiB response limit. Status polling is bounded by `--max-polls` (default 120), with `--poll-interval` default 2 seconds. A polling timeout leaves the remote job potentially running; it fails locally and never resubmits. Cancellation is exposed on the adapter for explicit callers only.
+
+Execution creates a new directory exclusively and writes `prepared_job.json` and `execution.json` before submitting. Submission intent is written before POST. An ambiguous submission response remains a failure with `submission_may_have_succeeded: true`; it is never retried. Evidence records the prepared-record hash, exact submitted document hash, credential-free backend origin, backend job ID, submission timestamp, status observations, declared outputs, timing/usage numbers when returned, error stage/code, and original lineage. Downloads use new index-based filenames and retain raw bytes, dimensions, mode and SHA-256. Existing directories and output files are not overwritten.
+
+Evidence excludes response headers, arbitrary backend response fields, raw exception text, signed URLs and authentication material. Terminal errors retain normalized codes and HTTP status when available; full remote tracebacks are deliberately excluded. Credential-bearing workflow input fields are rejected before recording. Prepared metadata and output names must themselves be suitable for persistent evidence.
+
+The fixture remains `firered_shoes_v1`, now with the generic alias `firered_shoes_to_stilettos` and selected `comfy-local` backend. Its graph, prompts, seed and input filename are unchanged. `--source` verifies an alternate local path to the same declared source SHA-256; it never changes the remote binding or uploads bytes.
+
+The exact separately authorized command is:
+
+```bash
+python -m renderlab generate --profile firered_shoes_to_stilettos \
+  --source /home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg \
+  --execute --server http://127.0.0.1:8188 \
+  --execution-dir output/firered_shoes_authorized_001
+```
+
+Do not run this command until separately authorized. The prepared record is `renderlab/profiles/resources/shoes_execution.prepared.json`. The observed readiness result and remaining requirements are in `resources/shoes_execution_readiness.json`. At implementation time the local server was unavailable, so no live model or asset check could complete and no backend dry-run pass is claimed. Start Comfy Local with the three recorded model files and the exact original under its authoritative input filename before requesting execution. Any future upload must be a separate explicitly authorized operation.

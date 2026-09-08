@@ -19,6 +19,7 @@ from urllib.request import Request, urlopen
 from PIL import Image, UnidentifiedImageError
 
 from . import __version__
+from .execution_backend import ComfyLocalBackend, ExecutionError, run_job
 from .workflow_profiles import PROFILE_DIR, ProfileError, load_profile, prepare_job, replay_job, write_job
 from .appearance import AppearanceError, list_presets, plan_appearance
 from .corpus import (
@@ -206,8 +207,16 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
         profile_parser.add_argument("profile")
     generate_parser = subparsers.add_parser("generate", help="prepare an external profile without submission")
     generate_parser.add_argument("--profile", required=True)
-    generate_parser.add_argument("--dry-run", action="store_true", required=True)
+    execution_mode = generate_parser.add_mutually_exclusive_group(required=True)
+    execution_mode.add_argument("--dry-run", action="store_true")
+    execution_mode.add_argument("--execute", action="store_true", help="explicitly authorize one submission, without retry")
+    generate_parser.add_argument("--check-backend", action="store_true", help="read-only live schema and asset check")
+    generate_parser.add_argument("--execution-dir", type=Path, help="new directory for execution evidence and raw outputs")
+    generate_parser.add_argument("--max-polls", type=int, default=120)
+    generate_parser.add_argument("--poll-interval", type=float, default=2)
+    add_server_argument(generate_parser)
     for offline_parser in (prepare_parser, generate_parser):
+        offline_parser.add_argument("--source", type=Path, help="local original; must match the profile source hash")
         offline_parser.add_argument("--bindings", type=Path, help="JSON object of declared input values")
         offline_parser.add_argument("--backend", help="opaque backend identifier; no automatic asset translation")
         offline_parser.add_argument("--parent-job", help="parent job identifier for lineage")
@@ -1829,9 +1838,16 @@ def run_control_command(args: argparse.Namespace) -> int:
                 result = replay_job(args.job)
             else:
                 values = json.loads(args.bindings.read_text()) if args.bindings else None
-                result = prepare_job(args.profile, values, args.backend, args.parent_job)
+                result = prepare_job(args.profile, values, args.backend, args.parent_job, args.source)
             if args.output:
                 write_job(args.output, result)
+            if args.command == "generate" and (args.execute or args.check_backend):
+                if result["backend"] != "comfy-local":
+                    raise ExecutionError("Only comfy-local is implemented; Cloud transport is not installed")
+                directory = args.execution_dir or DEFAULT_OUTPUT_DIR / "profile_jobs" / result["job_id"]
+                result = run_job(result, ComfyLocalBackend(args.server), directory, execute=args.execute, max_polls=args.max_polls, poll_interval=args.poll_interval)
+            elif args.command == "generate":
+                sys.stderr.write("Prepared only. Backend/source readiness and explicit --execute authorization remain gated.\n")
             sys.stdout.write(json.dumps(result, indent=2) + "\n")
             return 0
         if args.command == "corpus":
@@ -1954,7 +1970,7 @@ def run_control_command(args: argparse.Namespace) -> int:
         else:
             print(f"not cancelled: {args.prompt_id}")
         return 0
-    except (ProfileError, AppearanceError, RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
+    except (ExecutionError, ProfileError, AppearanceError, RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 

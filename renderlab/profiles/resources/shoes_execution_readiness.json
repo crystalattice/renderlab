@@ -1,0 +1,31 @@
+{
+  "status": "GATED_BACKEND_UNAVAILABLE",
+  "backend": "comfy-local",
+  "server": "http://127.0.0.1:8188",
+  "prepared_record": "shoes_execution.prepared.json",
+  "profile_alias": "firered_shoes_to_stilettos",
+  "read_only_check": "GET /system_stats and profile readiness GET /object_info: connection unavailable",
+  "backend_dry_run": "NOT_REACHED: readiness failed before schema or asset validation",
+  "submission_attempts": 0,
+  "uploads": 0,
+  "cloud_calls": 0,
+  "execution_authorized": false,
+  "required_models": [
+    "FireRed-Image-Edit-1.1-transformer.safetensors",
+    "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "qwen_image_vae.safetensors"
+  ],
+  "required_input": {
+    "filename": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg",
+    "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+    "local_presence": "NOT_VERIFIED: backend unavailable"
+  },
+  "credentials_required_for_local": "None for the direct unauthenticated local HTTP origin. Embedded credentials are rejected.",
+  "cloud_blocker": "MCP SDK unavailable in RenderLab environment; supported authenticated transport and private-asset presence adapter not integrated.",
+  "tests": {
+    "renderlab_suite": 131,
+    "new_execution_tests": 21,
+    "result": "PASS"
+  },
+  "static_checks": "PASS: changed modules strict Ruff; runtime/tests Ruff with existing T201 CLI-print exemption; syntax, JSON and diff checks"
+}

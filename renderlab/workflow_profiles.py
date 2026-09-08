@@ -60,14 +60,22 @@ def typed(value, binding, label):
 
 def profile_path(value):
     path = Path(value).expanduser()
-    return (PROFILE_DIR / (str(value) + ".json") if len(path.parts) == 1 and path.suffix != ".json" else path).resolve()
+    if len(path.parts) == 1 and path.suffix != ".json":
+        direct = PROFILE_DIR / (str(value) + ".json")
+        if direct.is_file():
+            return direct.resolve()
+        matches = [candidate for candidate in PROFILE_DIR.glob("*.json") if str(value) in read_json(candidate).get("aliases", [])]
+        require(len(matches) == 1, f"Missing or ambiguous profile {value}")
+        return matches[0].resolve()
+    return path.resolve()
 
 
 def load_profile(value):
     path = profile_path(value)
     p = read_json(path)
     required = {"schema_version", "profile_id", "capability", "backend", "workflow", "resource_inventory_path", "bindings", "prompt_binding", "source_image_bindings", "seed_bindings", "numeric_bindings", "model_references", "asset_references", "output_nodes", "reconstruction_policy", "immutable_source_policy", "metadata_capture_policy", "content_hash"}
-    fields(p, required, {"annotations"}, "profile")
+    fields(p, required, {"annotations", "aliases"}, "profile")
+    require(isinstance(p.get("aliases", []), list) and all(isinstance(alias, str) and alias for alias in p.get("aliases", [])), "aliases must be nonempty strings")
     require(type(p["schema_version"]) is int and p["schema_version"] == 1, "Unsupported profile schema_version")
     for name in ("profile_id", "capability", "backend", "resource_inventory_path", "content_hash"):
         require(isinstance(p[name], str) and bool(p[name]), f"{name} must be a nonempty string")
@@ -151,7 +159,7 @@ def check_graph(graph):
         visit(node)
 
 
-def prepare_job(profile, values=None, backend=None, parent_job=None):
+def prepare_job(profile, values=None, backend=None, parent_job=None, source=None):
     path, p = load_profile(profile)
     values = {} if values is None else values
     require(isinstance(values, dict), "Bindings must be a JSON object")
@@ -187,9 +195,11 @@ def prepare_job(profile, values=None, backend=None, parent_job=None):
     for name, model in p["model_references"].items():
         require(model in inventory["models"], f"Missing model in supplied inventory: {model}")
         require(bound[name] == model, f"Model binding {name} differs from declared reference")
+    if source is not None:
+        require(len(p["source_image_bindings"]) == 1, "--source requires exactly one declared source binding")
     assets = {}
     for name, ref in p["asset_references"].items():
-        local = (path.parent / ref["path"]).expanduser().resolve()
+        local = Path(source).expanduser().resolve() if source is not None and name in p["source_image_bindings"] else (path.parent / ref["path"]).expanduser().resolve()
         sha = digest(file_bytes(local, "asset"))
         require(sha == ref["sha256"], f"Asset hash mismatch: {name}")
         require(ref["backend_value"] in inventory["assets"], f"Missing backend asset in supplied inventory: {name}")
@@ -219,8 +229,7 @@ def prepare_job(profile, values=None, backend=None, parent_job=None):
     return job
 
 
-def replay_job(path):
-    job = read_json(path)
+def validate_job(job):
     require(isinstance(job, dict) and job.get("schema_version") == 1, "Unsupported job record")
     require(job.get("record_hash") == digest(canonical({k: v for k, v in job.items() if k != "record_hash"})), "Job record hash mismatch")
     require(job["profile_hash"] == profile_hash(job["profile"]), "Recorded profile hash mismatch")
@@ -231,6 +240,9 @@ def replay_job(path):
         require(digest(file_bytes(Path(asset["path"]), "replay asset")) == asset["sha256"], f"Replay asset changed: {name}")
     return job
 
+
+def replay_job(path):
+    return validate_job(read_json(path))
 
 def write_job(path, job):
     """Never overwrite any existing file, including a source or workflow."""

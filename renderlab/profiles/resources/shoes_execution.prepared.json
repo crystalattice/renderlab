@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "job_id": "adc4723e-e477-4dae-a65f-26208ec0a0f4",
+  "status": "prepared",
+  "submitted": false,
+  "created_at": "2026-09-08T16:18:27.020499+00:00",
+  "profile_id": "firered_shoes_v1",
+  "profile_hash": "2317a28aa466a2b0c58cb8e945846525e0ba52df8b4c9110242c3ae14550d3cf",
+  "profile": {
+    "schema_version": 1,
+    "profile_id": "firered_shoes_v1",
+    "capability": "footwear_change",
+    "backend": "comfy-local",
+    "workflow": {
+      "path": "../experiments/firered_single_pass_outfit_benchmark_v1/shoes_to_stilettos/api.cloud.resolved.json",
+      "sha256": "b61e7d4b7dbc9fb846ded1a30822ec8449bdd422c6cf4c43ec86e9584b192ca2"
+    },
+    "resource_inventory_path": "resources/shoes_inventory.json",
+    "bindings": {
+      "source": {
+        "node": "1",
+        "input": "image",
+        "type": "string",
+        "default": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+      },
+      "prompt": {
+        "node": "8",
+        "input": "prompt",
+        "type": "string",
+        "default": "Replace only the subject’s existing shoes with black closed-toe stiletto heels. Preserve her identity, face, hairstyle, body shape, anatomy, pose, clothing, hands, camera, lighting, background, and all unrelated objects."
+      },
+      "negative_prompt": {
+        "node": "9",
+        "input": "prompt",
+        "type": "string",
+        "default": ""
+      },
+      "seed": {
+        "node": "12",
+        "input": "seed",
+        "type": "integer",
+        "default": 3407,
+        "minimum": 0,
+        "maximum": 18446744073709551615
+      },
+      "steps": {
+        "node": "12",
+        "input": "steps",
+        "type": "integer",
+        "default": 40,
+        "minimum": 1,
+        "maximum": 10000
+      },
+      "cfg": {
+        "node": "12",
+        "input": "cfg",
+        "type": "number",
+        "default": 4,
+        "minimum": 0,
+        "maximum": 100
+      },
+      "denoise": {
+        "node": "12",
+        "input": "denoise",
+        "type": "number",
+        "default": 1,
+        "minimum": 0,
+        "maximum": 1
+      },
+      "shift": {
+        "node": "6",
+        "input": "shift",
+        "type": "number",
+        "default": 3.1,
+        "minimum": 0,
+        "maximum": 100
+      },
+      "cfg_norm": {
+        "node": "7",
+        "input": "strength",
+        "type": "number",
+        "default": 1,
+        "minimum": 0,
+        "maximum": 100
+      },
+      "diffusion": {
+        "node": "3",
+        "input": "unet_name",
+        "type": "string",
+        "default": "FireRed-Image-Edit-1.1-transformer.safetensors"
+      },
+      "encoder": {
+        "node": "4",
+        "input": "clip_name",
+        "type": "string",
+        "default": "qwen_2.5_vl_7b_fp8_scaled.safetensors"
+      },
+      "vae": {
+        "node": "5",
+        "input": "vae_name",
+        "type": "string",
+        "default": "qwen_image_vae.safetensors"
+      },
+      "prefix": {
+        "node": "14",
+        "input": "filename_prefix",
+        "type": "string",
+        "default": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native"
+      }
+    },
+    "prompt_binding": "prompt",
+    "source_image_bindings": [
+      "source"
+    ],
+    "seed_bindings": [
+      "seed"
+    ],
+    "numeric_bindings": [
+      "steps",
+      "cfg",
+      "denoise",
+      "shift",
+      "cfg_norm"
+    ],
+    "model_references": {
+      "diffusion": "FireRed-Image-Edit-1.1-transformer.safetensors",
+      "encoder": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "vae": "qwen_image_vae.safetensors"
+    },
+    "asset_references": {
+      "source": {
+        "path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+        "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+        "backend_value": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+      }
+    },
+    "output_nodes": [
+      "14"
+    ],
+    "reconstruction_policy": "preserve_visible_geometry",
+    "immutable_source_policy": "read_only_verified",
+    "metadata_capture_policy": "complete_v1",
+    "annotations": {
+      "fixture_commit": "1ac5e4e80bff45301c1c2da8a12361c212200b2b",
+      "purpose": "Existing successful non-explicit shoes transformation; offline preparation only",
+      "preservation": "Policy records caller intent; a generative backend cannot guarantee exact geometry or pixel preservation.",
+      "execution_backend": "Comfy Local; exact historical input filename must exist locally with identical bytes. No upload is implicit."
+    },
+    "content_hash": "2317a28aa466a2b0c58cb8e945846525e0ba52df8b4c9110242c3ae14550d3cf",
+    "aliases": [
+      "firered_shoes_to_stilettos"
+    ]
+  },
+  "profile_path": "/home/codyjackson/PycharmProjects/renderlab/renderlab/profiles/firered_shoes_v1.json",
+  "capability": "footwear_change",
+  "backend": "comfy-local",
+  "base_workflow_hash": "b61e7d4b7dbc9fb846ded1a30822ec8449bdd422c6cf4c43ec86e9584b192ca2",
+  "base_workflow_bytes_base64": "ewogICIxIjogewogICAgImNsYXNzX3R5cGUiOiAiTG9hZEltYWdlIiwKICAgICJpbnB1dHMiOiB7CiAgICAgICJpbWFnZSI6ICI1ZmRlZTFlMzIyOGQ5MGE5ZGUyZjUzMTFkMzNmMDlmODRiODM3MDI0N2I1ODAzNzRhYTQyMWViMjlkZjRjMGY0LmpwZyIKICAgIH0KICB9LAogICIzIjogewogICAgImNsYXNzX3R5cGUiOiAiVU5FVExvYWRlciIsCiAgICAiaW5wdXRzIjogewogICAgICAidW5ldF9uYW1lIjogIkZpcmVSZWQtSW1hZ2UtRWRpdC0xLjEtdHJhbnNmb3JtZXIuc2FmZXRlbnNvcnMiLAogICAgICAid2VpZ2h0X2R0eXBlIjogImRlZmF1bHQiCiAgICB9CiAgfSwKICAiNCI6IHsKICAgICJjbGFzc190eXBlIjogIkNMSVBMb2FkZXIiLAogICAgImlucHV0cyI6IHsKICAgICAgImNsaXBfbmFtZSI6ICJxd2VuXzIuNV92bF83Yl9mcDhfc2NhbGVkLnNhZmV0ZW5zb3JzIiwKICAgICAgInR5cGUiOiAicXdlbl9pbWFnZSIsCiAgICAgICJkZXZpY2UiOiAiZGVmYXVsdCIKICAgIH0KICB9LAogICI1IjogewogICAgImNsYXNzX3R5cGUiOiAiVkFFTG9hZGVyIiwKICAgICJpbnB1dHMiOiB7CiAgICAgICJ2YWVfbmFtZSI6ICJxd2VuX2ltYWdlX3ZhZS5zYWZldGVuc29ycyIKICAgIH0KICB9LAogICI2IjogewogICAgImNsYXNzX3R5cGUiOiAiTW9kZWxTYW1wbGluZ0F1cmFGbG93IiwKICAgICJpbnB1dHMiOiB7CiAgICAgICJtb2RlbCI6IFsKICAgICAgICAiMyIsCiAgICAgICAgMAogICAgICBdLAogICAgICAic2hpZnQiOiAzLjEKICAgIH0KICB9LAogICI3IjogewogICAgImNsYXNzX3R5cGUiOiAiQ0ZHTm9ybSIsCiAgICAiaW5wdXRzIjogewogICAgICAibW9kZWwiOiBbCiAgICAgICAgIjYiLAogICAgICAgIDAKICAgICAgXSwKICAgICAgInN0cmVuZ3RoIjogMQogICAgfQogIH0sCiAgIjgiOiB7CiAgICAiY2xhc3NfdHlwZSI6ICJUZXh0RW5jb2RlUXdlbkltYWdlRWRpdFBsdXMiLAogICAgImlucHV0cyI6IHsKICAgICAgImNsaXAiOiBbCiAgICAgICAgIjQiLAogICAgICAgIDAKICAgICAgXSwKICAgICAgInZhZSI6IFsKICAgICAgICAiNSIsCiAgICAgICAgMAogICAgICBdLAogICAgICAiaW1hZ2UxIjogWwogICAgICAgICIxIiwKICAgICAgICAwCiAgICAgIF0sCiAgICAgICJwcm9tcHQiOiAiUmVwbGFjZSBvbmx5IHRoZSBzdWJqZWN0XHUyMDE5cyBleGlzdGluZyBzaG9lcyB3aXRoIGJsYWNrIGNsb3NlZC10b2Ugc3RpbGV0dG8gaGVlbHMuIFByZXNlcnZlIGhlciBpZGVudGl0eSwgZmFjZSwgaGFpcnN0eWxlLCBib2R5IHNoYXBlLCBhbmF0b215LCBwb3NlLCBjbG90aGluZywgaGFuZHMsIGNhbWVyYSwgbGlnaHRpbmcsIGJhY2tncm91bmQsIGFuZCBhbGwgdW5yZWxhdGVkIG9iamVjdHMuIgogICAgfQogIH0sCiAgIjkiOiB7CiAgICAiY2xhc3NfdHlwZSI6ICJUZXh0RW5jb2RlUXdlbkltYWdlRWRpdFBsdXMiLAogICAgImlucHV0cyI6IHsKICAgICAgImNsaXAiOiBbCiAgICAgICAgIjQiLAogICAgICAgIDAKICAgICAgXSwKICAgICAgInZhZSI6IFsKICAgICAgICAiNSIsCiAgICAgICAgMAogICAgICBdLAogICAgICAiaW1hZ2UxIjogWwogICAgICAgICIxIiwKICAgICAgICAwCiAgICAgIF0sCiAgICAgICJwcm9tcHQiOiAiIgogICAgfQogIH0sCiAgIjEwIjogewogICAgImNsYXNzX3R5cGUiOiAiVkFFRW5jb2RlIiwKICAgICJpbnB1dHMiOiB7CiAgICAgICJwaXhlbHMiOiBbCiAgICAgICAgIjEiLAogICAgICAgIDAKICAgICAgXSwKICAgICAgInZhZSI6IFsKICAgICAgICAiNSIsCiAgICAgICAgMAogICAgICBdCiAgICB9CiAgfSwKICAiMTIiOiB7CiAgICAiY2xhc3NfdHlwZSI6ICJLU2FtcGxlciIsCiAgICAiaW5wdXRzIjogewogICAgICAibW9kZWwiOiBbCiAgICAgICAgIjciLAogICAgICAgIDAKICAgICAgXSwKICAgICAgInBvc2l0aXZlIjogWwogICAgICAgICI4IiwKICAgICAgICAwCiAgICAgIF0sCiAgICAgICJuZWdhdGl2ZSI6IFsKICAgICAgICAiOSIsCiAgICAgICAgMAogICAgICBdLAogICAgICAibGF0ZW50X2ltYWdlIjogWwogICAgICAgICIxMCIsCiAgICAgICAgMAogICAgICBdLAogICAgICAic2VlZCI6IDM0MDcsCiAgICAgICJzdGVwcyI6IDQwLAogICAgICAiY2ZnIjogNCwKICAgICAgInNhbXBsZXJfbmFtZSI6ICJldWxlciIsCiAgICAgICJzY2hlZHVsZXIiOiAic2ltcGxlIiwKICAgICAgImRlbm9pc2UiOiAxCiAgICB9CiAgfSwKICAiMTMiOiB7CiAgICAiY2xhc3NfdHlwZSI6ICJWQUVEZWNvZGUiLAogICAgImlucHV0cyI6IHsKICAgICAgInNhbXBsZXMiOiBbCiAgICAgICAgIjEyIiwKICAgICAgICAwCiAgICAgIF0sCiAgICAgICJ2YWUiOiBbCiAgICAgICAgIjUiLAogICAgICAgIDAKICAgICAgXQogICAgfQogIH0sCiAgIjE0IjogewogICAgImNsYXNzX3R5cGUiOiAiU2F2ZUltYWdlIiwKICAgICJpbnB1dHMiOiB7CiAgICAgICJpbWFnZXMiOiBbCiAgICAgICAgIjEzIiwKICAgICAgICAwCiAgICAgIF0sCiAgICAgICJmaWxlbmFtZV9wcmVmaXgiOiAicmVuZGVybGFiX2ZpcmVyZWRfc2luZ2xlX3Bhc3Nfb3V0Zml0X2JlbmNobWFya192MV9zaG9lc190b19zdGlsZXR0b3NfczM0MDdfbmF0aXZlIgogICAgfQogIH0KfQo=",
+  "resolved_workflow_hash": "14db8641ecca083a7cb919658423263b9e056e08bfa5878f2611d63ac4b530bb",
+  "workflow_bytes_base64": "eyIxIjp7ImNsYXNzX3R5cGUiOiJMb2FkSW1hZ2UiLCJpbnB1dHMiOnsiaW1hZ2UiOiI1ZmRlZTFlMzIyOGQ5MGE5ZGUyZjUzMTFkMzNmMDlmODRiODM3MDI0N2I1ODAzNzRhYTQyMWViMjlkZjRjMGY0LmpwZyJ9fSwiMTAiOnsiY2xhc3NfdHlwZSI6IlZBRUVuY29kZSIsImlucHV0cyI6eyJwaXhlbHMiOlsiMSIsMF0sInZhZSI6WyI1IiwwXX19LCIxMiI6eyJjbGFzc190eXBlIjoiS1NhbXBsZXIiLCJpbnB1dHMiOnsiY2ZnIjo0LCJkZW5vaXNlIjoxLCJsYXRlbnRfaW1hZ2UiOlsiMTAiLDBdLCJtb2RlbCI6WyI3IiwwXSwibmVnYXRpdmUiOlsiOSIsMF0sInBvc2l0aXZlIjpbIjgiLDBdLCJzYW1wbGVyX25hbWUiOiJldWxlciIsInNjaGVkdWxlciI6InNpbXBsZSIsInNlZWQiOjM0MDcsInN0ZXBzIjo0MH19LCIxMyI6eyJjbGFzc190eXBlIjoiVkFFRGVjb2RlIiwiaW5wdXRzIjp7InNhbXBsZXMiOlsiMTIiLDBdLCJ2YWUiOlsiNSIsMF19fSwiMTQiOnsiY2xhc3NfdHlwZSI6IlNhdmVJbWFnZSIsImlucHV0cyI6eyJmaWxlbmFtZV9wcmVmaXgiOiJyZW5kZXJsYWJfZmlyZXJlZF9zaW5nbGVfcGFzc19vdXRmaXRfYmVuY2htYXJrX3YxX3Nob2VzX3RvX3N0aWxldHRvc19zMzQwN19uYXRpdmUiLCJpbWFnZXMiOlsiMTMiLDBdfX0sIjMiOnsiY2xhc3NfdHlwZSI6IlVORVRMb2FkZXIiLCJpbnB1dHMiOnsidW5ldF9uYW1lIjoiRmlyZVJlZC1JbWFnZS1FZGl0LTEuMS10cmFuc2Zvcm1lci5zYWZldGVuc29ycyIsIndlaWdodF9kdHlwZSI6ImRlZmF1bHQifX0sIjQiOnsiY2xhc3NfdHlwZSI6IkNMSVBMb2FkZXIiLCJpbnB1dHMiOnsiY2xpcF9uYW1lIjoicXdlbl8yLjVfdmxfN2JfZnA4X3NjYWxlZC5zYWZldGVuc29ycyIsImRldmljZSI6ImRlZmF1bHQiLCJ0eXBlIjoicXdlbl9pbWFnZSJ9fSwiNSI6eyJjbGFzc190eXBlIjoiVkFFTG9hZGVyIiwiaW5wdXRzIjp7InZhZV9uYW1lIjoicXdlbl9pbWFnZV92YWUuc2FmZXRlbnNvcnMifX0sIjYiOnsiY2xhc3NfdHlwZSI6Ik1vZGVsU2FtcGxpbmdBdXJhRmxvdyIsImlucHV0cyI6eyJtb2RlbCI6WyIzIiwwXSwic2hpZnQiOjMuMX19LCI3Ijp7ImNsYXNzX3R5cGUiOiJDRkdOb3JtIiwiaW5wdXRzIjp7Im1vZGVsIjpbIjYiLDBdLCJzdHJlbmd0aCI6MX19LCI4Ijp7ImNsYXNzX3R5cGUiOiJUZXh0RW5jb2RlUXdlbkltYWdlRWRpdFBsdXMiLCJpbnB1dHMiOnsiY2xpcCI6WyI0IiwwXSwiaW1hZ2UxIjpbIjEiLDBdLCJwcm9tcHQiOiJSZXBsYWNlIG9ubHkgdGhlIHN1YmplY3TigJlzIGV4aXN0aW5nIHNob2VzIHdpdGggYmxhY2sgY2xvc2VkLXRvZSBzdGlsZXR0byBoZWVscy4gUHJlc2VydmUgaGVyIGlkZW50aXR5LCBmYWNlLCBoYWlyc3R5bGUsIGJvZHkgc2hhcGUsIGFuYXRvbXksIHBvc2UsIGNsb3RoaW5nLCBoYW5kcywgY2FtZXJhLCBsaWdodGluZywgYmFja2dyb3VuZCwgYW5kIGFsbCB1bnJlbGF0ZWQgb2JqZWN0cy4iLCJ2YWUiOlsiNSIsMF19fSwiOSI6eyJjbGFzc190eXBlIjoiVGV4dEVuY29kZVF3ZW5JbWFnZUVkaXRQbHVzIiwiaW5wdXRzIjp7ImNsaXAiOlsiNCIsMF0sImltYWdlMSI6WyIxIiwwXSwicHJvbXB0IjoiIiwidmFlIjpbIjUiLDBdfX19",
+  "workflow": {
+    "1": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+      }
+    },
+    "3": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "FireRed-Image-Edit-1.1-transformer.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "4": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "type": "qwen_image",
+        "device": "default"
+      }
+    },
+    "5": {
+      "class_type": "VAELoader",
+      "inputs": {
+        "vae_name": "qwen_image_vae.safetensors"
+      }
+    },
+    "6": {
+      "class_type": "ModelSamplingAuraFlow",
+      "inputs": {
+        "model": [
+          "3",
+          0
+        ],
+        "shift": 3.1
+      }
+    },
+    "7": {
+      "class_type": "CFGNorm",
+      "inputs": {
+        "model": [
+          "6",
+          0
+        ],
+        "strength": 1
+      }
+    },
+    "8": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "4",
+          0
+        ],
+        "vae": [
+          "5",
+          0
+        ],
+        "image1": [
+          "1",
+          0
+        ],
+        "prompt": "Replace only the subject’s existing shoes with black closed-toe stiletto heels. Preserve her identity, face, hairstyle, body shape, anatomy, pose, clothing, hands, camera, lighting, background, and all unrelated objects."
+      }
+    },
+    "9": {
+      "class_type": "TextEncodeQwenImageEditPlus",
+      "inputs": {
+        "clip": [
+          "4",
+          0
+        ],
+        "vae": [
+          "5",
+          0
+        ],
+        "image1": [
+          "1",
+          0
+        ],
+        "prompt": ""
+      }
+    },
+    "10": {
+      "class_type": "VAEEncode",
+      "inputs": {
+        "pixels": [
+          "1",
+          0
+        ],
+        "vae": [
+          "5",
+          0
+        ]
+      }
+    },
+    "12": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "7",
+          0
+        ],
+        "positive": [
+          "8",
+          0
+        ],
+        "negative": [
+          "9",
+          0
+        ],
+        "latent_image": [
+          "10",
+          0
+        ],
+        "seed": 3407,
+        "steps": 40,
+        "cfg": 4,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "denoise": 1
+      }
+    },
+    "13": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "12",
+          0
+        ],
+        "vae": [
+          "5",
+          0
+        ]
+      }
+    },
+    "14": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "13",
+          0
+        ],
+        "filename_prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native"
+      }
+    }
+  },
+  "resolved_bindings": {
+    "source": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg",
+    "prompt": "Replace only the subject’s existing shoes with black closed-toe stiletto heels. Preserve her identity, face, hairstyle, body shape, anatomy, pose, clothing, hands, camera, lighting, background, and all unrelated objects.",
+    "negative_prompt": "",
+    "seed": 3407,
+    "steps": 40,
+    "cfg": 4,
+    "denoise": 1,
+    "shift": 3.1,
+    "cfg_norm": 1,
+    "diffusion": "FireRed-Image-Edit-1.1-transformer.safetensors",
+    "encoder": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "vae": "qwen_image_vae.safetensors",
+    "prefix": "renderlab_firered_single_pass_outfit_benchmark_v1_shoes_to_stilettos_s3407_native"
+  },
+  "prompt_bytes_base64": "UmVwbGFjZSBvbmx5IHRoZSBzdWJqZWN04oCZcyBleGlzdGluZyBzaG9lcyB3aXRoIGJsYWNrIGNsb3NlZC10b2Ugc3RpbGV0dG8gaGVlbHMuIFByZXNlcnZlIGhlciBpZGVudGl0eSwgZmFjZSwgaGFpcnN0eWxlLCBib2R5IHNoYXBlLCBhbmF0b215LCBwb3NlLCBjbG90aGluZywgaGFuZHMsIGNhbWVyYSwgbGlnaHRpbmcsIGJhY2tncm91bmQsIGFuZCBhbGwgdW5yZWxhdGVkIG9iamVjdHMu",
+  "numeric_settings": {
+    "seed": 3407,
+    "steps": 40,
+    "cfg": 4,
+    "denoise": 1,
+    "shift": 3.1,
+    "cfg_norm": 1
+  },
+  "assets": {
+    "source": {
+      "path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+      "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+      "backend_value": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+    }
+  },
+  "source_hashes": {
+    "source": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902"
+  },
+  "lineage": {
+    "parent_job_id": null,
+    "sources": {
+      "source": {
+        "path": "/home/codyjackson/Datasets/renderlab-source/additional/Ziggy_Star/SCPE02977_001.jpg",
+        "sha256": "51a0859115d11b498a52c4ec9916e2737395b04513d49e3be985f06d5be53902",
+        "backend_value": "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+      }
+    }
+  },
+  "model_references": {
+    "diffusion": "FireRed-Image-Edit-1.1-transformer.safetensors",
+    "encoder": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "vae": "qwen_image_vae.safetensors"
+  },
+  "resource_inventory": {
+    "models": [
+      "FireRed-Image-Edit-1.1-transformer.safetensors",
+      "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "qwen_image_vae.safetensors"
+    ],
+    "assets": [
+      "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+    ],
+    "annotations": {
+      "evidence": "../../experiments/firered_single_pass_outfit_benchmark_v1/cloud_availability.json and cloud_upload_evidence.json",
+      "scope": "Historical verified names, not a live account availability assertion"
+    }
+  },
+  "resource_verification": "Supplied offline inventory only; no backend availability check performed",
+  "output_nodes": [
+    "14"
+  ],
+  "reconstruction_policy": "preserve_visible_geometry",
+  "immutable_source_policy": "read_only_verified",
+  "metadata_capture_policy": "complete_v1",
+  "record_hash": "282073276a8d3876e4bba2d6eed2fae7982c74251dd19be1a1ef117f0d006d0e"
+}
