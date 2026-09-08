@@ -1,0 +1,14 @@
+{
+  "models": [
+    "FireRed-Image-Edit-1.1-transformer.safetensors",
+    "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+    "qwen_image_vae.safetensors"
+  ],
+  "assets": [
+    "5fdee1e3228d90a9de2f5311d33f09f84b8370247b580374aa421eb29df4c0f4.jpg"
+  ],
+  "annotations": {
+    "evidence": "../../experiments/firered_single_pass_outfit_benchmark_v1/cloud_availability.json and cloud_upload_evidence.json",
+    "scope": "Historical verified names, not a live account availability assertion"
+  }
+}

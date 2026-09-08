@@ -19,6 +19,7 @@ from urllib.request import Request, urlopen
 from PIL import Image, UnidentifiedImageError
 
 from . import __version__
+from .workflow_profiles import PROFILE_DIR, ProfileError, load_profile, prepare_job, replay_job, write_job
 from .appearance import AppearanceError, list_presets, plan_appearance
 from .corpus import (
     CorpusError,
@@ -109,7 +110,7 @@ class RenderError(RuntimeError):
 CONTROL_COMMANDS = {
     "jobs", "status", "cancel", "models", "loras", "lora-presets", "lora-sweep",
     "doctor", "mask", "replay", "video", "corpus", "experiment", "render-run", "landmarks",
-    "appearance",
+    "appearance", "profiles", "generate",
 }
 
 MODEL_NODE_INPUTS = (
@@ -189,6 +190,28 @@ def parse_control_args(argv: list[str]) -> argparse.Namespace:
     jobs_parser = subparsers.add_parser("jobs", help="list ComfyUI jobs")
     jobs_parser.add_argument("--limit", type=int, default=20)
     add_server_argument(jobs_parser)
+    job_commands = jobs_parser.add_subparsers(dest="job_command")
+    prepare_parser = job_commands.add_parser("prepare", help="prepare an offline workflow job")
+    prepare_parser.add_argument("profile")
+    replay_parser = job_commands.add_parser("replay", help="verify and return exact recorded inputs; never submit")
+    replay_parser.add_argument("job", type=Path)
+    replay_parser.add_argument("--output", type=Path)
+
+    profiles_parser = subparsers.add_parser("profiles", help="versioned external workflow profiles")
+    profile_commands = profiles_parser.add_subparsers(dest="profile_command", required=True)
+    list_parser = profile_commands.add_parser("list")
+    list_parser.add_argument("--directory", type=Path, default=PROFILE_DIR)
+    for command in ("inspect", "validate"):
+        profile_parser = profile_commands.add_parser(command)
+        profile_parser.add_argument("profile")
+    generate_parser = subparsers.add_parser("generate", help="prepare an external profile without submission")
+    generate_parser.add_argument("--profile", required=True)
+    generate_parser.add_argument("--dry-run", action="store_true", required=True)
+    for offline_parser in (prepare_parser, generate_parser):
+        offline_parser.add_argument("--bindings", type=Path, help="JSON object of declared input values")
+        offline_parser.add_argument("--backend", help="opaque backend identifier; no automatic asset translation")
+        offline_parser.add_argument("--parent-job", help="parent job identifier for lineage")
+        offline_parser.add_argument("--output", type=Path, help="new record path; existing files are never overwritten")
 
     status_parser = subparsers.add_parser("status", help="show one ComfyUI job")
     status_parser.add_argument("prompt_id")
@@ -1791,6 +1814,26 @@ def lora_sweep_arguments(args: argparse.Namespace) -> list[list[str]]:
 
 def run_control_command(args: argparse.Namespace) -> int:
     try:
+        if args.command == "profiles":
+            if args.profile_command == "list":
+                result = [load_profile(path)[1]["profile_id"] for path in sorted(args.directory.glob("*.json"))]
+            elif args.profile_command == "inspect":
+                result = load_profile(args.profile)[1]
+            else:
+                job = prepare_job(args.profile)
+                result = {"status": "validated", "submitted": False, "profile_hash": job["profile_hash"], "resource_verification": job["resource_verification"]}
+            sys.stdout.write(json.dumps(result, indent=2) + "\n")
+            return 0
+        if args.command == "generate" or args.command == "jobs" and args.job_command:
+            if args.command == "jobs" and args.job_command == "replay":
+                result = replay_job(args.job)
+            else:
+                values = json.loads(args.bindings.read_text()) if args.bindings else None
+                result = prepare_job(args.profile, values, args.backend, args.parent_job)
+            if args.output:
+                write_job(args.output, result)
+            sys.stdout.write(json.dumps(result, indent=2) + "\n")
+            return 0
         if args.command == "corpus":
             if args.corpus_command == "validate":
                 summary = (
@@ -1911,7 +1954,7 @@ def run_control_command(args: argparse.Namespace) -> int:
         else:
             print(f"not cancelled: {args.prompt_id}")
         return 0
-    except (AppearanceError, RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
+    except (ProfileError, AppearanceError, RenderError, CorpusError, LandmarkError, RenderRunError, OSError, KeyError, json.JSONDecodeError) as exc:
         print(f"renderlab: error: {exc}", file=sys.stderr)
         return 1
 

@@ -84,6 +84,8 @@ See what ComfyUI can do with the [newer template workflows](https://comfy.org/wo
 This fork includes a focused local CLI using the bundled Z-Image Turbo INT8 API workflow.
 [Corpus import, deduplication, experiment subsets, paired-edit validation, and
 Base-vs-Distilled preparation](docs/CORPUS_EXPERIMENTS.md) use the same CLI.
+[Versioned workflow profiles](docs/WORKFLOW_PROFILES.md) add offline, backend-neutral
+job preparation and exact input replay for externally supplied API workflows.
 Start ComfyUI, then validate the required nodes and models:
 
 ```bash
